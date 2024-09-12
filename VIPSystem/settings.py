@@ -74,7 +74,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     # 把需要的第三方登入都放這裡
     'allauth.socialaccount.providers.google',
-    'widget_tweaks'
+    'widget_tweaks', 
+    'VIPSystem',
 ]
 
 MIDDLEWARE = [

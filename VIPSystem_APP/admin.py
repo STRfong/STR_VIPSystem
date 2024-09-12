@@ -7,5 +7,5 @@ from allauth.socialaccount.admin import SocialAppAdmin # type: ignore
 from allauth.socialaccount.models import SocialApp # type: ignore
 
 admin.site.register(Tag)
-admin.site.unregister(SocialApp)
-admin.site.register(CustomSocialApp, SocialAppAdmin)
+# admin.site.unregister(SocialApp)
+# admin.site.register(CustomSocialApp, SocialAppAdmin)
