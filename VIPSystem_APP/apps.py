@@ -1,8 +1,12 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
+from django.contrib.sites.models import Site
 
 def initialize_social_app(sender, **kwargs):
     from .models import CustomSocialApp
+    if not Site.objects.exists():
+        Site.objects.create(domain='https://str-vipststem.zeabur.app/', name='https://str-vipststem.zeabur.app/')
+    
     CustomSocialApp.get_or_create_app('google')
 
 class VipsystemAppConfig(AppConfig):

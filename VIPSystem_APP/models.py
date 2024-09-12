@@ -23,10 +23,13 @@ class CustomSocialApp(SocialApp):
 
         super().save(*args, **kwargs)
 
-        current_site = Site.objects.get_current()
+        try:
+            current_site = Site.objects.get_current()
+        except Site.DoesNotExist:
+            current_site = Site.objects.create(domain='https://str-vipststem.zeabur.app/', name='https://str-vipststem.zeabur.app/')
         if current_site not in self.sites.all():
             self.sites.add(current_site)
-            
+
     @classmethod
     def get_or_create_app(cls, provider):
         try:
