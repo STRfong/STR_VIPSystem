@@ -30,18 +30,18 @@ class CustomSocialApp(SocialApp):
         if current_site not in self.sites.all():
             self.sites.add(current_site)
 
-    @classmethod
-    def get_or_create_app(cls, provider):
-        try:
-            app = cls.objects.filter(provider=provider).first()  # 使用 .first() 而不是 .get()
-            if not app:
-                app = cls(provider=provider)
-                app.name = f"{provider.capitalize()} OAuth"
-                app.save()
-            return app
-        except Exception as e:
-            print(f"Error in get_or_create_app: {str(e)}")
-            return None 
+    # @classmethod
+    # def get_or_create_app(cls, provider):
+    #     try:
+    #         app = cls.objects.filter(provider=provider).first()  # 使用 .first() 而不是 .get()
+    #         if not app:
+    #             app = cls(provider=provider)
+    #             app.name = f"{provider.capitalize()} OAuth"
+    #             app.save()
+    #         return app
+    #     except Exception as e:
+    #         print(f"Error in get_or_create_app: {str(e)}")
+    #         return None 
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
