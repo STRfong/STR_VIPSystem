@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 class Command(BaseCommand):
-    help = '创建一个预定义的超级用户'
+    help = '創建超级用户'
 
     def handle(self, *args, **options):
         User = get_user_model()
@@ -17,6 +17,6 @@ class Command(BaseCommand):
                 os.getenv('SUPERUSER_EMAIL'),
                 os.getenv('SUPERUSER_PASSWORD')
             )
-            self.stdout.write(self.style.SUCCESS('成功创建超级用户'))
+            self.stdout.write(self.style.SUCCESS('創建成功'))
         else:
-            self.stdout.write(self.style.WARNING('超级用户已存在'))
+            self.stdout.write(self.style.WARNING('已存在'))
