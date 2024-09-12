@@ -30,23 +30,19 @@ CSRF_TRUSTED_ORIGINS = [os.getenv('PRODUCTION_URL')]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         'APP': {
-#             'client_id': os.getenv('GOOGLE_CLIENT_ID'),
-#             'secret': os.getenv('GOOGLE_SECRET_KEY'),
-#             'key': ''
-#         },
-#         'SCOPE': [
-#             'profile',
-#             'email',
-#         ],
-#         'AUTH_PARAMS': {
-#             'access_type': 'online',
-#         },
-#         'OAUTH_PKCE_ENABLED': True,
-#     }
-# }
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+      'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            }
+        }
+    }
+}
 SITE_ID = 1
 
 # SECURITY WARNING: don't run with debug turned on in production!
