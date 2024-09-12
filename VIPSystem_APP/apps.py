@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
-from django.contrib.sites.models import Site
+
 
 def initialize_social_app(sender, **kwargs):
     from .models import CustomSocialApp
@@ -12,6 +12,7 @@ def initialize_social_app(sender, **kwargs):
 class VipsystemAppConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "VIPSystem_APP"
-
+    
     def ready(self):
+        from django.contrib.sites.models import Site
         post_migrate.connect(initialize_social_app, sender=self)
