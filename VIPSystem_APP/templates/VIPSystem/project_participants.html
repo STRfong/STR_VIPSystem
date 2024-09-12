@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}專案詳細資料{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">專案詳細資料</h2>
+        </div>
+        <div class="card-body">
+            <h3 class="card-title">專案名稱：{{ project.name }}</h3>
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">參與人員名單</h4>
+                <a href="{% url 'VIPSystem_APP:invite_list' project.pk %}" class="btn btn-primary">新增邀請人員</a>
+            </div>
+            {% if participants_list %}
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-striped mt-3">
+                        <thead style="position: sticky; top: 0; background-color: white;">
+                            <tr>
+                                <th style="width: 15%;">姓名</th>
+                                <th>標籤</th>
+                                <th style="width: 10%;">刪除</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participant in participants_list %}
+                                <tr>
+                                    <td style="width: 15%;">{{ participant.name }}</td>
+                                    <td>
+                                        {% for tag in participant.tags.all %}
+                                            <span class="badge rounded-pill bg-primary">{{ tag.name }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td style="width: 10%;">
+                                        <span class="text-danger" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">❌</span>
+                                    </td>
+                                </tr>
+                                <!-- 刪除確認 Modal -->
+                                <div class="modal fade" id="deleteModal{{ participant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ participant.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ participant.id }}">確認刪除</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                您確定要刪除 {{ participant.name }} 嗎？
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                <form action="{% url 'VIPSystem_APP:remove_participant' project.pk participant.id %}" method="POST" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">確認刪除</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center">目前尚未邀請貴賓！</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mt-3 d-flex">
+        <a href="{% url 'VIPSystem_APP:project_id' project.pk %}" class="btn btn-secondary">回上層</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+首頁
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">薩泰爾禮賓系統</h2>
+          <p class="text-center mb-4">這是薩泰爾的禮賓系統，用來新增專案並邀請貴賓</p>
+          {% if not user.is_authenticated %}
+            <p class="text-center">你尚未登入！請<a href="{% url 'account_login' %}">登入</a>以開始使用</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

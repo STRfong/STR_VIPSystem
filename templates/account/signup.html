@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% block title %}
+註冊
+{% endblock title %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="mb-4">註冊新帳號</h2>
+            <form method="POST" action="{% url 'account_signup' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">註冊</button>
+            </form>
+            <hr>
+            <p>已經有帳號了？ <a href="{% url 'account_login' %}">登入</a></p>
+        </div>
+        <div class="col-md-6">
+            <h2 class="mb-4">或者使用以下方式註冊：</h2>
+            <a class="btn btn-danger btn-lg" href="{% provider_login_url 'google' method='oauth2' %}">使用Google註冊</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

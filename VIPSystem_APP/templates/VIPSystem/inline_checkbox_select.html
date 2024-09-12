@@ -1,0 +1,13 @@
+{% for group, options, index in widget.optgroups %}
+    {% for option in options %}
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="{{ option.attrs.id }}" value="{{ option.value }}"
+                   name="{{ widget.name }}"{% if option.selected %} checked{% endif %}
+                   onchange="this.nextElementSibling.querySelector('span').classList.toggle('bg-primary');
+                             this.nextElementSibling.querySelector('span').classList.toggle('bg-secondary');">
+            <label class="form-check-label" for="{{ option.attrs.id }}">
+                <span class="badge rounded-pill {% if option.selected %}bg-primary{% else %}bg-secondary{% endif %}">{{ option.label }}</span>
+            </label>
+        </div>
+    {% endfor %}
+{% endfor %}

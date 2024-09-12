@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% block title %}
+登入
+{% endblock title %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">登入</h2>
+          <form action="" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+              {{ form.as_p }}
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">登入</button>
+              <a href="{% provider_login_url 'google' method='oauth2' %}" class="btn btn-danger">Google登入</a>
+            </div>
+          </form>
+          <p class="text-center mt-3">還沒有帳號嗎？ <a href="{% url 'account_signup' %}">註冊</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

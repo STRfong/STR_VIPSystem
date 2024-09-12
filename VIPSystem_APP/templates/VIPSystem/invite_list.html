@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}邀請貴賓{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>邀請貴賓參與專案：{{ project.name }}</h2>
+    <form method="post" action="{% url 'VIPSystem_APP:update_participants' project.pk %}" id="inviteForm">
+        {% csrf_token %}
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped">
+                <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
+                    <tr>
+                        <th>選擇</th>
+                        <th>姓名</th>
+                        <th>電子郵件</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vip in vip_list %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="selected_vips" value="{{ vip.pk }}" class="vip-checkbox"
+                                    {% if vip in current_participants %}checked disabled{% endif %}>
+                            </td>
+                            <td>{{ vip.name }}</td>
+                            <td>{{ vip.email }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+    <div class="mt-3 d-flex justify-content-between">
+        <a href="{% url 'VIPSystem_APP:project_participants' project.id %}" class="btn btn-secondary">返回</a>
+        <button type="submit" form="inviteForm" class="btn btn-primary ms-2" id="submitButton" disabled>更新參與者</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.vip-checkbox:not(:disabled)');
+    const submitButton = document.getElementById('submitButton');
+
+    function updateSubmitButton() {
+        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+        submitButton.disabled = !anyChecked;
+    }
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSubmitButton);
+    });
+
+    updateSubmitButton();
+});
+</script>
+{% endblock %}
