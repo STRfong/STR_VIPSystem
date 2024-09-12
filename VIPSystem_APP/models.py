@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.urls import reverse # 新增
 from allauth.socialaccount.models import SocialApp # type: ignore
 from django.db import models
+from django.contrib.sites.models import Site
 import os
 
 class CustomSocialApp(SocialApp):
@@ -21,6 +22,20 @@ class CustomSocialApp(SocialApp):
         # 添加其他社交平台的邏輯
 
         super().save(*args, **kwargs)
+
+        current_site = Site.objects.get_current()
+        if current_site not in self.sites.all():
+            self.sites.add(current_site)
+            
+    @classmethod
+    def get_or_create_app(cls, provider):
+        try:
+            app = cls.objects.get(provider=provider)
+        except cls.DoesNotExist:
+            app = cls(provider=provider)
+            app.name = f"{provider.capitalize()} OAuth"
+            app.save()
+        return app
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
