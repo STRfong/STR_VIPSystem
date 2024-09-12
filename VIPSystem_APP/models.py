@@ -33,12 +33,15 @@ class CustomSocialApp(SocialApp):
     @classmethod
     def get_or_create_app(cls, provider):
         try:
-            app = cls.objects.get(provider=provider)
-        except cls.DoesNotExist:
-            app = cls(provider=provider)
-            app.name = f"{provider.capitalize()} OAuth"
-            app.save()
-        return app
+            app = cls.objects.filter(provider=provider).first()  # 使用 .first() 而不是 .get()
+            if not app:
+                app = cls(provider=provider)
+                app.name = f"{provider.capitalize()} OAuth"
+                app.save()
+            return app
+        except Exception as e:
+            print(f"Error in get_or_create_app: {str(e)}")
+            return None 
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
