@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
-
 def initialize_social_app(sender, **kwargs):
+    from django.contrib.sites.models import Site  # 在这里导入Site
     from .models import CustomSocialApp
     if not Site.objects.exists():
         Site.objects.create(domain='https://str-vipststem.zeabur.app/', name='https://str-vipststem.zeabur.app/')
@@ -14,5 +14,4 @@ class VipsystemAppConfig(AppConfig):
     name = "VIPSystem_APP"
     
     def ready(self):
-        from django.contrib.sites.models import Site
         post_migrate.connect(initialize_social_app, sender=self)
