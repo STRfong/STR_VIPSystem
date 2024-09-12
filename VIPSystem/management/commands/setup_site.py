@@ -8,8 +8,8 @@ class Command(BaseCommand):
         Site.objects.update_or_create(
             id=1,
             defaults={
-                'domain': 'https://str-vipststem.zeabur.app/',
-                'name': 'Ezeabur',
+                'domain': 'https://str-vipststem.zeabur.app',
+                'name': 'Zeabur',
             },
         )
         self.stdout.write(self.style.SUCCESS('Successfully set up the Site model'))
