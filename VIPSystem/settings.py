@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv # type: ignore
 import os
+import dj_database_url # type: ignore
 
 load_dotenv()
 
@@ -29,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 CSRF_TRUSTED_ORIGINS = [os.getenv('PRODUCTION_URL')]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL=os.getenv('ACCOUNT_DEFAULT_HTTP_PROTOCOL') # 如果目前處於開發環境，則要設定這個
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -54,6 +55,20 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'account_login' 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
+# 獲取環境變量中的 DATABASE_URL，如果不存在則為 None
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+# 默認使用 SQLite 配置
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# 如果存在 DATABASE_URL 環境變量，則使用該配置
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
 
 
 # Application definition
