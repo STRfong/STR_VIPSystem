@@ -11,7 +11,6 @@ class Command(BaseCommand):
         # Get credentials from environment variables
         client_id = os.environ.get('GOOGLE_CLIENT_ID')
         secret = os.environ.get('GOOGLE_SECRET_KEY')
-        print(f'-------{client_id}------')
 
         if not client_id or not secret:
             self.stdout.write(self.style.ERROR('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set in environment variables'))
