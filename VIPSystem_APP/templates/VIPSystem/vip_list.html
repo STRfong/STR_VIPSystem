@@ -60,7 +60,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for vip in object_list %}
+                {% for vip in vip_list %}
                 <tr>
                     <td>
                       <a href="{% url 'VIPSystem_APP:vip_id' vip.pk %}" class="text-decoration-none">{{ vip.name }}</a>

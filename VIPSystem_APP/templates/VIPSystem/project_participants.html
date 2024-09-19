@@ -25,7 +25,7 @@
                         <tbody>
                             {% for participant in participants_list %}
                                 <tr>
-                                    <td style="width: 15%;">{{ participant.name }}</td>
+                                    <td style="width: 15%;">{{ participant.vip.name }}</td>
                                     <td>
                                         {% for tag in participant.tags.all %}
                                             <span class="badge rounded-pill bg-primary">{{ tag.name }}</span>
@@ -44,11 +44,11 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                您確定要刪除 {{ participant.name }} 嗎？
+                                                您確定要刪除 {{ participant.vip.name }} 嗎？
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                                <form action="{% url 'VIPSystem_APP:remove_participant' project.pk participant.id %}" method="POST" style="display: inline;">
+                                                <form action="{% url 'VIPSystem_APP:remove_participant' project.pk participant.vip.id %}" method="POST" style="display: inline;">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-danger">確認刪除</button>
                                                 </form>

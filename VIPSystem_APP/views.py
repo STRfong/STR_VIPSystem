@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.shortcuts import redirect
-from .models import VIP, Project, Tag
+from .models import VIP, Project, Tag, ProjectParticipation
 from .forms import VIPForm, ProjectForm
 
 @method_decorator(login_required, name='dispatch')
@@ -24,7 +24,7 @@ class VIPListView(ListView):
         return context
 
     def get_queryset(self):
-        queryset = VIP.objects.annotate(project__count=Count('projects'))
+        queryset = VIP.objects.annotate(project__count=Count('project_participations'))
     
         # 處理標籤篩選
         tags = self.request.GET.getlist('tags')
@@ -66,7 +66,7 @@ class ProjectListView(ListView):
     model = Project
     template_name = 'VIPSystem/project_list.html'
     def get_queryset(self):
-        return Project.objects.annotate(participants_count=Count('participants'))
+        return Project.objects.annotate(participants_count=Count('vip_participations'))
 
 @method_decorator(login_required, name='dispatch')
 class ProjectDetailView(DetailView):
@@ -100,14 +100,13 @@ class ProjectDeleteView(DeleteView):
 
 @method_decorator(login_required, name='dispatch')
 class ProjectParticipantsView(ListView):
-    model = Project
+    model = ProjectParticipation
     template_name = 'VIPSystem/project_participants.html'
     context_object_name = 'participants_list'
 
     def get_queryset(self):
         project_id = self.kwargs.get('pk')
-        project = get_object_or_404(Project, pk=project_id)
-        return project.participants.all()
+        return ProjectParticipation.objects.filter(project_id= project_id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -115,7 +114,7 @@ class ProjectParticipantsView(ListView):
         context['project'] = get_object_or_404(Project, pk=project_id)
         return context
     
-@method_decorator(login_required, name='dispatch')
+@method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class InviteListView(ListView):
     model = VIP
     template_name = 'VIPSystem/invite_list.html'
@@ -126,6 +125,7 @@ class InviteListView(ListView):
         project_id = self.kwargs.get('project_id')
         project = get_object_or_404(Project, pk=project_id)
         context['project'] = project
+        print(project.participants.all())
         context['current_participants'] = project.participants.all()
         return context
 
@@ -134,15 +134,16 @@ def update_participants(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     
     if request.method == 'POST':
-        selected_vips = request.POST.getlist('selected_vips')
-        
-        # 清除當前的參與者
-        # project.participants.clear()
-        
+        selected_vips = set(map(int, request.POST.getlist('selected_vips')))
         # 添加選中的VIP到參與者列表
         for vip_id in selected_vips:
             vip = VIP.objects.get(id=vip_id)
-            project.participants.add(vip)
+            ProjectParticipation.objects.update_or_create(
+                project=project,
+                vip=vip,
+                invited_by=request.user,
+                defaults={'status': 'pending'}
+            )
         
         return redirect('VIPSystem_APP:project_participants', pk=project.pk)
     
@@ -154,6 +155,7 @@ def remove_participant(request, project_id, participant_id):
     if request.method == 'POST':
         project = get_object_or_404(Project, pk=project_id)
         participant = get_object_or_404(VIP, pk=participant_id)
-        project.participants.remove(participant)
+        project_participation = get_object_or_404(ProjectParticipation, project=project, vip=participant)
+        project_participation.delete()
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
     return redirect('VIPSystem_APP:project_participants', pk=project_id)

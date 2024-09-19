@@ -19,7 +19,7 @@
                     <strong>結束日期：</strong> {{ project.end_date }}
                 </li>
                 <li class="list-group-item">
-                    <strong>參與者人數：</strong> {{ project.participants.count }}
+                    <strong>參與者人數：</strong> {{ project.vip_participations.count }}
                     <a href="{% url 'VIPSystem_APP:project_participants' project.pk %}" class="ms-2">參與者名單</a>
                 </li>
             </ul>
