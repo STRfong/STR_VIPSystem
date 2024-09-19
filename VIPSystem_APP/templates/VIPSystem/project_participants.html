@@ -17,21 +17,21 @@
                     <table class="table table-striped mt-3">
                         <thead style="position: sticky; top: 0; background-color: white;">
                             <tr>
-                                <th style="width: 15%;">姓名</th>
-                                <th>標籤</th>
-                                <th style="width: 10%;">刪除</th>
+                                <th style="width: 20%;">姓名</th>
+                                <th style="width: 20%;">邀請人</th>
+                                <th style="width: 20%;">邀請時間</th>
+                                <th style="width: 20%;">狀態</th>
+                                <th style="width: 20%;">刪除</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for participant in participants_list %}
                                 <tr>
-                                    <td style="width: 15%;">{{ participant.vip.name }}</td>
-                                    <td>
-                                        {% for tag in participant.tags.all %}
-                                            <span class="badge rounded-pill bg-primary">{{ tag.name }}</span>
-                                        {% endfor %}
-                                    </td>
-                                    <td style="width: 10%;">
+                                    <td style="width: 20%;">{{ participant.vip.name }}</td>
+                                    <td style="width: 20%;">{{ participant.invited_by.username }}</td>
+                                    <td style="width: 20%;">{{ participant.invited_at }}</td>
+                                    <td style="width: 20%;">{{ participant.get_status_display }}</td>
+                                    <td style="width: 20%;">
                                         <span class="text-danger" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">❌</span>
                                     </td>
                                 </tr>
