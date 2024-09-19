@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>測試郵件</title>
+</head>
+<body>
+    <h1>測試郵件</h1>
+    <p>這是一封由 {{ username }} 寄出的測試郵件。</p>
+    {% if content %}
+        <p>{{ content }}</p>
+    {% endif %}
+    <p>感謝您使用我們的系統！</p>
+</body>
+</html>
