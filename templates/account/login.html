@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load socialaccount %}
+{% load static %}
 {% block title %}
 登入
 {% endblock title %}
@@ -9,18 +10,11 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-body">
-          <h2 class="card-title text-center mb-4">登入</h2>
-          <form action="" method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-              {{ form.as_p }}
-            </div>
+          <h2 class="card-title text-center mb-4">登入薩泰爾禮賓系統</h2>
+            <img src="{% static 'img/banner.png' %}" alt="封面" class="img-fluid">
             <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">登入</button>
-              <a href="{% provider_login_url 'google' method='oauth2' %}" class="btn btn-danger">Google登入</a>
+              <a href="{% provider_login_url 'google' method='oauth2' %}" class="btn btn-danger">使用 @strnetwork.cc 帳號登入</a>
             </div>
-          </form>
-          <p class="text-center mt-3">還沒有帳號嗎？ <a href="{% url 'account_signup' %}">註冊</a></p>
         </div>
       </div>
     </div>
