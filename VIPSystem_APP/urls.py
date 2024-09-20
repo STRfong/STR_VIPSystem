@@ -32,6 +32,7 @@ urlpatterns = [
     path('project_list/create/', ProjectCreateView.as_view(), name="project_create"), # 新增
     path('project_list/<int:pk>/', ProjectDetailView.as_view(), name="project_id"),
     path('project_list/<int:pk>/participants/', ProjectParticipantsView.as_view(), name="project_participants"),
+    path('project_list/<int:project_id>/participants/send_email/', views.send_email, name="send_email"),
     path('project_list/<int:project_id>/invite_list/', InviteListView.as_view(), name="invite_list"),
     path('project_list/<int:project_id>/update_participants/', views.update_participants, name="update_participants"),
     path('project_list/<int:pk>/update/', ProjectUpdateView.as_view(), name="project_update"),

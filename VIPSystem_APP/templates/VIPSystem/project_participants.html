@@ -1,7 +1,22 @@
 {% extends "base.html" %}
 {% block title %}專案詳細資料{% endblock %}
 {% block content %}
-<div class="container mt-4">
+{% if messages %}
+    <div class="container mt-5">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-bs-autohide="true" data-bs-delay="3000">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 3000);
+    </script>
+{% endif %}
+<div class="container mt-5">
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h2 class="mb-0">專案詳細資料</h2>
@@ -13,15 +28,15 @@
                 <a href="{% url 'VIPSystem_APP:invite_list' project.pk %}" class="btn btn-primary">新增邀請人員</a>
             </div>
             {% if participants_list %}
-                <div style="max-height: 250px; overflow-y: auto;">
+                <div style="max-height: 70vh; overflow-y: auto;">
                     <table class="table table-striped mt-3">
-                        <thead style="position: sticky; top: 0; background-color: white;">
+                        <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
                                 <th style="width: 20%;">姓名</th>
                                 <th style="width: 20%;">邀請人</th>
                                 <th style="width: 20%;">邀請時間</th>
                                 <th style="width: 20%;">狀態</th>
-                                <th style="width: 20%;">刪除</th>
+                                <th style="width: 20%;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -32,11 +47,30 @@
                                     <td style="width: 20%;">{{ participant.invited_at }}</td>
                                     <td style="width: 20%;">{{ participant.get_status_display }}</td>
                                     <td style="width: 20%;">
-                                        <span class="text-danger" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">❌</span>
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                                            <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#emailModal{{ participant.id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-arrow-up" viewBox="0 0 16 16">
+                                                    <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5a.5.5 0 0 1-1 0V5.383l-7 4.2-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h5.5a.5.5 0 0 1 0 1H2a2 2 0 0 1-2-1.99zm1 7.105 4.708-2.897L1 5.383zM1 4v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1"/>
+                                                    <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-5.354 1.25 1.25a.5.5 0 0 1-.708.708L13 12.207V14a.5.5 0 0 1-1 0v-1.717l-.28.305a.5.5 0 0 1-.737-.676l1.149-1.25a.5.5 0 0 1 .722-.016"/>
+                                                </svg>
+                                            </button>
+                                            <button type = "button" class = "btn btn-outline-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                                </svg>
+                                            </button> 
+                                            <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <!-- 刪除確認 Modal -->
-                                <div class="modal fade" id="deleteModal{{ participant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ participant.id }}" aria-hidden="true">
+                                <div class="modal fade" id="deleteModal{{ participant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
@@ -56,6 +90,40 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- 寄信 Modal -->
+                                <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="emailModalLabel{{ participant.id }}">寄送郵件給 {{ participant.vip.name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="post" action="{% url 'VIPSystem_APP:send_email' project.pk %}" id="emailForm{{ participant.id }}">
+                                                    {% csrf_token %}
+                                                    <div class="form-group mb-3">
+                                                        <label for="sender" class="form-label">收件人</label>
+                                                        <input type="email" class="form-control" id="sender" name="sender" required value="{{ participant.vip.email }}" placeholder="請輸入收件人電子郵件">
+                                                    </div>
+                                                    <div class="form-group mb-3">
+                                                        <label for="content" class="form-label">信件內容</label>
+                                                        <textarea class="form-control" id="content" name="content" rows="4" placeholder="請輸入額外資訊（選填）"></textarea>
+                                                    </div>
+                                                    <div class="d-grid">
+                                                        <button type="submit" class="btn btn-dark" id="submitBtn{{ participant.id }}">送出</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>
+                                    document.getElementById('emailForm{{ participant.id }}').addEventListener('submit', function(e) {
+                                        var submitBtn = document.getElementById('submitBtn{{ participant.id }}');
+                                        submitBtn.disabled = true;
+                                        submitBtn.innerHTML = ' <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> 寄件中請稍候';
+                                    });
+                                </script>
                             {% endfor %}
                         </tbody>
                     </table>

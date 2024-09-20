@@ -10,6 +10,12 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from .models import VIP, Project, Tag, ProjectParticipation
 from .forms import VIPForm, ProjectForm
+from django.template.loader import render_to_string
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import os
+from django.shortcuts import render
 
 @method_decorator(login_required, name='dispatch')
 class VIPListView(ListView):
@@ -159,3 +165,39 @@ def remove_participant(request, project_id, participant_id):
         project_participation.delete()
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
     return redirect('VIPSystem_APP:project_participants', pk=project_id)
+
+# 信件相關
+
+@login_required
+def send_email(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    if request.method == 'POST':
+        try:
+            with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                
+                msg = MIMEMultipart('alternative')
+                msg['From'] = "lab@strnetwork.cc"
+                msg['To'] = request.POST['sender']
+                msg['Subject'] = f"薩泰爾娛樂邀請您觀賞 《 {project.name} 》"
+                
+                # 渲染 HTML 模板
+                html_content = render_to_string(
+                    'VIPSystem/email_template.html',
+                    {'username': request.user.username, 'content': request.POST['content']}
+                )
+                
+                # 添加 HTML 内容到邮件
+                msg.attach(MIMEText(html_content, 'html'))
+                
+                smtp.send_message(msg)
+                print("完成!")
+                messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
+        except Exception as e:
+            print("錯誤訊息: ", e)
+
+        
+        return redirect('VIPSystem_APP:project_participants', pk=project_id)
+    return render(request, 'send_email.html')
