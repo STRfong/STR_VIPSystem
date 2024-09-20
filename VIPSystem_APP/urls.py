@@ -24,6 +24,7 @@ app_name = 'VIPSystem_APP'
 
 urlpatterns = [
     # path("", views.index, name="index"),
+    path('respond/<str:token>/', views.handle_invitation_response, name='respond'),
     path('VIP_list', VIPListView.as_view(), name="vip_list"),
     path('VIP_list/create/', VIPCreateView.as_view(), name="vip_create"), # 新增
     path('VIP_list/<int:pk>/', VIPDetailView.as_view(), name="vip_id"),

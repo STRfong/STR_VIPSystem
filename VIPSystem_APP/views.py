@@ -17,6 +17,7 @@ from email.mime.text import MIMEText
 import os
 from django.shortcuts import render
 from django.db import models
+from django.utils.crypto import get_random_string
 
 @method_decorator(login_required, name='dispatch')
 class VIPListView(ListView):
@@ -226,6 +227,8 @@ def send_emails(request, project_id):
             participation = ProjectParticipation.objects.get(id=vip_id)
             vip = VIP.objects.get(id=participation.vip.id)
             try:
+                pp = ProjectParticipation.objects.get(project=project, vip=vip)
+                random_token = get_random_string(length=32)
                 with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                     smtp.ehlo()
                     smtp.starttls()
@@ -238,15 +241,13 @@ def send_emails(request, project_id):
                 
                     html_content = render_to_string(
                         'VIPSystem/email_template.html',
-                        {'username': request.user.username, 'content': request.POST['content']}
+                        {'username': request.user.username, 'content': request.POST['content'], 'token': random_token, 'SITE_URL': os.getenv('SITE_URL')}
                     )
                     
                     msg.attach(MIMEText(html_content, 'html'))
-                    
                     smtp.send_message(msg)
-                    print("完成!")
 
-                pp = ProjectParticipation.objects.get(project=project, vip=vip)
+                pp.token = random_token
                 pp.status = 'sended'
                 pp.save()
 
@@ -263,3 +264,9 @@ def send_emails(request, project_id):
             messages.success(request, "所有邀請郵件已發送完成！")
             return redirect('VIPSystem_APP:project_participants', pk=project_id)
     return render(request, 'VIPSystem/send_emails.html', {'project': project})
+
+def handle_invitation_response(request, token):
+    participation = get_object_or_404(ProjectParticipation, token=token)
+    response = request.GET.get('response')
+    participation.handle_response(response)
+    return render(request, 'VIPSystem/thank_you_page.html')  # 創建一個感謝頁面

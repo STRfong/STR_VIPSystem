@@ -49,6 +49,17 @@ class ProjectParticipation(models.Model):
         ('declined', '拒絕參加'),
     ], default='added')
     invited_at = models.DateTimeField(auto_now_add=True)
+    join_people_count = models.IntegerField(default=0)
+    token = models.CharField(max_length=100, unique=True, null=True, blank=True)
+
+    def handle_response(self, response):
+        if response == 'yes':
+            self.status = 'confirmed'
+        elif response == 'no':
+            self.status = 'declined'
+        
+        self.token = None  # 使令牌失效
+        self.save()
 
 @admin.register(VIP)
 class VIPAdmin(admin.ModelAdmin):
@@ -78,4 +89,3 @@ class ProjectParticipationAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     list_per_page = 10
     list_max_show_all = 100
-    
