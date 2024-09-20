@@ -43,9 +43,11 @@ class ProjectParticipation(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='vip_participations')
     invited_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, related_name='invitations')
     status = models.CharField(max_length=20, choices=[
-        ('pending', '等待回覆'),
+        ('added', '已新增尚未寄信'),
         ('confirmed', '確認參加'),
-    ], default='pending')
+        ('sended', '已發送邀請信件等待回覆'),
+        ('declined', '拒絕參加'),
+    ], default='added')
     invited_at = models.DateTimeField(auto_now_add=True)
 
 @admin.register(VIP)

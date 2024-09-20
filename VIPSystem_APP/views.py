@@ -16,6 +16,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 from django.shortcuts import render
+from django.db import models
 
 @method_decorator(login_required, name='dispatch')
 class VIPListView(ListView):
@@ -30,7 +31,7 @@ class VIPListView(ListView):
         return context
 
     def get_queryset(self):
-        queryset = VIP.objects.annotate(project__count=Count('project_participations'))
+        queryset = VIP.objects.annotate(project__count=Count('project_participations', filter=models.Q(project_participations__status='confirmed')))
     
         # 處理標籤篩選
         tags = self.request.GET.getlist('tags')
@@ -131,10 +132,24 @@ class InviteListView(ListView):
         project_id = self.kwargs.get('project_id')
         project = get_object_or_404(Project, pk=project_id)
         context['project'] = project
-        print(project.participants.all())
         context['current_participants'] = project.participants.all()
         return context
+    
+@method_decorator(login_required, name='dispatch') # 發送邀請信
+class SendEmailListView(ListView):
+    model = ProjectParticipation
+    template_name = 'VIPSystem/send_emails.html'
+    context_object_name = 'vip_list'
 
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+        return ProjectParticipation.objects.filter(project_id=project_id).exclude(status='confirmed')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = get_object_or_404(Project, pk=self.kwargs.get('project_id'))
+        return context
+    
 @login_required
 def update_participants(request, project_id):
     project = get_object_or_404(Project, id=project_id)
@@ -148,7 +163,7 @@ def update_participants(request, project_id):
                 project=project,
                 vip=vip,
                 invited_by=request.user,
-                defaults={'status': 'pending'}
+                status = 'added'
             )
         
         return redirect('VIPSystem_APP:project_participants', pk=project.pk)
@@ -201,3 +216,50 @@ def send_email(request, project_id):
         
         return redirect('VIPSystem_APP:project_participants', pk=project_id)
     return render(request, 'send_email.html')
+
+@login_required
+def send_emails(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    if request.method == 'POST':
+        selected_vips = set(map(int, request.POST.getlist('selected_vips')))
+        for vip_id in selected_vips:
+            participation = ProjectParticipation.objects.get(id=vip_id)
+            vip = VIP.objects.get(id=participation.vip.id)
+            try:
+                with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+                    smtp.ehlo()
+                    smtp.starttls()
+                    smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                
+                    msg = MIMEMultipart('alternative')
+                    msg['From'] = "lab@strnetwork.cc"
+                    msg['To'] = vip.email
+                    msg['Subject'] = f"(多信件測試)薩泰爾娛樂邀請您觀賞 《 {project.name} 》"
+                
+                    html_content = render_to_string(
+                        'VIPSystem/email_template.html',
+                        {'username': request.user.username, 'content': request.POST['content']}
+                    )
+                    
+                    msg.attach(MIMEText(html_content, 'html'))
+                    
+                    smtp.send_message(msg)
+                    print("完成!")
+
+                pp = ProjectParticipation.objects.get(project=project, vip=vip)
+                pp.status = 'sended'
+                pp.save()
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'success'})
+            except Exception as e:
+                print("錯誤訊息: ", e)
+                # 替换 is_ajax() 检查
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # 替换 is_ajax() 检查
+        if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+            messages.success(request, "所有邀請郵件已發送完成！")
+            return redirect('VIPSystem_APP:project_participants', pk=project_id)
+    return render(request, 'VIPSystem/send_emails.html', {'project': project})

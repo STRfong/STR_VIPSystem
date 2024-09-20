@@ -2,7 +2,9 @@
 {% block title %}邀請貴賓{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>邀請貴賓參與專案：{{ project.name }}</h2>
+    <h2>
+        加入貴賓至《{{ project.name }}》邀請名單
+    </h2>
     <form method="post" action="{% url 'VIPSystem_APP:update_participants' project.pk %}" id="inviteForm">
         {% csrf_token %}
         <div style="max-height: 400px; overflow-y: auto;">
@@ -36,20 +38,21 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.vip-checkbox:not(:disabled)');
-    const submitButton = document.getElementById('submitButton');
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.vip-checkbox:not(:disabled)');
+        const submitButton = document.getElementById('submitButton');
 
-    function updateSubmitButton() {
-        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
-        submitButton.disabled = !anyChecked;
-    }
+        function updateSubmitButton() {
+            const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+            submitButton.disabled = !anyChecked;
+        }
 
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateSubmitButton);
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSubmitButton);
+        });
+
+        updateSubmitButton();
     });
 
-    updateSubmitButton();
-});
 </script>
 {% endblock %}

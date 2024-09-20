@@ -25,7 +25,15 @@
             <h3 class="card-title">專案名稱：{{ project.name }}</h3>
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">參與人員名單</h4>
-                <a href="{% url 'VIPSystem_APP:invite_list' project.pk %}" class="btn btn-primary">新增邀請人員</a>
+                <div class="btn-group" role="group">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      貴賓名單操作
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                      <li><a href="{% url 'VIPSystem_APP:invite_list' project.pk %}" class="dropdown-item">新增邀請人員</a></li>
+                      <li><a href="{% url 'VIPSystem_APP:send_emails_list' project.pk %}" class="dropdown-item">廣發邀請信</a></li>
+                    </ul>
+                </div>
             </div>
             {% if participants_list %}
                 <div style="max-height: 70vh; overflow-y: auto;">
