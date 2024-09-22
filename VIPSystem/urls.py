@@ -16,7 +16,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from . import  views
 from django.views.generic.base import TemplateView
 
 urlpatterns = [
@@ -24,5 +23,5 @@ urlpatterns = [
     path('VIPSystem_APP/', include('VIPSystem_APP.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('send_email/', views.send_email, name='send_email')
+    path('form/', TemplateView.as_view(template_name='form.html')),
 ]

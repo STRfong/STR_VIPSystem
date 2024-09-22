@@ -117,6 +117,7 @@
                                                         <label for="content" class="form-label">信件內容</label>
                                                         <textarea class="form-control" id="content" name="content" rows="4" placeholder="請輸入額外資訊（選填）"></textarea>
                                                     </div>
+                                                    <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
                                                     <div class="d-grid">
                                                         <button type="submit" class="btn btn-dark" id="submitBtn{{ participant.id }}">送出</button>
                                                     </div>

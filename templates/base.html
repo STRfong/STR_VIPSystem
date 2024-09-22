@@ -21,7 +21,8 @@
     body {
         padding-top: 56px; /* 根據您的導航欄高度調整 */
     }
-</style>
+  </style>
+  {% block extra_css %}{% endblock extra_css %}
   <body>
     <nav id="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
@@ -51,7 +52,6 @@
                   嗨！{{ user.username }}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="{% url 'send_email' %}">寄信測試</a></li>
                   <li><a class="dropdown-item" href="{% url 'account_logout' %}">登出</a></li>
                 </ul>
               </li>

@@ -22,7 +22,7 @@ def register(request):
         context = {'form': form}
         return render(request, 'registration/register.html', context)
 
-@login_required
+
 def send_email(request):
     if request.method == 'POST':
         try:
