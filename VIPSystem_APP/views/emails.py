@@ -20,17 +20,35 @@ def send_email(request, project_id):
     if request.method == 'POST':
         try:
             pp = ProjectParticipation.objects.get(project=project, vip=vip)
+        except Exception as e:
+            print("pp 有錯: ", e)
+        try:
             random_token = get_random_string(length=32)
+        except Exception as e:
+            print("random_token 有錯: ", e)
+        try:
             email = Email(request.user.username, 
                           request.POST['sender'], 
                           request.POST['content'], 
                           vip.name,
                           project.name, 
                           random_token)
-            email.send_email()        
+            email.send_email()
+        except Exception as e:
+            print("email 有錯: ", e)
+        try:
             pp.token = random_token
+        except Exception as e:
+            print("pp.token 有錯: ", e)
+        try:
             pp.status = 'sended'
+        except Exception as e:
+            print("pp.status 有錯: ", e)
+        try:
             pp.save()
+        except Exception as e:
+            print("pp.save 有錯: ", e)
+        try:
             messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
         except Exception as e:
             print("錯誤訊息: ", e)
