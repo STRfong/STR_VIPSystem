@@ -34,6 +34,36 @@ def send_email(request, project_id):
             messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
         except Exception as e:
             print("錯誤訊息: ", e)
+            print("username: ", repr(request.user.username))
+            print("sender: ", repr(request.POST['sender']))
+            print("content: ", repr(request.POST['content']))
+            print("vip_name: ", repr(vip.name))
+            print("project_name: ", repr(project.name))
+            print("token: ", repr(random_token))
+            try:
+                request.user.username.encode('utf-8')
+            except UnicodeEncodeError as ue:
+                print("username 編碼錯誤: ", ue)
+            try:
+                request.POST['sender'].encode('utf-8')
+            except UnicodeEncodeError as ue:
+                print("sender 編碼錯誤: ", ue)
+            try:
+                request.POST['content'].encode('utf-8')
+            except UnicodeEncodeError as ue:
+                print("content 編碼錯誤: ", ue)
+            try:
+                vip.name.encode('utf-8')
+            except UnicodeEncodeError as ue:
+                print("vip_name 編碼錯誤: ", ue)
+            try:
+                project.name.encode('utf-8')
+            except UnicodeEncodeError as ue:
+                print("project_name 編碼錯誤: ", ue)
+            try:
+                random_token.encode('utf-8')
+            except UnicodeEncodeError as ue:
+                print("token 編碼錯誤: ", ue)
 
         
         return redirect('VIPSystem_APP:project_participants', pk=project_id)
