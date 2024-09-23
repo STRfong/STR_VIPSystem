@@ -48,24 +48,13 @@ def send_emails(request, project_id):
             try:
                 pp = ProjectParticipation.objects.get(project=project, vip=vip)
                 random_token = get_random_string(length=32)
-                with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
-                    smtp.ehlo()
-                    smtp.starttls()
-                    smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
-                
-                    msg = MIMEMultipart('alternative')
-                    msg['From'] = "lab@strnetwork.cc"
-                    msg['To'] = vip.email
-                    msg['Subject'] = f"(多信件測試)薩泰爾娛樂邀請您觀賞 《 {project.name} 》"
-                
-                    html_content = render_to_string(
-                        'VIPSystem/email_template.html',
-                        {'username': request.user.username, 'content': request.POST['content'], 'token': random_token, 'SITE_URL': os.getenv('SITE_URL')}
-                    )
-                    
-                    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
-                    smtp.send_message(msg)
-
+                email = Email(request.user.username, 
+                          request.POST['sender'], 
+                          request.POST['content'], 
+                          vip.name,
+                          project.name, 
+                          random_token)
+                email.send_email()        
                 pp.token = random_token
                 pp.status = 'sended'
                 pp.save()
@@ -103,26 +92,26 @@ class Email():
          with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
                 smtp.starttls()
-                smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                smtp.login(os.getenv('EMAIL_HOST_USER').encode('utf-8'), os.getenv('EMAIL_HOST_PASSWORD').encode('utf-8'))
                 
                 msg = MIMEMultipart('alternative')
-                msg['From'] = "lab@strnetwork.cc"
-                msg['To'] = self.sender
-                msg['Subject'] = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
+                msg['From'] = "lab@strnetwork.cc".encode('utf-8')
+                msg['To'] = self.sender.encode('utf-8')
+                msg['Subject'] = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請".encode('utf-8')
                 
                 # 渲染 HTML 模板
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
-                    {'username': self.username, 
-                     'content': self.content, 
-                     'token': self.token, 
-                     'vip_name': self.vip_name,
-                     'project_name': self.project_name,
-                     'SITE_URL': os.getenv('SITE_URL')}
+                    {'username': self.username.encode('utf-8'), 
+                     'content': self.content.encode('utf-8'), 
+                     'token': self.token.encode('utf-8'), 
+                     'vip_name': self.vip_name.encode('utf-8'),
+                     'project_name': self.project_name.encode('utf-8'),
+                     'SITE_URL': os.getenv('SITE_URL').encode('utf-8')}
                 )
                 
                 # 添加 HTML 内容到邮件
-                msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+                msg.attach(MIMEText(html_content.encode('utf-8'), 'html', 'utf-8'))
                 smtp.send_message(msg)
 
 # <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}?response=yes" class="button accept">接受邀請</a>
