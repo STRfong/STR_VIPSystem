@@ -34,12 +34,6 @@ def send_email(request, project_id):
             messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
         except Exception as e:
             print("錯誤訊息: ", e)
-            print("username: ", repr(request.user.username))
-            print("sender: ", repr(request.POST['sender']))
-            print("content: ", repr(request.POST['content']))
-            print("vip_name: ", repr(vip.name))
-            print("project_name: ", repr(project.name))
-            print("token: ", repr(random_token))
         
         return redirect('VIPSystem_APP:project_participants', pk=project_id)
     return render(request, 'send_email.html')
@@ -99,13 +93,16 @@ class Email():
          with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
                 smtp.starttls()
-                smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                try:
+                    smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                except Exception as e:
+                    print("登入就出包了: ", e)
                 
                 msg = MIMEMultipart('alternative')
                 msg['From'] = "lab@strnetwork.cc".encode('utf-8')
                 msg['To'] = self.sender
-                # subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
-                msg['Subject'] = Header('testing', 'utf-8')
+                subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
+                msg['Subject'] = Header(subject, 'utf-8')
                 # 渲染 HTML 模板
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
