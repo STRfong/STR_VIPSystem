@@ -25,29 +25,7 @@ def send_email(request, project_id):
                           vip.name,
                           project.name, 
                           random_token)
-            email.send_email()
-            
-            # with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
-            #     smtp.ehlo()
-            #     smtp.starttls()
-            #     smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
-                
-            #     msg = MIMEMultipart('alternative')
-            #     msg['From'] = "lab@strnetwork.cc"
-            #     msg['To'] = request.POST['sender']
-            #     msg['Subject'] = f"薩泰爾娛樂邀請您觀賞 《 {project.name} 》"
-                
-            #     # 渲染 HTML 模板
-            #     html_content = render_to_string(
-            #         'VIPSystem/email_template.html',
-            #         {'username': request.user.username, 'content': request.POST['content']}
-            #     )
-                
-            #     # 添加 HTML 内容到邮件
-            #     msg.attach(MIMEText(html_content, 'html'))
-                
-            #     smtp.send_message(msg)
-            #     print("完成!")
+            email.send_email()        
             pp.token = random_token
             pp.status = 'sended'
             pp.save()
@@ -85,7 +63,7 @@ def send_emails(request, project_id):
                         {'username': request.user.username, 'content': request.POST['content'], 'token': random_token, 'SITE_URL': os.getenv('SITE_URL')}
                     )
                     
-                    msg.attach(MIMEText(html_content, 'html'))
+                    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
                     smtp.send_message(msg)
 
                 pp.token = random_token
@@ -144,7 +122,7 @@ class Email():
                 )
                 
                 # 添加 HTML 内容到邮件
-                msg.attach(MIMEText(html_content, 'html'))
+                msg.attach(MIMEText(html_content, 'html', 'utf-8'))
                 smtp.send_message(msg)
 
 # <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}?response=yes" class="button accept">接受邀請</a>
