@@ -40,31 +40,6 @@ def send_email(request, project_id):
             print("vip_name: ", repr(vip.name))
             print("project_name: ", repr(project.name))
             print("token: ", repr(random_token))
-            try:
-                request.user.username.encode('utf-8')
-            except UnicodeEncodeError as ue:
-                print("username 編碼錯誤: ", ue)
-            try:
-                request.POST['sender'].encode('utf-8')
-            except UnicodeEncodeError as ue:
-                print("sender 編碼錯誤: ", ue)
-            try:
-                request.POST['content'].encode('utf-8')
-            except UnicodeEncodeError as ue:
-                print("content 編碼錯誤: ", ue)
-            try:
-                vip.name.encode('utf-8')
-            except UnicodeEncodeError as ue:
-                print("vip_name 編碼錯誤: ", ue)
-            try:
-                project.name.encode('utf-8')
-            except UnicodeEncodeError as ue:
-                print("project_name 編碼錯誤: ", ue)
-            try:
-                random_token.encode('utf-8')
-            except UnicodeEncodeError as ue:
-                print("token 編碼錯誤: ", ue)
-
         
         return redirect('VIPSystem_APP:project_participants', pk=project_id)
     return render(request, 'send_email.html')
@@ -129,8 +104,8 @@ class Email():
                 msg = MIMEMultipart('alternative')
                 msg['From'] = "lab@strnetwork.cc".encode('utf-8')
                 msg['To'] = self.sender
-                subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
-                msg['Subject'] = Header(subject, 'utf-8')
+                # subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
+                msg['Subject'] = Header('testing', 'utf-8')
                 # 渲染 HTML 模板
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
