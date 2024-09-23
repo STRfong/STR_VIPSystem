@@ -82,25 +82,23 @@ def handle_invitation_response(request, token):
 
 class Email():
     def __init__(self, username, sender, content, vip_name, project_name, token):
-        self.username = username.encode('utf-8')
-        self.sender = sender.encode('utf-8')
-        self.content = content.encode('utf-8')
-        self.vip_name = vip_name.encode('utf-8')
-        self.project_name = project_name.encode('utf-8')
-        self.token = token.encode('utf-8')
+        self.username = username
+        self.sender = sender
+        self.content = content
+        self.vip_name = vip_name
+        self.project_name = project_name
+        self.token = token
 
     def send_email(self):
          with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
                 smtp.starttls()
-                try:
-                    smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
-                except Exception as e:
-                    print("登入就出包了: ", e)
+                smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                
                 
                 msg = MIMEMultipart('alternative')
-                msg['From'] = "lab@strnetwork.cc".encode('utf-8')
-                msg['To'] = self.sender
+                msg['From'] = Header("lab@strnetwork.cc",'utf-8')
+                msg['To'] =  Header(self.sender,'utf-8')
                 subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
                 msg['Subject'] = Header(subject, 'utf-8')
                 # 渲染 HTML 模板
