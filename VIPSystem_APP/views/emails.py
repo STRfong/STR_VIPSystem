@@ -10,6 +10,7 @@ import os
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from VIPSystem_APP.models import ProjectParticipation, VIP, Project
+from email.header import Header
 
 @login_required
 def send_email(request, project_id):
@@ -98,7 +99,7 @@ class Email():
                 msg['From'] = "lab@strnetwork.cc"
                 msg['To'] = self.sender
                 msg['Subject'] = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
-                
+                msg['Subject'] = Header(msg['Subject'], 'utf-8')
                 # 渲染 HTML 模板
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
