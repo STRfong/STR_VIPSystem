@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'widget_tweaks', 
     'VIPSystem',
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
