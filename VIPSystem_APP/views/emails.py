@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from django.shortcuts import render, get_object_or_404, redirect
