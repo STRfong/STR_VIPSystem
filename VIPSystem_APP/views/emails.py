@@ -98,8 +98,8 @@ class Email():
                 msg = MIMEMultipart('alternative')
                 msg['From'] = "lab@strnetwork.cc"
                 msg['To'] = self.sender
-                msg['Subject'] = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
-                msg['Subject'] = Header(msg['Subject'], 'utf-8')
+                subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
+                msg['Subject'] = Header(subject, 'utf-8')
                 # 渲染 HTML 模板
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
