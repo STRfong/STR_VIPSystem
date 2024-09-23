@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+    <h1>{{ vip_name }} 您好</h1>
+   <p>
+      感謝您一路以來對薩泰爾娛樂的支持，<br>
+      我們將於 2024 年 6 月 21、22 日 於 台北小巨蛋 舉辦<br>
+      <strong>床的世界 2024 曾博恩×賀瓏 單口喜劇世界巡迴《{{project_name}}》</strong><br>
+   </p>
+   <p>
+      請於下方連結中填寫資料，敬請於 6/12（三） 前填寫完成，期待您的蒞臨！
+   </p>
+   <p>
+    <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}?response=yes">☞點擊按鈕確認參加</a><span>邀請您的夥伴組別請選填：【製作人】{{username}}</span>
+   </p>
+   
+    <p>
+      賀博台瘋 禮賓統籌<br>
+      游幃傑 Jerry Yu<br>
+      jerryyu@strnetwork.cc<br>
+      0924-109-008
+   </p>
+   <p>
+      保留席有限，敬請把握登記！
+   </p>
+
+
+
+
+</body>
+</html>

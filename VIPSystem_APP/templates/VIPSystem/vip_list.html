@@ -4,7 +4,15 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>貴賓名單</h2>
-        <a href="{% url 'VIPSystem_APP:vip_create' %}" class="btn btn-success">新增 VIP</a>
+        <div class="btn-group" role="group">
+          <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            貴賓名單操作
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+            <li><a href="{% url 'VIPSystem_APP:vip_create' %}" class="dropdown-item">新增 VIP</a></li>
+            <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#uploadExcelModal">新增 VIP（批量輸入）</a></li>
+          </ul>
+      </div>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -60,7 +68,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for vip in object_list %}
+                {% for vip in vip_list %}
                 <tr>
                     <td>
                       <a href="{% url 'VIPSystem_APP:vip_id' vip.pk %}" class="text-decoration-none">{{ vip.name }}</a>
@@ -81,29 +89,91 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div class="pagination justify-content-center mt-4">
+          <span class="step-links">
+              {% if page_obj.has_previous %}
+                  <a href="?page=1" class="btn btn-outline-primary">&laquo; 首頁</a>
+                  <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">上一頁</a>
+              {% endif %}
+      
+              <span class="current btn btn-primary disabled">
+                  第 {{ page_obj.number }} 頁，共 {{ page_obj.paginator.num_pages }} 頁
+              </span>
+      
+              {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">下一頁</a>
+                  <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">末頁 &raquo;</a>
+              {% endif %}
+          </span>
+      </div>
     </div>
 </div>
+
+<!-- 上傳 Excel 檔案的 Modal vip_create_from_excel-->
+<div class="modal fade" id="uploadExcelModal" tabindex="-1" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadExcelModalLabel">上傳 Excel 檔案</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'VIPSystem_APP:vip_create_from_excel' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="excelFile" class="form-label">選擇 Excel 檔案（請確認包含「姓名」、「Email」、「手機」三項）</label>
+            <input class="form-control" type="file" id="excelFile" name="excel_file" accept=".xlsx, .xls">
+          </div>
+          <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">上傳</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     function applyTagFilter() {
       var selectedTags = [];
       var checkboxes = document.querySelectorAll('#tagFilterForm input[type="checkbox"]:checked');
       checkboxes.forEach(function(checkbox) {
-        selectedTags.push(checkbox.value);
+          selectedTags.push(checkbox.value);
       });
       
       var url = new URL(window.location.href);
       url.searchParams.delete('tags');
       selectedTags.forEach(function(tag) {
-        url.searchParams.append('tags', tag);
+          url.searchParams.append('tags', tag);
       });
       
+      // 保留當前的排序參數
+      var currentSort = url.searchParams.get('sort_by_projects');
+      if (currentSort) {
+          url.searchParams.set('sort_by_projects', currentSort);
+      }
+      
+      // 重置頁碼到第一頁
+      url.searchParams.set('page', 1);
+      
       window.location.href = url.toString();
-    }
+  }
 
-    function applySortFilter(sortOrder) {
+  function applySortFilter(sortOrder) {
       var url = new URL(window.location.href);
       url.searchParams.set('sort_by_projects', sortOrder);
+      
+      // 保留當前的標籤篩選
+      var currentTags = url.searchParams.getAll('tags');
+      url.searchParams.delete('tags');
+      currentTags.forEach(function(tag) {
+          url.searchParams.append('tags', tag);
+      });
+      
+      // 重置頁碼到第一頁
+      url.searchParams.set('page', 1);
+      
       window.location.href = url.toString();
-    }
+  }
 </script>
 {% endblock %}

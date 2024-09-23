@@ -37,14 +37,14 @@ SOCIALACCOUNT_PROVIDERS = {
       'google': {
         'SCOPE': [
             'profile',
-            'email',
+            'email'
         ],
          'FIELDS': [
             'email',
             'name',
         ],
         'AUTH_PARAMS': {
-            'access_type': 'online',
+            'access_type': 'offline',
             }
         }
     }
@@ -57,7 +57,7 @@ ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_REQUIRED = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG_MODE')
 ALLOWED_HOSTS = ["*"]
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -200,3 +200,9 @@ SITE_ID = 1
 
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# SMTP Configuration
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+SITE_URL = 'http://localhost:8000'
