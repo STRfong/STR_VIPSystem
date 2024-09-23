@@ -94,11 +94,12 @@ class Email():
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
-                
-                
                 msg = MIMEMultipart('alternative')
-                msg['From'] = Header("lab@strnetwork.cc",'utf-8')
-                msg['To'] =  Header(self.sender,'utf-8')
+                try:
+                    msg['From'] = Header("lab@strnetwork.cc",'utf-8')
+                    msg['To'] =  Header(self.sender,'utf-8')
+                except Exception as e:
+                    print("錯誤訊息: ", e)
                 subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
                 msg['Subject'] = Header(subject, 'utf-8')
                 # 渲染 HTML 模板
@@ -113,8 +114,15 @@ class Email():
                 )
                 
                 # 添加 HTML 内容到邮件
-                msg.attach(MIMEText(html_content, 'html', 'utf-8'))
-                smtp.send_message(msg)
+                try:
+                    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+                except Exception as e:
+                    print("attach 出了問題: ", e)
+                try:
+                    smtp.send_message(msg)
+                except Exception as e:
+                    print("最後一步出了問題: ", e)
+                
 
 # <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}?response=yes" class="button accept">接受邀請</a>
 # <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}?response=no" class="button decline">婉拒邀請</a>
