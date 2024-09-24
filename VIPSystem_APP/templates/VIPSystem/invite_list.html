@@ -20,10 +20,14 @@
                     {% for vip in vip_list %}
                         <tr>
                             <td>
-                                <input type="checkbox" name="selected_vips" value="{{ vip.pk }}" class="vip-checkbox"
+                                <input type="checkbox" id="vip_{{ vip.pk }}" name="selected_vips" value="{{ vip.pk }}" class="vip-checkbox"
                                     {% if vip in current_participants %}checked disabled{% endif %}>
                             </td>
-                            <td>{{ vip.name }}</td>
+                            <td>
+                                <label for="vip_{{ vip.pk }}" style="cursor: pointer; display: block; width: 100%;">
+                                    {{ vip.name }}
+                                </label>
+                            </td>
                             <td>{{ vip.email }}</td>
                         </tr>
                     {% endfor %}

@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views 
-from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView
+from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIPDeleteView
 from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView
 from .views import InviteListView, SendEmailListView
 app_name = 'VIPSystem_APP'
@@ -29,6 +29,7 @@ urlpatterns = [
     path('VIP_list/create_from_excel/', views.vip_create_from_excel, name="vip_create_from_excel"), # 新增
     path('VIP_list/<int:pk>/', VIPDetailView.as_view(), name="vip_id"),
     path('VIP_list/<int:pk>/update/', VIPUpdateView.as_view(), name="vip_update"),
+    path('VIP_list/<int:vip_id>/delete/', VIPDeleteView.as_view(), name="vip_delete"),
     path('project_list', ProjectListView.as_view(), name="project_list"),
     path('project_list/create/', ProjectCreateView.as_view(), name="project_create"), # 新增
     path('project_list/<int:pk>/', ProjectDetailView.as_view(), name="project_id"),
