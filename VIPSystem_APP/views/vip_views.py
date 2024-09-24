@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView, CreateView, UpdateView   
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView   
 from django.db import models    
 from VIPSystem_APP.models import VIP, Tag
 from django.db.models import Count, Q
@@ -9,6 +9,8 @@ from VIPSystem_APP.forms import VIPForm
 import pandas as pd
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
 
 @method_decorator(login_required, name='dispatch')
 class VIPListView(ListView):
@@ -39,6 +41,11 @@ class VIPListView(ListView):
         else:
             queryset = queryset.order_by('name')
 
+        # 處理搜尋
+        name = self.request.GET.get('name')
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
         return queryset
 
 @method_decorator(login_required, name='dispatch')
@@ -62,6 +69,19 @@ class VIPUpdateView(UpdateView):
         context = super().get_context_data(**kwargs)
         context['is_update'] = True
         return context
+    
+@method_decorator(require_http_methods(["DELETE"]), name='delete')
+@method_decorator(login_required, name='dispatch')
+class VIPDeleteView(DeleteView):
+    model = VIP
+    pk_url_kwarg = 'vip_id'
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        vip_name = self.object.name
+        self.object.delete()
+        messages.success(self.request, f'已成功刪除貴賓 {vip_name}。')
+        return JsonResponse({'status': 'success'})
     
 @login_required
 def vip_create_from_excel(request):

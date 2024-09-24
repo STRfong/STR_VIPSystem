@@ -9,8 +9,9 @@
             貴賓名單操作
           </button>
           <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-            <li><a href="{% url 'VIPSystem_APP:vip_create' %}" class="dropdown-item">新增 VIP</a></li>
+            <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addVIPModal">新增 VIP</a></li>
             <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#uploadExcelModal">新增 VIP（批量輸入）</a></li>
+            <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#searchNameModal">搜尋姓名</a></li>
           </ul>
       </div>
     </div>
@@ -89,23 +90,29 @@
                 {% endfor %}
             </tbody>
         </table>
-        <div class="pagination justify-content-center mt-4">
-          <span class="step-links">
-              {% if page_obj.has_previous %}
-                  <a href="?page=1" class="btn btn-outline-primary">&laquo; 首頁</a>
-                  <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">上一頁</a>
-              {% endif %}
-      
-              <span class="current btn btn-primary disabled">
-                  第 {{ page_obj.number }} 頁，共 {{ page_obj.paginator.num_pages }} 頁
-              </span>
-      
-              {% if page_obj.has_next %}
-                  <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">下一頁</a>
-                  <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">末頁 &raquo;</a>
-              {% endif %}
-          </span>
-      </div>
+        {% if page_obj.paginator.count == 0 %}
+            <div class="text-center mt-4">
+                <p>（貴賓名單無資料）</p>
+            </div>
+        {% else %}
+            <div class="pagination justify-content-center mt-4">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="btn btn-outline-primary">&laquo; 首頁</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">上一頁</a>
+                    {% endif %}
+            
+                    <span class="current btn btn-primary disabled">
+                        第 {{ page_obj.number }} 頁，共 {{ page_obj.paginator.num_pages }} 頁
+                    </span>
+            
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">下一頁</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">末頁 &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
     </div>
 </div>
 
@@ -126,6 +133,76 @@
           </div>
           <div class="text-end mt-3">
             <button type="submit" class="btn btn-primary">上傳</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 新增 VIP 的 Modal -->
+<div class="modal fade" id="addVIPModal" tabindex="-1" aria-labelledby="addVIPModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addVIPModalLabel">新增 VIP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'VIPSystem_APP:vip_create' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="vipName" class="form-label">姓名</label>
+            <input type="text" class="form-control" id="vipName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="vipEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="vipEmail" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="vipPhone" class="form-label">手機</label>
+            <input type="tel" class="form-control" id="vipPhone" name="phone" required>
+          </div>
+          <div class="mb-3">
+            <label for="vipTags" class="form-label">標籤：</label>
+            {% for tag in all_tags %}
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="{{tag.id}}" value="{{ tag.id  }}"
+                           name="tags"
+                           onchange="this.nextElementSibling.querySelector('span').classList.toggle('bg-primary');
+                                     this.nextElementSibling.querySelector('span').classList.toggle('bg-secondary');">
+                <label class="form-check-label" for="{{tag.id}}">
+                    <span class="badge rounded-pill {% if tag.selected %}bg-primary{% else %}bg-secondary{% endif %}">{{ tag.name }}</span>
+                </label>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="text-end mt-3">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="submit" class="btn btn-primary">新增</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 搜尋姓名 Modal -->
+<div class="modal fade" id="searchNameModal" tabindex="-1" aria-labelledby="searchNameModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="searchNameModalLabel">搜尋姓名</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button> 
+      </div>
+      <div class="modal-body">
+        <form id="searchNameForm" method="get" action="{% url 'VIPSystem_APP:vip_list' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="searchName" class="form-label">請輸入姓名</label>
+            <input type="text" class="form-control" id="searchName" name="name" placeholder="請輸入姓名">
+          </div>
+          <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">搜尋</button> 
           </div>
         </form>
       </div>
@@ -175,5 +252,36 @@
       
       window.location.href = url.toString();
   }
+
+  // 搜尋姓名的 JavaScript 代碼
+  document.addEventListener('DOMContentLoaded', function() {
+    var searchNameForm = document.getElementById('searchNameForm');
+    searchNameForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      var searchName = document.getElementById('searchName').value;
+      var url = new URL(this.action);
+      
+      // 添加搜尋參數
+      url.searchParams.set('name', searchName);
+      
+      // 保留當前的標籤篩選
+      var currentTags = new URL(window.location.href).searchParams.getAll('tags');
+      currentTags.forEach(function(tag) {
+        url.searchParams.append('tags', tag);
+      });
+      
+      // 保留當前的排序參數
+      var currentSort = new URL(window.location.href).searchParams.get('sort_by_projects');
+      if (currentSort) {
+        url.searchParams.set('sort_by_projects', currentSort);
+      }
+      
+      // 重置頁碼到第一頁
+      url.searchParams.set('page', 1);
+      
+      window.location.href = url.toString();
+    });
+  });
 </script>
 {% endblock %}
