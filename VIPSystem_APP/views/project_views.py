@@ -3,7 +3,6 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView   
 from django.db.models import Count, Q
 from django.urls import reverse_lazy
-from VIPSystem_APP.forms import ProjectForm
 from VIPSystem_APP.models import Project
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -25,12 +24,12 @@ class ProjectDetailView(DetailView):
 
 @method_decorator(login_required, name='dispatch')
 class ProjectCreateView(CreateView):
-    form_class = ProjectForm        
+    # form_class = ProjectForm        
     template_name = 'VIPSystem/project_create.html'
 
 @method_decorator(login_required, name='dispatch')
 class ProjectUpdateView(UpdateView):
-    form_class = ProjectForm        
+    # form_class = ProjectForm        
     template_name = 'VIPSystem/project_create.html'
     queryset = Project.objects.all() # 這很重要
 

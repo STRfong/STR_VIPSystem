@@ -26,17 +26,18 @@ class VIPForm(forms.ModelForm):
             'phone_number': ('VIP 電話號碼：')
         }
 
-class ProjectForm(forms.ModelForm):
-    class Meta:
-        model = Project
-        fields = ['name', 'description', 'start_date', 'end_date']
-        labels = {
-            'name': ('專案名稱：'),
-            'description': ('專案描述：'),
-            'start_date': ('開始日期：'), 
-            'end_date': ('結束日期：')
-        }
-        widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        }   
+# class ProjectForm(forms.ModelForm):
+#     class Meta:
+#         model = Project
+        
+#         fields = ['name', 'description', 'start_date', 'end_date']
+#         labels = {
+#             'name': ('專案名稱：'),
+#             'description': ('專案描述：'),
+#             'start_date': ('開始日期：'), 
+#             'end_date': ('結束日期：')
+#         }
+#         widgets = {
+#             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+#             'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+#         }   
