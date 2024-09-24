@@ -123,13 +123,11 @@ class Email():
                 )
                 
                 # 添加 HTML 内容到邮件
-                msg = (MIMEText(html_content, 'html', 'utf-8'))
+                msg = MIMEText(html_content, 'html', 'utf-8')
                 msg['From'] = Header("lab@strnetwork.cc",'utf-8')
                 msg['To'] =  Header(self.sender,'utf-8')            
                 subject = f" 【薩泰爾娛樂】《{self.project_name}》合作夥伴現場觀賞邀請"
                 msg['Subject'] = Header(subject, 'utf-8')
-                # 渲染 HTML 模板
-                
                 smtp.send_message(msg)      
                 
 
