@@ -91,7 +91,7 @@
                 {% for vip in vip_list %}
                 <tr>
                     <td>
-                      <a href="{% url 'VIPSystem_APP:vip_id' vip.pk %}" class="text-decoration-none">{{ vip.name }}</a>
+                      <a href="{% url 'VIPSystem_APP:vip_detail' vip.pk %}" class="text-decoration-none">{{ vip.name }}</a>
                     </td>
                     <td>
                         {% if vip.tags.all %}

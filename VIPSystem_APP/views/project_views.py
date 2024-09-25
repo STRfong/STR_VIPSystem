@@ -17,6 +17,8 @@ from django.shortcuts import redirect
 class ProjectListView(ListView):
     model = Project
     template_name = 'VIPSystem/project_list.html'
+    pk_url_kwarg = 'project_id'
+
     def get_queryset(self):
         return Project.objects.annotate(participants_count=Count('vip_participations'))
 
@@ -25,6 +27,7 @@ class ProjectDetailView(DetailView):
     model = Project
     template_name = 'VIPSystem/project_detail.html'
     context_object_name = 'project'
+    pk_url_kwarg = 'project_id'
 
 @method_decorator(login_required, name='dispatch')
 class ProjectCreateView(LoginRequiredMixin, View):

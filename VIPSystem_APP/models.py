@@ -24,7 +24,7 @@ class VIP(models.Model):
         return self.project_participations.count() # 獲取參與數量
     
     def get_absolute_url(self):
-        return reverse("VIPSystem_APP:vip_id", kwargs={"pk": self.pk})
+        return reverse("VIPSystem_APP:vip_detail", kwargs={"vip_id": self.pk})
 
 class Project(models.Model):
     name = models.CharField(max_length=200)
@@ -38,7 +38,7 @@ class Project(models.Model):
         return sum(event_time.ticket_count for event_time in self.event_times.all())
 
     def get_absolute_url(self):
-        return reverse("VIPSystem_APP:project_id", kwargs={"pk": self.pk})
+        return reverse("VIPSystem_APP:project_detail", kwargs={"project_id": self.pk})
     
 class EventTime(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='event_times')

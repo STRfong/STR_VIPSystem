@@ -10,14 +10,15 @@ class ProjectParticipantsView(ListView):
     model = ProjectParticipation
     template_name = 'VIPSystem/project_participants.html'
     context_object_name = 'participants_list'
+    pk_url_kwarg = 'project_id'
 
     def get_queryset(self):
-        project_id = self.kwargs.get('pk')
+        project_id = self.kwargs.get('project_id')
         return ProjectParticipation.objects.filter(project_id= project_id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_id = self.kwargs.get('pk')
+        project_id = self.kwargs.get('project_id')
         context['project'] = get_object_or_404(Project, pk=project_id)
         return context
     
@@ -26,15 +27,16 @@ class ProjectParticipantsEventTimeView(ListView):
     model = ProjectParticipation
     template_name = 'VIPSystem/project_participants_event_time.html'
     context_object_name = 'participants_list'
-
+    pk_url_kwarg = 'project_id'
+    
     def get_queryset(self):
-        project_id = self.kwargs.get('pk')
+        project_id = self.kwargs.get('project_id')
         event_time_id = self.kwargs.get('event_time_id')
         return ProjectParticipation.objects.filter(project_id= project_id, event_time_id=event_time_id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_id = self.kwargs.get('pk')
+        project_id = self.kwargs.get('project_id')
         event_time_id = self.kwargs.get('event_time_id')
         context['project'] = get_object_or_404(Project, pk=project_id)
         context['event_time'] = get_object_or_404(EventTime, pk=event_time_id)

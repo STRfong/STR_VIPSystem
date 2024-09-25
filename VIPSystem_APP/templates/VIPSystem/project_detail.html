@@ -7,7 +7,7 @@
             <h2 class="mb-0">{{ project.description }}《{{ project.name }}》</h2>
         </div>
         <div class="card-body">
-            <h3 class="card-title">相關場次 / <a href="{% url 'VIPSystem_APP:project_participants' project.pk%}">邀請名單大表</a></h3>
+            <h3 class="card-title">場次列表 / <a href="{% url 'VIPSystem_APP:project_participants' project.pk%}">邀請名單大表</a></h3>
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
                 {% for event_time in project.event_times.all %}
                 <div class="col">
