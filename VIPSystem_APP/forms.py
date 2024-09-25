@@ -1,6 +1,7 @@
 from django import forms
+from django.forms import formset_factory
 
-from .models import VIP, Project, Tag
+from .models import VIP, Project, Tag, EventTime      
 
 class RawVIPForm(forms.Form): # 這個 form 是沒有跟 model 綁定的，所以沒有 save() 的功能
     name = forms.CharField()
@@ -26,18 +27,34 @@ class VIPForm(forms.ModelForm):
             'phone_number': ('VIP 電話號碼：')
         }
 
-# class ProjectForm(forms.ModelForm):
-#     class Meta:
-#         model = Project
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['name', 'description']
+
+class EventTimeForm(forms.Form):
+    event_date = forms.DateField()
+    event_time = forms.TimeField()
+    event_end_time = forms.TimeField()
+    event_session = forms.ChoiceField(choices=EventTime.session_choices)
+    ticket_count = forms.IntegerField()
+    event_location = forms.CharField(max_length=100)
+    event_address = forms.CharField(max_length=200)
+
+class BaseEventTimeFormSet(forms.BaseFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
         
-#         fields = ['name', 'description', 'start_date', 'end_date']
-#         labels = {
-#             'name': ('專案名稱：'),
-#             'description': ('專案描述：'),
-#             'start_date': ('開始日期：'), 
-#             'end_date': ('結束日期：')
-#         }
-#         widgets = {
-#             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-#             'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-#         }   
+        for form in self.forms:
+            if self.can_delete and self._should_delete_form(form):
+                continue
+            event_date = form.cleaned_data.get('event_date')
+            event_time = form.cleaned_data.get('event_time')
+            event_end_time = form.cleaned_data.get('event_end_time')
+            if event_date and event_time and event_end_time:
+                if event_time >= event_end_time:
+                    raise forms.ValidationError(
+                        'Event time must be before end time.'
+                    )
+EventTimeFormSet = forms.formset_factory(EventTimeForm, formset=BaseEventTimeFormSet, extra=0)

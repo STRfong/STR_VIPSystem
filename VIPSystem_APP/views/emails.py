@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -10,7 +9,7 @@ import smtplib
 import os
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
-from VIPSystem_APP.models import ProjectParticipation, VIP, Project
+from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime
 from email.header import Header
 
 @login_required
@@ -18,42 +17,42 @@ def send_email(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     vip = VIP.objects.get(id=request.POST['vip_id'])
     if request.method == 'POST':
-        try:
-            pp = ProjectParticipation.objects.get(project=project, vip=vip)
-        except Exception as e:
-            print("pp 有錯: ", e)
-        try:
-            random_token = get_random_string(length=32)
-        except Exception as e:
-            print("random_token 有錯: ", e)
-        try:
-            email = Email(request.user.username, 
-                          request.POST['sender'], 
-                          request.POST['content'], 
-                          vip.name,
-                          project.name, 
-                          random_token)
-            email.send_email()
-        except Exception as e:
-            print("email 有錯: ", e)
-        try:
-            pp.token = random_token
-        except Exception as e:
-            print("pp.token 有錯: ", e)
-        try:
-            pp.status = 'sended'
-        except Exception as e:
-            print("pp.status 有錯: ", e)
-        try:
-            pp.save()
-        except Exception as e:
-            print("pp.save 有錯: ", e)
-        try:
-            messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
-        except Exception as e:
-            print("錯誤訊息: ", e)
-        
+        pp = ProjectParticipation.objects.get(project=project, vip=vip)
+        random_token = get_random_string(length=32)
+        email = Email(request.user.username, 
+                        request.POST['sender'], 
+                        request.POST['content'], 
+                        vip.name,
+                        project.name, 
+                        random_token)
+        email.send_email()
+        pp.token = random_token
+        pp.status = 'sended'
+        pp.save()
+        messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
         return redirect('VIPSystem_APP:project_participants', pk=project_id)
+    return render(request, 'send_email.html')
+
+@login_required
+def send_email_event_time(request, project_id, event_time_id):
+    project = get_object_or_404(Project, pk=project_id)
+    event_time = get_object_or_404(EventTime, pk=event_time_id)
+    vip = VIP.objects.get(id=request.POST['vip_id'])
+    if request.method == 'POST':
+        pp = ProjectParticipation.objects.get(project=project, vip=vip, event_time=event_time)
+        random_token = get_random_string(length=32)
+        email = Email(request.user.username, 
+                        request.POST['sender'], 
+                        request.POST['content'], 
+                        vip.name,
+                        project.name, 
+                        random_token)
+        email.send_email()
+        pp.token = random_token
+        pp.status = 'sended'
+        pp.save()
+        messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
+        return redirect('VIPSystem_APP:project_participants_event_time', pk=project_id, event_time_id=event_time_id)
     return render(request, 'send_email.html')
 
 @login_required
@@ -63,6 +62,43 @@ def send_emails(request, project_id):
         selected_vips = set(map(int, request.POST.getlist('selected_vips')))
         for vip_id in selected_vips:
             participation = ProjectParticipation.objects.get(id=vip_id)
+            vip = VIP.objects.get(id=participation.vip.id)
+            try:
+                pp = ProjectParticipation.objects.get(project=project, vip=vip)
+                random_token = get_random_string(length=32)
+                email = Email(request.user.username, 
+                          vip.email, 
+                          request.POST['content'], 
+                          vip.name,
+                          project.name, 
+                          random_token)
+                email.send_email()        
+                pp.token = random_token
+                pp.status = 'sended'
+                pp.save()
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'success'})
+            except Exception as e:
+                print("錯誤訊息: ", e)
+                # 替换 is_ajax() 检查
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # 替换 is_ajax() 检查
+        if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+            messages.success(request, "所有邀請郵件已發送完成！")
+            return redirect('VIPSystem_APP:project_participants', pk=project_id)
+    return render(request, 'VIPSystem/send_emails.html', {'project': project})
+
+@login_required
+def send_emails_event_time(request, project_id, event_time_id):
+    project = get_object_or_404(Project, pk=project_id)
+    event_time = get_object_or_404(EventTime, pk=event_time_id)
+    if request.method == 'POST':
+        selected_vips = set(map(int, request.POST.getlist('selected_vips')))
+        for vip_id in selected_vips:
+            participation = ProjectParticipation.objects.get(id=vip_id, event_time=event_time)
             vip = VIP.objects.get(id=participation.vip.id)
             try:
                 pp = ProjectParticipation.objects.get(project=project, vip=vip)

@@ -43,14 +43,16 @@ class Project(models.Model):
 class EventTime(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='event_times')
     date = models.DateField()
-    time = models.TimeField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
     session_choices = [
         ('morning', '早場'),
         ('afternoon', '午場'),
         ('evening', '晚場'),
     ]
     session = models.CharField(max_length=10, choices=session_choices)
-    location = models.CharField(max_length=100)
+    location_name = models.CharField(max_length=100)
+    location_address = models.CharField(max_length=200)
     ticket_count = models.IntegerField()
 
     def __str__(self):
