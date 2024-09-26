@@ -10,7 +10,7 @@ class EventTimeDetailView(DetailView):
     def get_object(self):
         return get_object_or_404(
             EventTime,
-            project__id=self.kwargs['pk'],
+            project__id=self.kwargs['project_id'],
             id=self.kwargs['event_time_id']
         )
 

@@ -39,8 +39,9 @@ class ProjectCreateView(LoginRequiredMixin, View):
             'form-INITIAL_FORMS': '0',
             'form-MAX_NUM_FORMS': '',
         }
-        for i, date in enumerate(request.POST.getlist('event_date')):
-            event_time_data.update({
+        try:
+            for i, date in enumerate(request.POST.getlist('event_date')):
+                event_time_data.update({
                 f'form-{i}-event_date': date,
                 f'form-{i}-event_time': request.POST.getlist('event_time')[i],
                 f'form-{i}-event_end_time': request.POST.getlist('event_end_time')[i],
@@ -49,26 +50,35 @@ class ProjectCreateView(LoginRequiredMixin, View):
                 f'form-{i}-event_location': request.POST.getlist('event_location')[i],
                 f'form-{i}-event_address': request.POST.getlist('event_address')[i],
             })
-        event_time_formset = EventTimeFormSet(event_time_data)
+        except Exception as e:
+            messages.error(request, f'專案建立失敗，請檢查輸入資料是否正確。{e}')
+            print(e)
+            return redirect('VIPSystem_APP:project_list')
+        try:
+            event_time_formset = EventTimeFormSet(event_time_data)
 
-        if project_form.is_valid() and event_time_formset.is_valid():
-            project = project_form.save()
-            event_times = []
-            for form in event_time_formset:
-                event_time = EventTime(
-                    project=project,
-                    date=form.cleaned_data['event_date'],
-                    start_time=form.cleaned_data['event_time'],
-                    end_time=form.cleaned_data['event_end_time'],
-                    session=form.cleaned_data['event_session'],
-                    location_name=form.cleaned_data['event_location'],
-                    location_address=form.cleaned_data['event_address'],
-                    ticket_count=form.cleaned_data['ticket_count']
-                )
-                event_times.append(event_time)              
+            if project_form.is_valid() and event_time_formset.is_valid():
+                project = project_form.save()
+                event_times = []
+                for form in event_time_formset:
+                    event_time = EventTime(
+                        project=project,
+                        date=form.cleaned_data['event_date'],
+                        start_time=form.cleaned_data['event_time'],
+                        end_time=form.cleaned_data['event_end_time'],
+                        session=form.cleaned_data['event_session'],
+                        location_name=form.cleaned_data['event_location'],
+                        location_address=form.cleaned_data['event_address'],
+                        ticket_count=form.cleaned_data['ticket_count']
+                    )
+                    event_times.append(event_time)              
 
-            EventTime.objects.bulk_create(event_times)
-            messages.success(request, f'專案《{project.name}》已成功建立，共 {len(event_times)} 場次。')
+                EventTime.objects.bulk_create(event_times)
+                messages.success(request, f'專案《{project.name}》已成功建立，共 {len(event_times)} 場次。')
+                return redirect('VIPSystem_APP:project_list')
+        except Exception as e:
+            print(e)
+            messages.error(request, f'專案建立失敗，請檢查輸入資料是否正確。{e}')
             return redirect('VIPSystem_APP:project_list')
 
         else:
@@ -86,6 +96,7 @@ class ProjectUpdateView(UpdateView):
 @method_decorator(login_required, name='dispatch')
 class ProjectDeleteView(DeleteView):
     model = Project
+    pk_url_kwarg = 'project_id'
     success_url = reverse_lazy('VIPSystem_APP:project_list')
 
     def delete(self, request, *args, **kwargs):

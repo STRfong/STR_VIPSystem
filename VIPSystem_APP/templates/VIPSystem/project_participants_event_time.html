@@ -108,7 +108,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <form method="post" action="{% url 'VIPSystem_APP:send_email_event_time' project.pk event_time.pk %}" id="emailForm{{ participant.id }}">
+                                                <form method="post" action="{% url 'VIPSystem_APP:send_email_event_time' project.pk event_time.pk participant.vip.id %}" id="emailForm{{ participant.id }}">
                                                     {% csrf_token %}
                                                     <div class="form-group mb-3">
                                                         <label for="sender" class="form-label">收件人</label>

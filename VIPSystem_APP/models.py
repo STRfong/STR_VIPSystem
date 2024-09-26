@@ -56,7 +56,7 @@ class EventTime(models.Model):
     ticket_count = models.IntegerField()
 
     def __str__(self):
-        return f"{self.project.name} - {self.start_time}"
+        return f"{self.project.name} - {self.date} - {self.get_session_display()}"
     
 class ProjectParticipation(models.Model):
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')

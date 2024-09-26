@@ -28,7 +28,7 @@ class ProjectParticipantsEventTimeView(ListView):
     template_name = 'VIPSystem/project_participants_event_time.html'
     context_object_name = 'participants_list'
     pk_url_kwarg = 'project_id'
-    
+
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         event_time_id = self.kwargs.get('event_time_id')
@@ -120,10 +120,10 @@ def update_participants(request, project_id):
                 status = 'added'
             )
         
-        return redirect('VIPSystem_APP:project_participants', pk=project.pk)
+        return redirect('VIPSystem_APP:project_participants', project_id=project.pk)
     
     # 如果不是POST請求，重定向回邀請列表頁面
-    return redirect('VIPSystem_APP:invite_list', pk=project.pk)
+    return redirect('VIPSystem_APP:invite_list', project_id=project.pk)
 
 @login_required
 def update_participants_event_time(request, project_id, event_time_id):
@@ -143,10 +143,10 @@ def update_participants_event_time(request, project_id, event_time_id):
                 event_time=event_time
             )
         
-        return redirect('VIPSystem_APP:project_participants_event_time', pk=project.pk, event_time_id=event_time.pk)
+        return redirect('VIPSystem_APP:project_participants_event_time', project_id=project.pk, event_time_id=event_time.pk)
     
     # 如果不是POST請求，重定向回邀請列表頁面
-    return redirect('VIPSystem_APP:invite_list_event_time', pk=project.pk, event_time_id=event_time.pk)
+    return redirect('VIPSystem_APP:invite_list_event_time', project_id=project.pk, event_time_id=event_time.pk)
 
 @login_required
 def remove_participant(request, project_id, participant_id):
@@ -156,7 +156,7 @@ def remove_participant(request, project_id, participant_id):
         project_participation = get_object_or_404(ProjectParticipation, project=project, vip=participant)
         project_participation.delete()
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
-    return redirect('VIPSystem_APP:project_participants', pk=project_id)
+    return redirect('VIPSystem_APP:project_participants', project_id=project_id)
 
 @login_required
 def remove_participant_event_time(request, project_id, event_time_id, participant_id):
@@ -166,4 +166,4 @@ def remove_participant_event_time(request, project_id, event_time_id, participan
         project_participation = get_object_or_404(ProjectParticipation, project=project, vip=participant)
         project_participation.delete()
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
-    return redirect('VIPSystem_APP:project_participants_event_time', pk=project_id, event_time_id=event_time_id)
+    return redirect('VIPSystem_APP:project_participants_event_time', project_id=project_id, event_time_id=event_time_id)

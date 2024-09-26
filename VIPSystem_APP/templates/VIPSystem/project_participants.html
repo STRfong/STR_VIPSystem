@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}專案詳細資料{% endblock %}
+{% block title %}{{ project.name }} 貴賓邀請大表{% endblock %}
 {% block content %}
 {% if messages %}
     <div class="container mt-5">
@@ -103,22 +103,48 @@
                                 </div>
                                 <!-- 寄信 Modal -->
                                 <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
-                                    <div class="modal-dialog">
+                                    <div class="modal-dialog modal-lg">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="emailModalLabel{{ participant.id }}">寄送郵件給 {{ participant.vip.name }}</h5>
+                                                <h3 class="modal-title" id="emailModalLabel{{ participant.id }}">寄件資訊確認</h3>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <form method="post" action="{% url 'VIPSystem_APP:send_email' project.pk%}" id="emailForm{{ participant.id }}">
+                                                <form method="post" action="{% url 'VIPSystem_APP:send_email' project.pk participant.vip.id %}" id="emailForm{{ participant.id }}">
                                                     {% csrf_token %}
-                                                    <div class="form-group mb-3">
-                                                        <label for="sender" class="form-label">收件人</label>
-                                                        <input type="email" class="form-control" id="sender" name="sender" required value="{{ participant.vip.email }}" placeholder="請輸入收件人電子郵件">
+                                                    <div class="form-group mb-3 row">
+                                                        <label for="recipient_name" class="col-sm-2 col-form-label">收件人名稱</label>
+                                                        <div class="col-sm-3">
+                                                            <input type="text" class="form-control" id="recipient_name" name="recipient_name" required value="{{ participant.vip.name }}" placeholder="請輸入收件人名稱">
+                                                        </div>  
+                                                        <label for="sender" class="col-sm-2 col-form-label">收件人 E-mail</label>
+                                                        <div class="col-sm-5">
+                                                            <input type="email" class="form-control" id="sender" name="sender" required value="{{ participant.vip.email }}" placeholder="請輸入收件人電子郵件">
+                                                        </div>
                                                     </div>
+                                                    <hr>
+                                                    <h5>信件資訊確認</h5>
                                                     <div class="form-group mb-3">
-                                                        <label for="content" class="form-label">信件內容</label>
-                                                        <textarea class="form-control" id="content" name="content" rows="4" placeholder="請輸入額外資訊（選填）"></textarea>
+                                                        <label class="form-label">選擇邀請場次（可複選）</label>
+                                                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                                                            {% for event_time in project.event_times.all %}
+                                                            <div class="col">
+                                                                <label class="card h-100">
+                                                                    <div class="card-body">
+                                                                        <h5 class="card-title">
+                                                                            <input type="checkbox" name="selected_event_times" value="{{ event_time.id }}" class="form-check-input me-2">
+                                                                            {{ event_time.date }} {{ event_time.get_session_display }}
+                                                                        </h5>
+                                                                        <p class="card-text">
+                                                                            時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
+                                                                            地點：{{ event_time.location_name }}<br>
+                                                                            地址：{{ event_time.location_address }}
+                                                                        </p>
+                                                                    </div>
+                                                                </label>
+                                                            </div>
+                                                            {% endfor %}
+                                                        </div>
                                                     </div>
                                                     <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
                                                     <div class="d-grid">
@@ -129,13 +155,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <script>
-                                    document.getElementById('emailForm{{ participant.id }}').addEventListener('submit', function(e) {
-                                        var submitBtn = document.getElementById('submitBtn{{ participant.id }}');
-                                        submitBtn.disabled = true;
-                                        submitBtn.innerHTML = ' <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> 寄件中請稍候';
-                                    });
-                                </script>
                             {% endfor %}
                         </tbody>
                     </table>
