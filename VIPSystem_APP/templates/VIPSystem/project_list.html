@@ -23,7 +23,7 @@
     {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>專案列表</h2>
-        <a href="{% url 'VIPSystem_APP:project_create' %}" class="btn btn-success">新增專案</a>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createProjectModal">新增專案</button>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -38,7 +38,7 @@
                 {% for project in object_list %}
                 <tr>
                     <td>
-                      <a href="{% url 'VIPSystem_APP:project_id' project.pk %}" class="text-decoration-none">{{ project.name }}</a>
+                      <a href="{% url 'VIPSystem_APP:project_detail' project.pk %}" class="text-decoration-none">{{ project.name }}</a>
                     </td>
                     <td>{{ project.description }}</td> 
                     <td class="text-center align-middle">{{ project.participants_count }}</td>
@@ -48,4 +48,116 @@
         </table>
     </div>
 </div>
+
+<!-- 新增專案 Modal -->
+<div class="modal fade" id="createProjectModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="createProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="width: 65%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="createProjectModalLabel">新增專案</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createProjectForm" method="post" action="{% url 'VIPSystem_APP:project_create' %}">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h5><label for="projectName" class="form-label">專案名稱</label></h5>
+                            <input type="text" class="form-control" id="projectName" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h5><label for="projectDescription" class="form-label">專案說明</label></h5>
+                            <textarea class="form-control" id="projectDescription" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5><strong>場次資訊</strong></h5>
+                        <button type="button" class="btn btn-outline-success" id="addSessionButton">新增場次</button>
+                    </div>
+                    
+                    <div id="sessionContainer">
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label for="eventDate" class="form-label me-2">活動日期</label>
+                                <input type="date" class="form-control" id="eventDate" name="event_date" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="eventTime" class="form-label me-2">活動開始時間</label>
+                                <input type="time" class="form-control" id="eventTime" name="event_time" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="eventEndTime" class="form-label me-2">活動結束時間</label>
+                                <input type="time" class="form-control" id="eventEndTime" name="event_end_time" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="eventSession" class="form-label me-2">場次</label>
+                                <select class="form-control" id="eventSession" name="event_session" required>
+                                    <option value="" disabled selected>選擇場次</option>
+                                    <option value="morning">早場</option>
+                                    <option value="afternoon">午場</option>
+                                    <option value="evening">晚場</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="ticketCount" class="form-label me-2">票數</label>
+                                <input type="number" class="form-control" id="ticketCount" name="ticket_count" min="0" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label for="eventLocation" class="form-label">場地名稱</label>
+                                <input type="text" class="form-control" id="eventLocation" name="event_location" required>
+                            </div>
+                            <div class="col-md-9">
+                                <label for="eventAddress" class="form-label">地址</label>
+                                <input type="text" class="form-control" id="eventAddress" name="event_address" required>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end justify-content-end">
+                                <button type="button" class="btn" id="removeSessionButton">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                        
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="createProjectForm" class="btn btn-success">新增專案</button>
+            </div>
+        </div> 
+    </div>
+</div>
+<script>
+    document.getElementById('addSessionButton').addEventListener('click', function() {
+        var sessionContainer = document.getElementById('sessionContainer');
+        var newSession = sessionContainer.cloneNode(true);
+        var hr = document.createElement('hr');
+        sessionContainer.parentNode.insertBefore(hr, sessionContainer.nextSibling);
+        sessionContainer.parentNode.insertBefore(newSession, hr.nextSibling);
+    });
+
+    document.addEventListener('click', function(event) {
+        if (event.target.closest('#removeSessionButton')) {
+            var sessionContainers = document.querySelectorAll('#sessionContainer');
+            if (sessionContainers.length == 1) {
+                alert('至少需要輸入一個場次');
+                return;
+            }
+            if (sessionContainers.length > 1) {
+                var currentContainer = event.target.closest('#sessionContainer');
+                var prevHr = currentContainer.previousElementSibling;
+                if (prevHr && prevHr.tagName === 'HR') {
+                    prevHr.remove();
+                }
+                currentContainer.remove();
+            }
+        }
+    });
+</script>
 {% endblock %}

@@ -51,19 +51,22 @@ class VIPListView(ListView):
 @method_decorator(login_required, name='dispatch')
 class VIPDetailView(DetailView):
     model = VIP
-    template_name = 'VIPSystem/vip_detail.html'   
+    template_name = 'VIPSystem/vip_detail.html'
+    pk_url_kwarg = 'vip_id'
 
 @method_decorator(login_required, name='dispatch')
 class VIPCreateView(CreateView):
     form_class = VIPForm        
     template_name = 'VIPSystem/vip_create.html'
     success_url = reverse_lazy('VIPSystem_APP:vip_list')
+    pk_url_kwarg = 'vip_id'
 
 @method_decorator(login_required, name='dispatch')
 class VIPUpdateView(UpdateView):
     form_class = VIPForm        
     template_name = 'VIPSystem/vip_create.html'
     queryset = VIP.objects.all()
+    pk_url_kwarg = 'vip_id'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
