@@ -73,10 +73,12 @@ class ProjectParticipation(models.Model):
     join_people_count = models.IntegerField(default=0)
     token = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
-    def handle_response(self, response):
-        if response == 'yes':
+    def handle_response(self, response, join_people_count, event_time_id):
+        if response == 'confirmed':
             self.status = 'confirmed'
-        elif response == 'no':
+            self.join_people_count = join_people_count
+            self.event_time = EventTime.objects.get(id=event_time_id)
+        elif response == 'declined':
             self.status = 'declined'
         
         self.token = None  # 使令牌失效

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邀請回覆表單</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    {% load static %}
+    <style>
+        .sidebar {
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: 250px;
+            width: 250px;
+            border-radius: 10px;
+        }
+        .sidebar-item {
+            cursor: pointer;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: #000;
+            border-radius: 10px;
+            color: #fff;
+        }
+        .sidebar-item i {
+            margin-right: 10px;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 25px;
+        }
+        /* .step-content {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        } */
+        .banner {
+            width: 100%;
+            text-align: center;
+            background-color: #000;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: #e9ecef;
+        }
+        .card-body {
+            padding: 13px 13px 0 13px;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .card-text {
+            color: #333;
+        }
+        .card-action {
+            padding: 1rem;  
+        }
+        .white-bg {
+            background-color: white;
+            border-radius: 10px;
+            padding: 13px;
+        }
+        .sidebar-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .step-content {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .step-content.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="{% static 'img/banner_W.png' %}" alt="Banner" class="img-fluid" style="max-width: 20%;">
+    </div>
+    <div class="container-fluid mt-5">
+        
+        <div class="row justify-content-center">
+            <!-- 左側導航欄 -->
+            <div class="col-md-3 sidebar d-flex flex-column justify-content-center">
+                <div class="sidebar-item active d-flex justify-content-between align-items-center" onclick="showStep('step1')">
+                    <span><i class="bi bi-book"></i>填表說明須知</span>
+                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step1"></i>
+                </div>
+                <div class="sidebar-item disabled d-flex justify-content-between align-items-center" onclick="showStepIfEnabled('step2')">
+                    <span><i class="bi bi-person"></i>參與意願</span>
+                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step2"></i>
+                </div>
+                <div class="sidebar-item disabled d-flex justify-content-between align-items-center" onclick="showStepIfEnabled('step3')">
+                    <span><i class="bi bi-calendar-event"></i>場次選擇</span>
+                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step3"></i>
+                </div>
+                <div class="sidebar-item disabled d-flex justify-content-between align-items-center" onclick="showStepIfEnabled('step4')">
+                    <span><i class="bi bi-check-circle"></i>確認資訊</span>
+                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step4"></i>
+                </div>
+            </div>
+
+            <!-- 右側內容區 -->
+            <div class="col-md-6 main-content">
+
+                <form id="responseForm" method="post" action="">
+                    {% csrf_token %}
+                    
+                    <!-- 步驟 1: 填表說明須知 -->
+                    <div id="step1" class="step-content card shadow">
+                            <div class="card-header bg-dark text-white" style="border-radius: 10px 10px 0 0;">
+                                <h5 class="mb-0"><i class="bi bi-book"></i> 填表說明須知</h5>
+                            </div>
+                        <div class="card-body">
+                            <div class="white-bg">
+                                <h3 class="card-title mb-4">親愛的 {{ participation.vip.name }}！</h3>
+                                <p>感謝您一路以來對薩泰爾娛樂的支持，</p>
+                                <p>我們誠摯地邀請您參加《{{ participation.project.name }}》活動。</p>
+                                <p>活動詳情：</p>
+                                <ul>
+                                    <li>活動名稱：{{ participation.project.name }}</li>
+                                    <li>活動描述：{{ participation.project.description }}</li>
+                                    {% if participation.event_time %}
+                                    <li>日期：{{ participation.event_time.date }}</li>
+                                    <li>時間：{{ participation.event_time.start_time }} - {{ participation.event_time.end_time }}</li>
+                                    <li>場次：{{ participation.event_time.get_session_display }}</li>
+                                    <li>地點：{{ participation.event_time.location_name }}</li>
+                                    <li>地址：{{ participation.event_time.location_address }}</li>
+                                    {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-action d-flex justify-content-end">
+                            <button type="button" class="btn btn-dark" onclick="nextStep('step1', 'step2')" style="border-radius: 20px;">繼續 <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <!-- 步驟 2: 參與意願 -->
+                    <div id="step2" class="step-content card shadow" style="display: none;">
+                        <div class="card-header bg-dark text-white" style="border-radius: 10px 10px 0 0;">
+                            <h5 class="mb-0"><i class="bi bi-person"></i> 參與意願</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="white-bg">
+                                <div class="mb-3">
+                                    <label for="response" class="form-label">請選擇您的回覆：</label>
+                                    <select id="response" name="response" class="form-select" required onchange="toggleAttendeeCount()">
+                                        <option value="">請選擇</option>
+                                        <option value="confirmed">可以出席</option>
+                                        <option value="declined">不方便出席</option>
+                                    </select>
+                                </div>
+                                <div id="join_people_countDiv" class="mb-3 d-none">
+                                    <label for="join_people_count" class="form-label"><i class="bi bi-people"></i> 參與人數：</label>
+                                    <input type="number" id="join_people_count" name="join_people_count" class="form-control" min="1" max="4" value="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-action d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-dark me-2" onclick="prevStep('step2', 'step1')" style="border-radius: 20px;"><i class="bi bi-arrow-left"></i> 返回</button>
+                            <button type="button" class="btn btn-dark" onclick="nextStep('step2', 'step3')" style="border-radius: 20px;">繼續 <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- 步驟 3: 場次選擇 -->
+                    <div id="step3" class="step-content card shadow" style="display: none;">
+                        <div class="card-header bg-dark text-white" style="border-radius: 10px 10px 0 0;">
+                            <h5 class="mb-0"><i class="bi bi-calendar-event"></i> 場次選擇</h5>
+                        </div>
+                        <div class="card-body"> 
+                            <div class="white-bg">
+                                <div id="eventTimeDiv" class="mb-3">
+                                    <label for="eventTime" class="form-label">選擇場次：</label>
+                                    <select id="eventTime" name="eventTime" class="form-select" required>
+                                        <option value="">請選擇場次</option>
+                                        {% for event_time in project.event_times.all %}
+                                            <option value="{{ event_time.id }}">
+                                                {{ event_time.date }} {{ event_time.get_session_display }}
+                                                ({{ event_time.start_time }} - {{ event_time.end_time }})
+                                                at {{ event_time.location_name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-action d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-dark me-2" onclick="prevStep('step3', 'step2')" style="border-radius: 20px;"><i class="bi bi-arrow-left"></i> 返回</button>
+                            <button type="button" class="btn btn-dark" onclick="nextStep('step3', 'step4')" style="border-radius: 20px;">繼續 <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- 步驟 4: 確認資訊 -->
+                    <div id="step4" class="step-content card shadow" style="display: none;">
+                        <div class="card-header bg-dark text-white" style="border-radius: 10px 10px 0 0;">
+                            <h5 class="mb-0"><i class="bi bi-check-circle"></i> 確認資訊</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="white-bg">
+                                <h5 class="card-title">您的回覆摘要</h5>
+                                <p class="card-text"><strong>參與意願：</strong> <span id="summaryResponse"></span></p>
+                                <p class="card-text"><strong>參與人數：</strong> <span id="summaryJoinPeopleCount"></span></p>
+                                <p class="card-text"><strong>選擇場次：</strong> <span id="summaryEventTime"></span></p>
+                            </div>
+                        </div>
+                        <div class="card-action d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-dark me-2" onclick="prevStep('step4', 'step3')" style="border-radius: 20px;"><i class="bi bi-arrow-left"></i> 返回</button>
+                            <button type="submit" class="btn btn-dark" style="border-radius: 20px;">確認提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showStepIfEnabled(stepId) {
+            const sidebarItem = document.querySelector(`.sidebar-item[onclick*="'${stepId}'"]`);
+            if (!sidebarItem.classList.contains('disabled')) {
+                showStep(stepId);
+            }
+        }
+
+        function showStep(stepId) {
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active');
+            });
+            const stepElement = document.getElementById(stepId);
+            stepElement.style.display = 'block';
+            setTimeout(() => {
+                stepElement.classList.add('active');
+            }, 50);
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.sidebar-item[onclick*="'${stepId}'"]`).classList.add('active');
+        }
+
+        function nextStep(currentStepId, nextStepId) {
+            const currentStep = document.getElementById(currentStepId);
+            const inputs = currentStep.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!input.checkValidity()) {
+                    input.reportValidity();
+                    isValid = false;
+                }
+            });
+
+            if (isValid) {
+                if (nextStepId === 'step4') {
+                    updateSummary();
+                }
+                currentStep.classList.remove('active');
+                setTimeout(() => {
+                    showStep(nextStepId);
+                    document.getElementById(`check-${currentStepId}`).style.display = 'inline-block';
+                    document.querySelector(`.sidebar-item[onclick*="'${nextStepId}'"]`).classList.remove('disabled');
+                }, 500);
+            }
+        }
+
+        function prevStep(currentStepId, prevStepId) {
+            const currentStep = document.getElementById(currentStepId);
+            currentStep.classList.remove('active');
+            setTimeout(() => {
+                showStep(prevStepId);
+                }, 500);
+        }
+
+        function toggleAttendeeCount() {
+            var response = document.getElementById('response').value;
+            var join_people_countDiv = document.getElementById('join_people_countDiv');
+            var join_people_count = document.getElementById('join_people_count');
+            if (response === 'confirmed') {
+                join_people_countDiv.classList.remove('d-none');
+                join_people_count.required = true;
+            } else {
+                join_people_countDiv.classList.add('d-none');
+                join_people_count.required = false;
+                join_people_count.value = ''; // 清空值
+            }
+        }
+
+        function updateSummary() {
+            const response = document.getElementById('response');
+            const joinPeopleCount = document.getElementById('join_people_count');
+            const eventTime = document.getElementById('eventTime');
+
+            // 使用可選鏈運算符來避免在未選擇選項時出錯
+            document.getElementById('summaryResponse').textContent = response.selectedOptions[0]?.text || '未選擇';
+            document.getElementById('summaryJoinPeopleCount').textContent = joinPeopleCount.value || '不適用';
+            document.getElementById('summaryEventTime').textContent = eventTime.selectedOptions[0]?.text || '未選擇';
+        }
+
+        // 初始顯示第一個步驟
+        showStep('step1');
+    </script>
+</body>
+</html>

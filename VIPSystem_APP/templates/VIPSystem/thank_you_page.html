@@ -3,51 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>感謝您的回覆</title>
+    <title>邀請回覆表單</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    {% load static %}
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
+        .step-indicator {
+            position: relative;
         }
-        .container {
-            text-align: center;
-            padding: 2rem;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 12px;
+            width: 2px;
+            height: calc(100% - 48px);
+            background-color: #dee2e6;
+            z-index: 0;
         }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-            margin-bottom: 1rem;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #0056b3;
+        .step-item {
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>感謝您的回覆</h1>
-        <p>我們已收到您的回應，非常感謝您的參與。</p>
-        <p>如有任何問題，請隨時與我們聯繫。</p>
-        <a href="https://www.strnetwork.cc/" class="btn">返回薩泰爾官網</a>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- 左側進度指示器 -->
+            <div class="col-md-3 bg-light py-4">
+                <h4 class="mb-4">填表進度</h4>
+                <ul class="list-unstyled step-indicator">
+                    <li class="step-item mb-3 text-primary">
+                        <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+                        <span>填表說明須知</span>
+                    </li>
+                    <li class="step-item mb-3">
+                        <i class="bi bi-circle fs-5 me-2"></i>
+                        <span>參與意願</span>
+                    </li>
+                    <li class="step-item mb-3">
+                        <i class="bi bi-circle fs-5 me-2"></i>
+                        <span>場次選擇</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- 右側表單 -->
+            <div class="col-md-9 py-4">
+                <div class="container">
+                    <form id="responseForm" method="post" action="">
+                        {% csrf_token %}
+                        <!-- 步驟 1: 基本資訊確認 -->
+                        <div id="step1" class="step-content">
+                            <h2 class="mb-4">填表說明須知</h2>
+                            <p>親愛的 {{ participation.vip.name }}！</p>
+                            <p>感謝您一路以來對薩泰爾娛樂的支持，</p>
+                            <p>我們誠摯地邀請您參加《{{ participation.project.name }}》活動。</p>
+                            <p>以下是您的基本資訊，請確認是否正確：</p>
+                            <ul>
+                                <li>姓名：{{ participation.vip.name }}</li>
+                                <li>電子郵件：{{ participation.vip.email }}</li>
+                                <li>公司：{{ participation.vip.company }}</li>
+                                <li>職稱：{{ participation.vip.title }}</li>
+                            </ul>
+                            <p>活動詳情：</p>
+                            <ul>
+                                <li>活動名稱：{{ participation.project.name }}</li>
+                                <li>活動描述：{{ participation.project.description }}</li>
+                                {% if participation.event_time %}
+                                <li>日期：{{ participation.event_time.date }}</li>
+                                <li>時間：{{ participation.event_time.start_time }} - {{ participation.event_time.end_time }}</li>
+                                <li>場次：{{ participation.event_time.get_session_display }}</li>
+                                <li>地點：{{ participation.event_time.location_name }}</li>
+                                <li>地址：{{ participation.event_time.location_address }}</li>
+                                {% endif %}
+                            </ul>
+                            <p>請確認以上資訊是否正確。如有任何問題或需要更改，請聯繫我們的客戶服務。</p>
+                            <button type="button" class="btn btn-primary mt-3" onclick="nextStep(2)">確認無誤，繼續</button>
+                        </div>
+
+                        <!-- 步驟 2: 參與意願 -->
+                        <div id="step2" class="step-content d-none">
+                            <h2 class="mb-4">參與意願</h2>
+                            <div class="mb-3">
+                                <label for="response" class="form-label">請選擇您的回覆：</label>
+                                <select id="response" name="response" class="form-select" onchange="toggleAttendeeCount()">
+                                    <option value="">請選擇</option>
+                                    <option value="confirmed">可以出席</option>
+                                    <option value="declined">不方便出席</option>
+                                </select>
+                            </div>
+                            <div id="join_people_countDiv" class="mb-3 d-none">
+                                <label for="join_people_count" class="form-label">參與人數：</label>
+                                <input type="number" id="join_people_count" name="join_people_count" class="form-control" max="4" value="1">
+                            </div>
+                            <button type="button" class="btn btn-secondary me-2" onclick="prevStep(1)">返回</button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep(3)">繼續</button>
+                        </div>
+
+                        <!-- 步驟 3: 場次選擇 -->
+                        <div id="step3" class="step-content d-none">
+                            <h2 class="mb-4">場次選擇</h2>
+                            <div id="eventTimeDiv" class="mb-3">
+                                <label for="eventTime" class="form-label">選擇場次：</label>
+                                <select id="eventTime" name="eventTime" class="form-select">
+                                    <option value="">請選擇場次</option>
+                                    {% if participation.event_time %}
+                                        <option value="{{ participation.event_time.id }}">
+                                            {{ participation.event_time.date }} {{ participation.event_time.get_session_display }}
+                                            ({{ participation.event_time.start_time }} - {{ participation.event_time.end_time }})
+                                            at {{ participation.event_time.location_name }}
+                                        </option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-secondary me-2" onclick="prevStep(2)">返回</button>
+                            <button type="submit" class="btn btn-primary">提交回覆</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function nextStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('d-none'));
+            document.getElementById('step' + step).classList.remove('d-none');
+            updateProgress(step);
+        }
+
+        function prevStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('d-none'));
+            document.getElementById('step' + step).classList.remove('d-none');
+            updateProgress(step);
+        }
+
+        function updateProgress(step) {
+            const indicators = document.querySelectorAll('.step-indicator .step-item');
+            indicators.forEach((item, index) => {
+                if (index < step - 1) {
+                    item.classList.add('text-primary');
+                    item.querySelector('i').classList.replace('bi-circle', 'bi-check-circle-fill');
+                } else if (index === step - 1) {
+                    item.classList.add('text-primary');
+                    item.querySelector('i').classList.replace('bi-check-circle-fill', 'bi-circle-fill');
+                } else {
+                    item.classList.remove('text-primary');
+                    item.querySelector('i').classList.replace('bi-check-circle-fill', 'bi-circle');
+                    item.querySelector('i').classList.replace('bi-circle-fill', 'bi-circle');
+                }
+            });
+        }
+
+        function toggleAttendeeCount() {
+            var response = document.getElementById('response').value;
+            var join_people_countDiv = document.getElementById('join_people_countDiv');
+            if (response === 'confirmed') {
+                join_people_countDiv.classList.remove('d-none');
+            } else {
+                join_people_countDiv.classList.add('d-none');
+            }
+        }
+    </script>
 </body>
 </html>

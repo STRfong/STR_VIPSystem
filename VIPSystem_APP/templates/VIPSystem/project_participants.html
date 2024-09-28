@@ -155,6 +155,13 @@
                                         </div>
                                     </div>
                                 </div>
+                                <script>
+                                    document.getElementById('emailForm{{ participant.id }}').addEventListener('submit', function(e) {
+                                        var submitBtn = document.getElementById('submitBtn{{ participant.id }}');
+                                        submitBtn.disabled = true;
+                                        submitBtn.innerHTML = ' <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> 寄件中請稍候';
+                                    });
+                                </script>
                             {% endfor %}
                         </tbody>
                     </table>
