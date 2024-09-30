@@ -181,6 +181,7 @@ class Email():
         
         return formatted_result
     
+
 def handle_invitation_response(request, token):
     if request.method == 'POST':
         response = request.POST.get('response')
@@ -188,7 +189,7 @@ def handle_invitation_response(request, token):
         event_time_id = request.POST.get('eventTime')
         participation = get_object_or_404(ProjectParticipation, token=token)
         participation.handle_response(response, join_people_count, event_time_id)
-        return redirect('https://www.strnetwork.cc/')
+        return render(request, 'VIPSystem/thank_you_page.html')
 
 
 
