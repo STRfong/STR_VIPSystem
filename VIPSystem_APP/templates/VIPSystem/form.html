@@ -34,6 +34,7 @@
         }
         .main-content {
             margin-left: 25px;
+            margin-right: 25px;
         }
         /* .step-content {
             background-color: #f8f9fa;
@@ -85,6 +86,45 @@
         .step-content.active {
             opacity: 1;
         }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            .sidebar-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 0;
+                padding: 5px;
+                width: 60px;
+                position: relative;
+            }
+            .sidebar-item span {
+                display: none;
+            }
+            .sidebar-item i.bi {
+                font-size: 1.5rem;
+                margin-right: 0;
+            }
+            .sidebar-item .bi-check2-circle {
+                position: absolute;
+                bottom: -5px;
+                right: -0.5px;
+                font-size: 0.4rem;
+                border-radius: 50%;
+            }
+            .main-content {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -95,22 +135,34 @@
         
         <div class="row justify-content-center">
             <!-- 左側導航欄 -->
-            <div class="col-md-3 sidebar d-flex flex-column justify-content-center">
-                <div class="sidebar-item active d-flex justify-content-between align-items-center" onclick="showStep('step1')">
-                    <span><i class="bi bi-book"></i>填表說明須知</span>
-                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step1"></i>
+            <div class="col-md-3 sidebar">
+                <div class="sidebar-item active justify-content-between d-flex align-items-center" onclick="showStep('step1')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-book"></i>
+                        <span>填表說明須知</span>
+                    </div>
+                    <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step1"></i>
                 </div>
-                <div class="sidebar-item disabled d-flex justify-content-between align-items-center" onclick="showStepIfEnabled('step2')">
-                    <span><i class="bi bi-person"></i>參與意願</span>
-                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step2"></i>
+                <div class="sidebar-item disabled justify-content-between d-flex align-items-center" onclick="showStepIfEnabled('step2')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person"></i>
+                        <span>參與意願</span>
+                    </div>
+                    <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step2"></i>
                 </div>
-                <div class="sidebar-item disabled d-flex justify-content-between align-items-center" onclick="showStepIfEnabled('step3')">
-                    <span><i class="bi bi-calendar-event"></i>場次選擇</span>
-                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step3"></i>
+                <div class="sidebar-item disabled justify-content-between d-flex align-items-center" onclick="showStepIfEnabled('step3')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>場次選擇</span>
+                    </div>
+                    <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step3"></i>
                 </div>
-                <div class="sidebar-item disabled d-flex justify-content-between align-items-center" onclick="showStepIfEnabled('step4')">
-                    <span><i class="bi bi-check-circle"></i>確認資訊</span>
-                    <i class="bi bi-check-circle text-success" style="display: none;" id="check-step4"></i>
+                <div class="sidebar-item disabled justify-content-between d-flex align-items-center" onclick="showStepIfEnabled('step4')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle"></i>
+                        <span>確認資訊</span>
+                    </div>
+                    <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step4"></i>
                 </div>
             </div>
 
