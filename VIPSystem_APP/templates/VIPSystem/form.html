@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         .vertical-divider {
-            border-left: 2px solid #333;
+            border-left: 2.5px solid #333;
             height: 30px;
             margin: 0 20px;
+            opacity: 0.5;
         }
         .sidebar {
             background-color: #f8f9fa;
@@ -23,6 +24,7 @@
             border-radius: 10px;
         }
         .sidebar-item .sidebar-text {
+            font-size: 1.2em;
             padding: 5px 10px;
             border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
@@ -31,10 +33,12 @@
         .sidebar-item.active .sidebar-text {
             background-color: #000;
             color: #fff;
+            
         }
 
         .sidebar-item:hover, .sidebar-item.active {
             background-color: transparent;
+            cursor: pointer;
         }
         .sidebar-item i {
             border-radius: 10px;
@@ -164,7 +168,7 @@
 
             .vertical-divider {
                 border-left: none;
-                border-top: 2px solid #333;
+                border-top: 2.5px solid #333;
                 width: 100%;
                 height: 0;
                 margin: 15px 0;
@@ -188,7 +192,7 @@
                     </div>
                     <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step1"></i>
                 </div>
-                <div class="vertical-divider"></div>
+                <div class="vertical-divider vertical-divider-step2"></div>
                 <div class="sidebar-item disabled justify-content-between d-flex align-items-center" onclick="showStepIfEnabled('step2')">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-circle"><i class="bi bi-person"></i></i>
@@ -196,7 +200,7 @@
                     </div>
                     <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step2"></i>
                 </div>
-                <div class="vertical-divider"></div>
+                <div class="vertical-divider vertical-divider-step3"></div>
                 <div class="sidebar-item disabled justify-content-between d-flex align-items-center" onclick="showStepIfEnabled('step3')">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-circle"><i class="bi bi-calendar-event"></i></i>
@@ -204,7 +208,7 @@
                     </div>
                     <i class="bi bi-check2-circle text-success" style="display: none;" id="check-step3"></i>
                 </div>
-                <div class="vertical-divider"></div>
+                <div class="vertical-divider vertical-divider-step4"></div>
                 <div class="sidebar-item disabled justify-content-between d-flex align-items-center" onclick="showStepIfEnabled('step4')">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-circle"><i class="bi bi-check"></i></i>
@@ -270,7 +274,7 @@
                         </div>
                         <div class="card-action d-flex justify-content-between">
                             <button type="button" class="btn btn-outline-dark me-2" onclick="prevStep('step2', 'step1')" style="border-radius: 20px;"><i class="bi bi-arrow-left"></i> 返回</button>
-                            <button type="button" class="btn btn-dark" onclick="nextStep('step2', 'step3')" style="border-radius: 20px;">繼續 <i class="bi bi-arrow-right"></i></button>
+                            <button id="nextButton_2" type="button" class="btn btn-dark" onclick="nextStep('step2', 'step3')" style="border-radius: 20px;">繼續 <i class="bi bi-arrow-right"></i></button>
                         </div>
                     </div>
 
@@ -309,15 +313,15 @@
                         </div>
                         <div class="card-body">
                             <div class="white-bg">
-                                <h5 class="card-title">您的回覆摘要</h5>
+                                <h5 class="card-title">再次確認您的填寫內容！</h5>
                                 <p class="card-text"><strong>參與意願：</strong> <span id="summaryResponse"></span></p>
-                                <p class="card-text"><strong>參與人數：</strong> <span id="summaryJoinPeopleCount"></span></p>
-                                <p class="card-text"><strong>選擇場次：</strong> <span id="summaryEventTime"></span></p>
+                                <p class="card-text" id="summaryJoinPeopleCountRow"><strong>參與人數：</strong> <span id="summaryJoinPeopleCount"></span></p>
+                                <p class="card-text" id="summaryEventTimeRow"><strong>選擇場次：</strong> <span id="summaryEventTime"></span></p>
                             </div>
                         </div>
                         <div class="card-action d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-dark me-2" onclick="prevStep('step4', 'step3')" style="border-radius: 20px;"><i class="bi bi-arrow-left"></i> 返回</button>
-                            <button type="submit" class="btn btn-dark" style="border-radius: 20px;">確認提交</button>
+                            <button id="backButton_4" type="button" class="btn btn-outline-dark me-2" onclick="prevStep('step4', 'step3')" style="border-radius: 20px;"><i class="bi bi-arrow-left"></i> 返回</button>
+                            <button id="submitButton" type="submit" class="btn btn-dark" style="border-radius: 20px;">確認送出</button>
                         </div>
                     </div>
                 </form>
@@ -351,6 +355,7 @@
         function nextStep(currentStepId, nextStepId) {
             const currentStep = document.getElementById(currentStepId);
             const inputs = currentStep.querySelectorAll('input[required], select[required]');
+            const backButton_4 = document.getElementById('backButton_4');
             let isValid = true;
 
             inputs.forEach(input => {
@@ -361,6 +366,17 @@
             });
 
             if (isValid) {
+                // 检查是否选择了"不方便出席"
+                if (currentStepId === 'step2' && document.getElementById('response').value === 'declined') {
+                    nextStepId = 'step4';  // 直接跳到确认信息步骤
+                    document.querySelector(`.vertical-divider-step3`).style.opacity = '1';
+                    backButton_4.onclick = function() { prevStep('step4', 'step2'); };
+                }
+
+                if (nextStepId === 'step3') {
+                    backButton_4.onclick = function() { prevStep('step4', 'step3'); };
+                }
+
                 if (nextStepId === 'step4') {
                     updateSummary();
                 }
@@ -369,6 +385,7 @@
                     showStep(nextStepId);
                     document.getElementById(`check-${currentStepId}`).style.display = 'inline-block';
                     document.querySelector(`.sidebar-item[onclick*="'${nextStepId}'"]`).classList.remove('disabled');
+                    document.querySelector(`.vertical-divider-${nextStepId}`).style.opacity = '1';
                 }, 500);
             }
         }
@@ -400,10 +417,17 @@
             const joinPeopleCount = document.getElementById('join_people_count');
             const eventTime = document.getElementById('eventTime');
 
-            // 使用可選鏈運算符來避免在未選擇選項時出錯
-            document.getElementById('summaryResponse').textContent = response.selectedOptions[0]?.text || '未選擇';
-            document.getElementById('summaryJoinPeopleCount').textContent = joinPeopleCount.value || '不適用';
-            document.getElementById('summaryEventTime').textContent = eventTime.selectedOptions[0]?.text || '未選擇';
+            document.getElementById('summaryResponse').textContent = response.selectedOptions[0]?.text || '未选择';
+            
+            if (response.value === 'confirmed') {
+                document.getElementById('summaryJoinPeopleCount').textContent = joinPeopleCount.value || '未选择';
+                document.getElementById('summaryEventTime').textContent = eventTime.selectedOptions[0]?.text || '未选择';
+                document.getElementById('summaryJoinPeopleCountRow').style.display = 'block';
+                document.getElementById('summaryEventTimeRow').style.display = 'block';
+            } else {
+                document.getElementById('summaryJoinPeopleCountRow').style.display = 'none';
+                document.getElementById('summaryEventTimeRow').style.display = 'none';
+            }
         }
 
         // 初始顯示第一個步驟
