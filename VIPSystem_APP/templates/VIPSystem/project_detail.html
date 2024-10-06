@@ -34,7 +34,6 @@
                 <div>
                     <h3 class="card-title">場次列表</h3>
                 </div>
-                <!-- <h3 class="card-title">場次列表 / <a href="{% url 'VIPSystem_APP:project_participants' project.pk%}">邀請名單大表</a></h3> -->
                 <div class="btn-group" role="group">
                     <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       場次操作
@@ -53,7 +52,8 @@
                         <th>場次</th>
                         <th>演出時間</th>
                         <th>場地</th>
-                        <th>票數</th>
+                        <th>總邀請票數</th>
+                        <th>已確認參與票數</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,6 +75,7 @@
                                 <td>{{ event.start_time }} - {{ event.end_time }}</td>
                                 <td>{{ event.location_name }}</td>
                                 <td>{{ event.ticket_count }}</td>
+                                <td>{{ event.total_join_people_count }}</td>
                             </tr>
                         {% endfor %}
                     {% endfor %}

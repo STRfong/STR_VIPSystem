@@ -36,6 +36,11 @@ class ProjectParticipationBySectionView(ListView):
             project=project, 
             wish_attend_section=self.kwargs['section']
         )
+
+        name_filter = self.request.GET.get('nameFilter')
+        if name_filter:
+            queryset = queryset.filter(vip__name__icontains=name_filter)
+            
         filter_wish_attend = self.request.GET.getlist('filter_wish_attend')
         if filter_wish_attend:
             if 'all' in filter_wish_attend:
@@ -43,6 +48,8 @@ class ProjectParticipationBySectionView(ListView):
             else:
                 event_times = EventTime.objects.filter(id__in=filter_wish_attend)
             queryset = [ participation for participation in queryset if self.check_intersection(event_times, participation)]
+        
+        
         return queryset
         
     

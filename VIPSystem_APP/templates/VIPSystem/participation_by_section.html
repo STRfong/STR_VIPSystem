@@ -39,15 +39,12 @@
                 <table class="table table-striped mt-3">
                     <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                         <tr>
-                            <th style="width: 8%;">姓名</th>
-                            <th style="width: 6%;">邀請人</th>
+                            <th style="width: 8%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                            <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
                             <th style="width: 12%;">
-                                希望參加場次
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16" data-bs-toggle="modal" data-bs-target="#filterWishAttendModal" style="cursor: pointer;">
-                                  <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
-                                </svg>
+                                希望參加場次 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterWishAttendModal" style="cursor: pointer;"></i>
                             </th>
-                            <th style="width: 13%;">狀態</th>
+                            <th style="width: 13%;">狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                             <th style="width: 8%;">參加場次</th>
                             <th style="width: 5%;">票數</th>
                             <th style="width: 15%;">操作</th>
@@ -161,6 +158,17 @@
                                                         </li>
                                                         {% endfor %}
                                                     </ul>
+                                                </div>
+                                                <hr>
+                                                <div class="mb-3">
+                                                    <h5>填表死線</h5>
+                                                    <select class="form-select" name="dead_line_date">
+                                                        {% for event_time in participant.get_wish_attend_list %}
+                                                            <option value="{{ event_time.dead_line_date}}">
+                                                                {{ event_time.get_weekday }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
                                                 </div>
                                                 <div class="d-grid">
                                                     <button type="submit" class="btn btn-dark" id="submitBtn{{ participant.id }}">送出</button>
@@ -301,6 +309,30 @@
         </div>
     </div>
 </div>
+
+<!-- 篩選姓名 Modal -->
+<div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterNameModalLabel">顯示哪些姓名</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterNameForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="nameFilter" name="nameFilter" placeholder="請輸入關鍵字">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterName()" id="applyFilterNameBtn">篩選</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 篩選希望參與時間 Modal -->
 <div class="modal fade" id="filterWishAttendModal" tabindex="-1" aria-labelledby="filterWishAttendModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -427,5 +459,16 @@
             });
         });
     });
+
+    function applyFilterName() {
+        var nameFilter = document.getElementById('nameFilter').value;
+        var url = new URL(window.location.href);
+        if (nameFilter == '') {
+            url.searchParams.delete('nameFilter');
+        } else {
+            url.searchParams.set('nameFilter', nameFilter);
+        }
+        window.location.href = url.toString();
+    }
 </script>
 {% endblock %}

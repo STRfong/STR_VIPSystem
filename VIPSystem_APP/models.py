@@ -5,6 +5,7 @@ from django.urls import reverse # 新增
 from django.db import models
 from django.utils.timezone import now
 from django.utils.formats import date_format
+from datetime import datetime
 
 
 class Tag(models.Model):
@@ -65,6 +66,14 @@ class EventTime(models.Model):
 
     def __str__(self):
          return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
+    
+    def get_weekday(self):
+        weekday_number = self.dead_line_date.weekday()
+        days = ["一", "二", "三", "四", "五", "六", "日"]
+        return f"{self.dead_line_date}（{days[weekday_number]}）"
+    
+    def total_join_people_count(self):
+        return self.participations.aggregate(total=models.Sum('join_people_count'))['total'] or 0
     
 class ProjectParticipation(models.Model):
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')
