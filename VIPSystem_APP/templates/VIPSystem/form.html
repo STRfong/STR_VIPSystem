@@ -233,18 +233,12 @@
                             <div class="white-bg">
                                 <h3 class="card-title mb-4">親愛的 {{ participation.vip.name }}！</h3>
                                 <p>感謝您一路以來對薩泰爾娛樂的支持，</p>
-                                <p>我們誠摯地邀請您參加《{{ participation.project.name }}》活動。</p>
-                                <p>活動詳情：</p>
-                                <ul>
-                                    <li>活動名稱：{{ participation.project.name }}</li>
-                                    <li>活動描述：{{ participation.project.description }}</li>
-                                    {% if participation.event_time %}
-                                    <li>日期：{{ participation.event_time.date }}</li>
-                                    <li>時間：{{ participation.event_time.start_time }} - {{ participation.event_time.end_time }}</li>
-                                    <li>場次：{{ participation.event_time.get_session_display }}</li>
-                                    <li>地點：{{ participation.event_time.location_name }}</li>
-                                    <li>地址：{{ participation.event_time.location_address }}</li>
-                                    {% endif %}
+                                <p>我們誠摯地邀請您參加在</p>
+                                {% if selected_event_times|length > 1 %}我們將於 <br>{% else %}我們將於 {% endif %}
+                                    {% for event_string in selected_event_times %}
+                                        {{ event_string }}{% if not forloop.last %}；<br>{% else %} 舉辦<br>{% endif %}
+                                    {% endfor %}
+                                <h4 class="mt-4">{{ participation.project.description }} 《{{ participation.project.name }}》</h4> 
                             </div>
                         </div>
                         <div class="card-action d-flex justify-content-end">
@@ -289,7 +283,7 @@
                                     <label for="eventTime" class="form-label">選擇場次：</label>
                                     <select id="eventTime" name="eventTime" class="form-select" required>
                                         <option value="">請選擇場次</option>
-                                        {% for event_time in project.event_times.all %}
+                                        {% for event_time in participation.get_wish_attend_list %}
                                             <option value="{{ event_time.id }}">
                                                 {{ event_time.date }} {{ event_time.get_session_display }}
                                                 ({{ event_time.start_time }} - {{ event_time.end_time }})

@@ -33,14 +33,20 @@ class ProjectForm(forms.ModelForm):
         fields = ['name', 'description']
 
 class EventTimeForm(forms.Form):
-    event_date = forms.DateField()
-    event_time = forms.TimeField()
-    event_end_time = forms.TimeField()
-    event_session = forms.ChoiceField(choices=EventTime.session_choices)
-    ticket_count = forms.IntegerField()
-    event_location = forms.CharField(max_length=100)
-    event_address = forms.CharField(max_length=200)
 
+    date = forms.DateField()
+    start_time = forms.TimeField()
+    end_time = forms.TimeField()
+    session = forms.ChoiceField(choices=EventTime.session_choices)
+    ticket_count = forms.IntegerField()
+    location_name = forms.CharField(max_length=100)
+    location_address = forms.CharField(max_length=200)
+    dead_line_date = forms.DateField()
+    dispatch_date = forms.DateField()
+    announce_date = forms.DateField()      
+    entry_time = forms.TimeField()
+    section = forms.CharField(max_length=100)   
+    
 class BaseEventTimeFormSet(forms.BaseFormSet):
     def clean(self):
         if any(self.errors):
@@ -49,11 +55,11 @@ class BaseEventTimeFormSet(forms.BaseFormSet):
         for form in self.forms:
             if self.can_delete and self._should_delete_form(form):
                 continue
-            event_date = form.cleaned_data.get('event_date')
-            event_time = form.cleaned_data.get('event_time')
-            event_end_time = form.cleaned_data.get('event_end_time')
-            if event_date and event_time and event_end_time:
-                if event_time >= event_end_time:
+            date = form.cleaned_data.get('date')
+            start_time = form.cleaned_data.get('start_time')
+            end_time = form.cleaned_data.get('end_time')
+            if date and start_time and end_time:
+                if start_time >= end_time:
                     raise forms.ValidationError(
                         'Event time must be before end time.'
                     )

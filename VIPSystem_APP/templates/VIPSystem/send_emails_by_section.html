@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》</h2>
+            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{section}}區場次邀請信件寄送</h2>
         </div>
         <div class="card-body">
             <h3 class="card-title mb-0">廣發邀請信</h3>
@@ -16,30 +16,45 @@
                             <tr>
                                 <th>選擇</th>
                                 <th>姓名</th>
+                                <th>邀請人</th>
                                 <th>邀請狀態</th>
+                                <th>希望邀請場次</th>
                             </tr>
                         </thead>
                         <tbody>
-                        {% for vip in vip_list %}
+                        {% for participant in participants_list %}
                             <tr>
                                 <td>
-                                    <input type="checkbox" id="vip_{{ vip.pk }}" name="selected_vips" value="{{ vip.pk }}" class="vip-checkbox"
-                                        {% if vip in current_participants %}checked disabled{% endif %}>
+                                    <input type="checkbox" id="vip_{{ participant.pk }}" name="selected_vips" value="{{ participant.pk }}" class="vip-checkbox"
+                                        {% if participant in current_participants %}checked disabled{% endif %}>
                                 </td>
                                 <td>
-                                    <label for="vip_{{ vip.pk }}" style="cursor: pointer; display: block; width: 100%;">
-                                        {{ vip.vip.name }}
+                                    <label for="vip_{{ participant.pk }}" style="cursor: pointer; display: block;">
+                                        {{ participant.vip.name }}
                                     </label>
                                 </td>
-                                <td>{{ vip.get_status_display }}</td>
+                                <td>{{ participant.invited_by.username }}</td>
+                                <td>{{ participant.get_status_display }}</td>
+                                {% if participant.wish_attend == 'all' %}
+                                    <td>都可以</td>
+                                {% else %}
+                                    <td>
+                                        {% for event_time in participant.get_wish_attend_list %}
+                                            {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }} 
+                                            {% if not forloop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </form>
-            <div class="mt-3 d-flex justify-content-between">
-            <a href="{% url 'VIPSystem_APP:project_participants' project.id %}" class="btn btn-secondary">返回</a>
+        </div>
+    </div>
+    <div class="mt-3 d-flex justify-content-between">
+        <a href="{% url 'VIPSystem_APP:project_participants' project.id %}" class="btn btn-outline-secondary">返回{{section}}區邀請列表</a>
         <button type="button" form="sendEmailForm" class="btn btn-primary ms-2" id="submitButton" disabled data-bs-toggle="modal" data-bs-target="#confirmSenderModal">發送邀請信</button>
     </div>
 </div>

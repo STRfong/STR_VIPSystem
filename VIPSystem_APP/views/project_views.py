@@ -17,7 +17,6 @@ from django.shortcuts import redirect
 class ProjectListView(ListView):
     model = Project
     template_name = 'VIPSystem/project_list.html'
-    pk_url_kwarg = 'project_id'
 
     def get_queryset(self):
         return Project.objects.annotate(participants_count=Count('vip_participations'))
@@ -29,26 +28,50 @@ class ProjectDetailView(DetailView):
     context_object_name = 'project'
     pk_url_kwarg = 'project_id'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project = self.object
+        
+        each_section_event_times = EventTime.objects.filter(project=project).values('section').annotate(count=Count('id'))   
+         
+        result = {}
+        for item in each_section_event_times:
+            section = item['section']
+            count = item['count']
+            event_time_in_section = EventTime.objects.filter(project=project, section=section)
+            result[section] = {'count': count, 'event_time_in_section': event_time_in_section}
+        
+        context['each_section_event_times'] = result
+        
+        return context
+    
+
+
 @method_decorator(login_required, name='dispatch')
 class ProjectCreateView(LoginRequiredMixin, View):
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         project_form = ProjectForm(request.POST)
         event_time_data = {
-            'form-TOTAL_FORMS': str(len(request.POST.getlist('event_date'))),
+            'form-TOTAL_FORMS': str(len(request.POST.getlist('date'))),
             'form-INITIAL_FORMS': '0',
             'form-MAX_NUM_FORMS': '',
         }
         try:
-            for i, date in enumerate(request.POST.getlist('event_date')):
+            for i, date in enumerate(request.POST.getlist('date')):
                 event_time_data.update({
-                f'form-{i}-event_date': date,
-                f'form-{i}-event_time': request.POST.getlist('event_time')[i],
-                f'form-{i}-event_end_time': request.POST.getlist('event_end_time')[i],
-                f'form-{i}-event_session': request.POST.getlist('event_session')[i],
+                f'form-{i}-date': date,
+                f'form-{i}-start_time': request.POST.getlist('start_time')[i],
+                f'form-{i}-end_time': request.POST.getlist('end_time')[i],
+                f'form-{i}-session': request.POST.getlist('session')[i],
                 f'form-{i}-ticket_count': request.POST.getlist('ticket_count')[i],
-                f'form-{i}-event_location': request.POST.getlist('event_location')[i],
-                f'form-{i}-event_address': request.POST.getlist('event_address')[i],
+                f'form-{i}-location_name': request.POST.getlist('location_name')[i],
+                f'form-{i}-location_address': request.POST.getlist('location_address')[i],
+                f'form-{i}-dead_line_date': request.POST.getlist('dead_line_date')[i],
+                f'form-{i}-dispatch_date': request.POST.getlist('dispatch_date')[i],
+                f'form-{i}-announce_date': request.POST.getlist('announce_date')[i],
+                f'form-{i}-entry_time': request.POST.getlist('entry_time')[i],
+                f'form-{i}-section': request.POST.getlist('section')[i],
             })
         except Exception as e:
             messages.error(request, f'專案建立失敗，請檢查輸入資料是否正確。{e}')
@@ -63,13 +86,18 @@ class ProjectCreateView(LoginRequiredMixin, View):
                 for form in event_time_formset:
                     event_time = EventTime(
                         project=project,
-                        date=form.cleaned_data['event_date'],
-                        start_time=form.cleaned_data['event_time'],
-                        end_time=form.cleaned_data['event_end_time'],
-                        session=form.cleaned_data['event_session'],
-                        location_name=form.cleaned_data['event_location'],
-                        location_address=form.cleaned_data['event_address'],
-                        ticket_count=form.cleaned_data['ticket_count']
+                        date=form.cleaned_data['date'],
+                        start_time=form.cleaned_data['start_time'],
+                        end_time=form.cleaned_data['end_time'],
+                        session=form.cleaned_data['session'],
+                        location_name=form.cleaned_data['location_name'],
+                        location_address=form.cleaned_data['location_address'],
+                        ticket_count=form.cleaned_data['ticket_count'],
+                        dead_line_date=form.cleaned_data['dead_line_date'],
+                        dispatch_date=form.cleaned_data['dispatch_date'],
+                        announce_date=form.cleaned_data['announce_date'],
+                        entry_time=form.cleaned_data['entry_time'],
+                        section=form.cleaned_data['section'],
                     )
                     event_times.append(event_time)              
 
@@ -88,9 +116,15 @@ class ProjectCreateView(LoginRequiredMixin, View):
 
 @method_decorator(login_required, name='dispatch')
 class ProjectUpdateView(UpdateView):
-    # form_class = ProjectForm        
-    template_name = 'VIPSystem/project_create.html'
-    queryset = Project.objects.all() # 這很重要
+    def post(self, request, *args, **kwargs):
+        project_id = kwargs.get('project_id')   
+        project = Project.objects.get(pk=project_id)
+        project.name = request.POST.get('name')
+        project.description = request.POST.get('description')
+        project.save()
+        messages.success(request, f'專案《{project.name}》已成功更新。')
+        return redirect('VIPSystem_APP:project_detail', project_id=project_id)  
+
 
 @method_decorator(require_http_methods(["DELETE"]), name='delete')
 @method_decorator(login_required, name='dispatch')
