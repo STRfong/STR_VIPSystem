@@ -67,7 +67,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <h5><label for="projectDescription" class="form-label">專案說明</label></h5>
-                            <textarea class="form-control" id="projectDescription" name="description" rows="3"></textarea>
+                            <input type="text" class="form-control" id="projectDescription" name="description" rows="3"></textarea>
                         </div>
                     </div>
                     <hr>
@@ -79,20 +79,30 @@
                     <div id="sessionContainer">
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label for="eventDate" class="form-label me-2">活動日期</label>
-                                <input type="date" class="form-control" id="eventDate" name="event_date" required>
+                                <label for="date" class="form-label me-2">演出日期</label>
+                                <input type="date" class="form-control" id="date" name="date" required>
                             </div>
                             <div class="col-md-2">
-                                <label for="eventTime" class="form-label me-2">活動開始時間</label>
-                                <input type="time" class="form-control" id="eventTime" name="event_time" required>
+                                <label for="entry_time" class="form-label me-2">進場時間</label>
+                                <input type="time" class="form-control" id="entry_time" name="entry_time" required>
                             </div>
                             <div class="col-md-2">
-                                <label for="eventEndTime" class="form-label me-2">活動結束時間</label>
-                                <input type="time" class="form-control" id="eventEndTime" name="event_end_time" required>
+                                <label for="start_time" class="form-label me-2">演出開始時間</label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
                             </div>
                             <div class="col-md-2">
-                                <label for="eventSession" class="form-label me-2">場次</label>
-                                <select class="form-control" id="eventSession" name="event_session" required>
+                                <label for="end_time" class="form-label me-2">演出結束時間</label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="section" class="form-label me-2">地區</label>
+                                <input type="text" class="form-control" id="section" name="section" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label for="session" class="form-label me-2">場次</label>
+                                <select class="form-control" id="session" name="session" required>
                                     <option value="" disabled selected>選擇場次</option>
                                     <option value="morning">早場</option>
                                     <option value="afternoon">午場</option>
@@ -103,15 +113,28 @@
                                 <label for="ticketCount" class="form-label me-2">票數</label>
                                 <input type="number" class="form-control" id="ticketCount" name="ticket_count" min="0" required>
                             </div>
+                            <div class="col-md-2">
+                                <label for="dead-line-date" class="form-label me-2">回覆死線</label>
+                                <input type="date" class="form-control" id="dead-line-date" name="dead_line_date" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="dispatch-date" class="form-label me-2">分票日期</label>
+                                <input type="date" class="form-control" id="dispatch-date" name="dispatch_date" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="announce-date" class="form-label me-2">出席提醒日期</label>
+                                <input type="date" class="form-control" id="announce-date" name="announce_date" required>
+                            </div>
+                           
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label for="eventLocation" class="form-label">場地名稱</label>
-                                <input type="text" class="form-control" id="eventLocation" name="event_location" required>
+                                <label for="location_name" class="form-label me-2">場地名稱</label>
+                                <input type="text" class="form-control" id="location_name" name="location_name" required>
                             </div>
                             <div class="col-md-9">
-                                <label for="eventAddress" class="form-label">地址</label>
-                                <input type="text" class="form-control" id="eventAddress" name="event_address" required>
+                                <label for="location_address" class="form-label me-2">地址</label>
+                                <input type="text" class="form-control" id="location_address" name="location_address" required>
                             </div>
                             <div class="col-md-1 d-flex align-items-end justify-content-end">
                                 <button type="button" class="btn" id="removeSessionButton">
@@ -135,11 +158,12 @@
 </div>
 <script>
     document.getElementById('addSessionButton').addEventListener('click', function() {
-        var sessionContainer = document.getElementById('sessionContainer');
-        var newSession = sessionContainer.cloneNode(true);
+        var sessionContainers = document.querySelectorAll('#sessionContainer');
+        var lastSessionContainer = sessionContainers[sessionContainers.length - 1];
+        var newSession = lastSessionContainer.cloneNode(true);
         var hr = document.createElement('hr');
-        sessionContainer.parentNode.insertBefore(hr, sessionContainer.nextSibling);
-        sessionContainer.parentNode.insertBefore(newSession, hr.nextSibling);
+        lastSessionContainer.parentNode.insertBefore(hr, lastSessionContainer.nextSibling);
+        lastSessionContainer.parentNode.insertBefore(newSession, hr.nextSibling);
     });
 
     document.addEventListener('click', function(event) {

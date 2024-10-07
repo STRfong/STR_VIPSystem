@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}邀請貴賓{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h2 class="mb-0">新增 {{ project.description }}《{{ project.name }}》{{section}}區貴賓邀請名單</h2>
+        </div>
+        <div class="card-body">
+            <h3 class="card-title">VIP 名單總覽</h3>
+            <form method="post" action="{% url 'VIPSystem_APP:update_participants_by_section' project.pk section%}" id="inviteFormBySection">
+                {% csrf_token %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped">
+                        <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
+                            <tr>
+                                <th>選擇</th>
+                                <th>姓名</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vip in vip_list %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" id="vip_{{ vip.pk }}" name="selected_vips" value="{{ vip.pk }}" class="vip-checkbox"
+                                            {% if vip in current_participants %}checked disabled{% endif %}>
+                                    </td>
+                                    <td>
+                                        <label for="vip_{{ vip.pk }}" style="cursor: pointer; display: block; width: 100%;">
+                                            {{ vip.name }}
+                                        </label>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="mt-3 d-flex justify-content-between">
+        <a href="{% url 'VIPSystem_APP:participation_by_section' project.id section%}" class="btn btn-outline-secondary">返回</a>
+        <button type="button" class="btn btn-primary ms-2" id="submitButton" data-bs-toggle="modal" data-bs-target="#eventTimeModal" disabled>選擇邀請場次</button>
+    </div>
+</div>
+
+<!-- Event Time Modal -->
+<div class="modal fade" id="eventTimeModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="eventTimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventTimeModalLabel">選擇欲邀請貴賓參加的場次</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    <div class="col">
+                        <label class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2" id="selectAll" form="inviteFormBySection">
+                                    都可以
+                                </h5>
+                                <p class="card-text">
+                                    選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                {% for event_time in event_times %}
+                    <div class="col">
+                        <label class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <input form="inviteFormBySection" type="checkbox" name="selected_event_time_by_section" value="{{ event_time.id }}" class="form-check-input me-2 event-time-checkbox">
+                                    {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }}
+                                </h5>
+                                <p class="card-text">
+                                    時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
+                                    地點：{{ event_time.location_name }}<br>
+                                    地址：{{ event_time.location_address }}
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                {% endfor %}
+                </div>
+            
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="inviteFormBySection" class="btn btn-primary" id="confirmEventTime">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.vip-checkbox:not(:disabled)');
+        const submitButton = document.getElementById('submitButton');
+        const confirmEventTimeButton = document.getElementById('confirmEventTime');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const eventTimeCheckboxes = document.querySelectorAll('.event-time-checkbox');
+
+        function updateSubmitButton() {
+            const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+            submitButton.disabled = !anyChecked;
+        }
+
+        function updateSelectAllCheckbox() {
+            const allChecked = Array.from(eventTimeCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+        }
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSubmitButton);
+        });
+
+        updateSubmitButton();
+
+        selectAllCheckbox.addEventListener('change', function() {
+            eventTimeCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        eventTimeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (!this.checked) {
+                    selectAllCheckbox.checked = false;
+                } else {
+                    updateSelectAllCheckbox();
+                }
+            });
+        });
+
+        // confirmEventTimeButton.addEventListener('click', function() {
+        //     const selectedEventTimes = document.querySelectorAll('input[name="selected_event_time_by_section"]:checked');
+        //     if (selectedEventTimes.length > 0) {
+        //         const eventTimeIds = Array.from(selectedEventTimes)
+        //             .filter(checkbox => checkbox.value !== 'all')
+        //             .map(checkbox => checkbox.value)
+        //             .join(',');
+        //         document.getElementById('inviteFormBySection').action = `{% url 'VIPSystem_APP:update_participants' project.pk %}?event_times=${eventTimeIds}`;
+        //         document.getElementById('inviteFormBySection').submit();
+        //     } else {
+        //         alert('請至少選擇一個場次');
+        //     }
+        // });
+    });
+</script>
+{% endblock %}

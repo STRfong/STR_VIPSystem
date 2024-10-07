@@ -1,61 +1,383 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}專案詳細資料{% endblock %}
 {% block content %}
 <div class="container mt-4">
+    {% if messages %}
+        <div id="message-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-bs-autohide="true" data-bs-delay="3000">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function() {
+                var alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 3000);
+        </script>
+    {% endif %}
+    <div class="container mt-5">
+        
+    </div>
     <div class="card">
         <div class="card-header bg-dark text-white">
             <h2 class="mb-0">{{ project.description }}《{{ project.name }}》</h2>
         </div>
         <div class="card-body">
-            <h3 class="card-title">場次列表 / <a href="{% url 'VIPSystem_APP:project_participants' project.pk%}">邀請名單大表</a></h3>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-                {% for event_time in project.event_times.all %}
-                <div class="col">
-                    <a href="{% url 'VIPSystem_APP:event_time_detail' project.id event_time.id %}" class="card h-100 text-decoration-none">
-                        <div class="card-header">
-                            <strong>{{ event_time.date }} {{ event_time.get_session_display }}</strong>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">
-                                <strong>時間：</strong>{{ event_time.start_time }} - {{ event_time.end_time }}<br>
-                                <strong>地點：</strong>{{ event_time.location_name }}<br>
-                                <strong>地址：</strong>{{ event_time.location_address }}<br>
-                            </p>
-                        </div>
-                    </a>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="card-title">場次列表</h3>
                 </div>
-                {% endfor %}
+                <div class="btn-group" role="group">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      場次操作
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                      <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createEventTimeModal">新增場次</a></li>
+                      <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#chooseEventTimeModal" data-bs-nextStep="編輯" data-bs-nextStep-en="edit">編輯場次</a></li>
+                      <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#chooseEventTimeModal" data-bs-nextStep="刪除" data-bs-nextStep-en="delete">刪除場次</a></li>
+                    </ul>
+                </div>
             </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>地區</th>
+                        <th>場次</th>
+                        <th>演出時間</th>
+                        <th>場地</th>
+                        <th>總邀請票數</th>
+                        <th>已確認參與票數</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for section, data in each_section_event_times.items %}
+                        {% for event in data.event_time_in_section %}
+                            <tr>
+                                {% if forloop.first %}
+                                    <td rowspan="{{ data.count }}">
+                                        <a href="{% url 'VIPSystem_APP:participation_by_section' project.id section %}" class="text-decoration-none">
+                                            {{ section }}
+                                        </a>
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    <a href="{% url 'VIPSystem_APP:participation_by_event_time' project.id section event.id %}" class="text-decoration-none">
+                                        {{ event.date|date:"m/d" }} {{ event.get_session_display }}
+                                    </a>
+                                </td>
+                                <td>{{ event.start_time }} - {{ event.end_time }}</td>
+                                <td>{{ event.location_name }}</td>
+                                <td>{{ event.ticket_count }}</td>
+                                <td>{{ event.total_join_people_count }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="mt-3 d-flex justify-content-between">
-        <a href="{% url 'VIPSystem_APP:project_list' %}" class="btn btn-secondary">返回專案列表</a>
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
-            刪除專案
-        </button>
-
-        <!-- 刪除確認 Modal -->
-        <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteProjectModalLabel">確認刪除</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        確定要刪除專案嗎？
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">確定刪除</button>
-                    </div>
-                </div>
+        <a href="{% url 'VIPSystem_APP:project_list' %}" class="btn btn-outline-secondary">返回專案列表</a>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
+                刪除專案
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProjectModal">
+                編輯專案
+            </button>
+        </div>
+    </div>
+</div>
+<!-- 刪除確認專案 Modal -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProjectModalLabel">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                確定要刪除專案嗎？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteProjectBtn">確定刪除</button>
             </div>
         </div>
     </div>
 </div>
+<!-- 編輯專案 Modal -->
+<div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProjectModalLabel">編輯專案</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="editProjectForm" action="{% url 'VIPSystem_APP:project_update' project.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">專案名稱</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ project.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">專案描述</label>
+                        <input type="text" class="form-control" id="description" name="description" rows="3" required value="{{ project.description }}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="editProjectForm" class="btn btn-success" id="confirmEditBtn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增場次 Modal -->
+<div class="modal fade" id="createEventTimeModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="createEventTimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="width: 65%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createEventTimeModalLabel">新增場次</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="createEventTimeForm" action="{% url 'VIPSystem_APP:create_event_time' project.pk %}">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="date" class="form-label me-2">演出日期</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="entry_time" class="form-label me-2">進場時間</label>
+                            <input type="time" class="form-control" id="entry_time" name="entry_time" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="start_time" class="form-label me-2">演出開始時間</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="end_time" class="form-label me-2">演出結束時間</label>
+                            <input type="time" class="form-control" id="end_time" name="end_time" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="section" class="form-label me-2">地區</label>
+                            <input type="text" class="form-control" id="section" name="section" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="session" class="form-label me-2">場次</label>
+                            <select class="form-control" id="session" name="session" required>
+                                <option value="" disabled selected>選擇場次</option>
+                                <option value="morning">早場</option>
+                                <option value="afternoon">午場</option>
+                                <option value="evening">晚場</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="ticketCount" class="form-label me-2">票數</label>
+                            <input type="number" class="form-control" id="ticketCount" name="ticket_count" min="0" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="dead-line-date" class="form-label me-2">回覆死線</label>
+                            <input type="date" class="form-control" id="dead-line-date" name="dead_line_date" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="dispatch-date" class="form-label me-2">分票日期</label>
+                            <input type="date" class="form-control" id="dispatch-date" name="dispatch_date" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="announce-date" class="form-label me-2">出席提醒日期</label>
+                            <input type="date" class="form-control" id="announce-date" name="announce_date" required>
+                        </div>
+                       
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="location_name" class="form-label me-2">場地名稱</label>
+                            <input type="text" class="form-control" id="location_name" name="location_name" required>
+                        </div>
+                        <div class="col-md-9">
+                            <label for="location_address" class="form-label me-2">地址</label>
+                            <input type="text" class="form-control" id="location_address" name="location_address" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>   
+                <button type="submit" form="createEventTimeForm" class="btn btn-success" id="confirmCreateBtn">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 選擇場次編輯或刪除 Modal -->
+<div class="modal fade" id="chooseEventTimeModal" tabindex="-1" aria-labelledby="chooseEventTimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chooseEventTimeModalLabel">選擇場次</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="selectEventTimeForm">
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for event_time in project.event_times.all %}
+                        <div class="col">
+                            <label class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <input type="radio" name="selected_event_time" value="{{ event_time.id }}" class="form-check-input me-2"
+                                        data-event-time='{"date": "{{ event_time.date|date:"Y-m-d" }}",
+                                                        "entry_time": "{{ event_time.entry_time|time:"H:i" }}",
+                                                        "start_time": "{{ event_time.start_time|time:"H:i" }}",
+                                                        "end_time": "{{ event_time.end_time|time:"H:i" }}",
+                                                        "section": "{{ event_time.section }}",
+                                                        "session": "{{ event_time.session }}",
+                                                        "ticket_count": {{ event_time.ticket_count }},
+                                                        "dead_line_date": "{{ event_time.dead_line_date|date:"Y-m-d" }}",
+                                                        "dispatch_date": "{{ event_time.dispatch_date|date:"Y-m-d" }}",
+                                                        "announce_date": "{{ event_time.announce_date|date:"Y-m-d" }}",
+                                                        "location_name": "{{ event_time.location_name }}",
+                                                        "location_address": "{{ event_time.location_address }}"}'>
+                                        {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }}
+                                    </h5>
+                                    <p class="card-text">
+                                        時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
+                                        地點：{{ event_time.location_name }}<br>
+                                        地址：{{ event_time.location_address }}
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button id="chooseEventTimeBtn" class="btn btn-primary" data-bs-target="#editEventTimeModal" data-bs-toggle="modal" data-bs-dismiss="modal">編輯</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 編輯場次 Modal -->
+<div class="modal fade" id="editEventTimeModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editEventTimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="width: 65%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEventTimeModalLabel">編輯場次</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="editEventTimeForm" action="{% url 'VIPSystem_APP:update_event_time' project.pk %}">
+                    <input type="hidden" id="edit_event_time_id" name="event_time_id" value="">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="edit_date" class="form-label me-2">演出日期</label>
+                            <input type="date" class="form-control" id="edit_date" name="date" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_entry_time" class="form-label me-2">進場時間</label>
+                            <input type="time" class="form-control" id="edit_entry_time" name="entry_time" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_start_time" class="form-label me-2">演出開始時間</label>
+                            <input type="time" class="form-control" id="edit_start_time" name="start_time" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_end_time" class="form-label me-2">演出結束時間</label>
+                            <input type="time" class="form-control" id="edit_end_time" name="end_time" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_section" class="form-label me-2">地區</label>
+                            <input type="text" class="form-control" id="edit_section" name="section" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="edit_session" class="form-label me-2">場次</label>
+                            <select class="form-control" id="edit_session" name="session" required>
+                                <option value="" disabled selected>選擇場次</option>
+                                <option value="morning">早場</option>
+                                <option value="afternoon">午場</option>
+                                <option value="evening">晚場</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_ticketCount" class="form-label me-2">票數</label>
+                            <input type="number" class="form-control" id="edit_ticketCount" name="ticket_count" min="0" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_dead_line_date" class="form-label me-2">回覆死線</label>
+                            <input type="date" class="form-control" id="edit_dead_line_date" name="dead_line_date" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_dispatch_date" class="form-label me-2">分票日期</label>
+                            <input type="date" class="form-control" id="edit_dispatch_date" name="dispatch_date" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="edit_announce_date" class="form-label me-2">出席提醒日期</label>
+                            <input type="date" class="form-control" id="edit_announce_date" name="announce_date" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="edit_location_name" class="form-label me-2">場地名稱</label>
+                            <input type="text" class="form-control" id="edit_location_name" name="location_name" required>
+                        </div>
+                        <div class="col-md-9">
+                            <label for="edit_location_address" class="form-label me-2">地址</label>
+                            <input type="text" class="form-control" id="edit_location_address" name="location_address" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>   
+                <button type="submit" form="editEventTimeForm" class="btn btn-success" id="confirmEditBtn">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 刪除場次 Modal -->
+<div class="modal fade" id="deleteEventTimeModal" tabindex="-1" aria-labelledby="deleteEventTimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteEventTimeModalLabel">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>  
+            <div class="modal-body">
+                確定要刪除場次嗎？
+            </div>
+            <form id="deleteEventTimeForm" method="post" action="{% url 'VIPSystem_APP:delete_event_time' project.pk %}">
+                {% csrf_token %}
+                <input type="hidden" id="deleteEventTimeId" name="event_time_id" value="">
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="deleteEventTimeForm" class="btn btn-danger" id="confirmDeleteBtn">確定刪除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    document.getElementById('confirmDeleteProjectBtn').addEventListener('click', function() {
         fetch('{% url "VIPSystem_APP:project_delete" project.pk %}', {
             method: 'DELETE',
             headers: {
@@ -77,5 +399,45 @@
     function showEventDetails(url) {
         window.location.href = url;
     }
+
+    document.getElementById('chooseEventTimeBtn').addEventListener('click', function() {
+        var selectedRadio = document.querySelector('input[name="selected_event_time"]:checked');
+        if (selectedRadio) {
+            var selectedEventTimeId = selectedRadio.value;
+            var eventTimeData = JSON.parse(selectedRadio.dataset.eventTime);
+            document.getElementById('deleteEventTimeId').value = selectedEventTimeId;
+            document.getElementById('edit_event_time_id').value = selectedEventTimeId;
+            document.getElementById('edit_date').value = eventTimeData.date;
+            document.getElementById('edit_entry_time').value = eventTimeData.entry_time;
+            document.getElementById('edit_start_time').value = eventTimeData.start_time;
+            document.getElementById('edit_end_time').value = eventTimeData.end_time;
+            document.getElementById('edit_section').value = eventTimeData.section;
+            document.getElementById('edit_session').value = eventTimeData.session;
+            document.getElementById('edit_ticketCount').value = eventTimeData.ticket_count;
+            document.getElementById('edit_dead_line_date').value = eventTimeData.dead_line_date;
+            document.getElementById('edit_dispatch_date').value = eventTimeData.dispatch_date;
+            document.getElementById('edit_announce_date').value = eventTimeData.announce_date;
+            document.getElementById('edit_location_name').value = eventTimeData.location_name;
+            document.getElementById('edit_location_address').value = eventTimeData.location_address;
+            
+        } else {
+            alert('請選擇一個場次進行編輯。');
+        }
+    });
+
+    var chooseEventTimeModal = document.getElementById('chooseEventTimeModal')
+    chooseEventTimeModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var nextStep = button.getAttribute('data-bs-nextStep')
+        var nextStepEn = button.getAttribute('data-bs-nextStep-en')
+        var modalTitle = chooseEventTimeModal.querySelector('.modal-title')
+        var chooseEventTimeBtn = chooseEventTimeModal.querySelector('#chooseEventTimeBtn')
+
+        modalTitle.textContent = '選擇場次' + nextStep
+        chooseEventTimeBtn.setAttribute('data-bs-target', '#' + nextStepEn + 'EventTimeModal')
+        chooseEventTimeBtn.textContent = nextStep;
+    })
+
+
 </script>
 {% endblock %}

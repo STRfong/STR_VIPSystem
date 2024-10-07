@@ -12,12 +12,11 @@ from django.utils.crypto import get_random_string
 from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime
 from email.header import Header
 from collections import defaultdict
-from datetime import date
+from datetime import datetime
 
 
 @login_required
 def send_email(request, project_id, participant_id):
-    print(request.POST)
     project = get_object_or_404(Project, pk=project_id)
     vip = get_object_or_404(VIP, pk=participant_id)
     if request.method == 'POST':
@@ -35,6 +34,28 @@ def send_email(request, project_id, participant_id):
         pp.save()
         messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
         return redirect('VIPSystem_APP:project_participants', project_id=project_id)
+    return render(request, 'send_email.html')
+
+def send_email_by_section(request, project_id, section):
+    project = get_object_or_404(Project, pk=project_id)
+    vip = get_object_or_404(VIP, pk=request.POST['vip_id'])
+    dead_line_date = request.POST['dead_line_date']
+    if request.method == 'POST':
+        pp = ProjectParticipation.objects.get(project=project, vip=vip)
+        random_token = get_random_string(length=32)
+        email = Email(request.user.username, 
+                        request.POST['sender'], 
+                        pp.get_wish_attend_list(), 
+                        vip.name,
+                        project, 
+                        dead_line_date,
+                        random_token)
+        email.send_email()
+        pp.token = random_token
+        pp.status = 'sended'
+        pp.save()
+        messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
+        return redirect('VIPSystem_APP:participation_by_section', project_id=project_id, section=section)
     return render(request, 'send_email.html')
 
 @login_required
@@ -56,7 +77,6 @@ def send_email_event_time(request, project_id, event_time_id, participant_id):
         pp.status = 'sended'
         pp.save()
         messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
-        print("哈哈")
         return redirect('VIPSystem_APP:project_participants_event_time', project_id=project_id, event_time_id=event_time_id)
     return render(request, 'send_email.html')
 
@@ -115,26 +135,28 @@ def send_emails_event_time(request, project_id, event_time_id):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, username, sender, selected_event_times_list, vip_name, project, token):
+    def __init__(self, username, sender, selected_event_times_list, vip_name, project, dead_line_date, token):
         self.username = username
         self.sender = sender
         self.selected_event_times_list = selected_event_times_list
         self.vip_name = vip_name
         self.project = project
+        self.dead_line_date = dead_line_date
         self.token = token
 
     def send_email(self):
-         with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+        with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
                     {'username': self.username, 
-                     'selected_event_times': self.filter_selected_event_times(), 
+                     'selected_event_times': self.filter_selected_event_times(self.selected_event_times_list), 
                      'token': self.token, 
                      'vip_name': self.vip_name,
                      'project': self.project,
+                     'dead_line_date': self.get_weekday(self.dead_line_date),
                      'SITE_URL': os.getenv('SITE_URL')}
                 )
                 
@@ -146,15 +168,22 @@ class Email():
                 msg['Subject'] = Header(subject, 'utf-8')
                 smtp.send_message(msg)  
 
-    def filter_selected_event_times(self):
+    def get_weekday(self, date_string):
+        date_object = datetime.strptime(date_string, "%Y年%m月%d日")
+        weekday_number = date_object.weekday()
+        days = ["一", "二", "三", "四", "五", "六", "日"]
+        return f"{date_string}（{days[weekday_number]}）"
+
+    @staticmethod
+    def filter_selected_event_times(selected_event_times_list):
         selected_event_times = defaultdict(list)
-        for event_time_id in self.selected_event_times_list:
-            event_time = EventTime.objects.get(id=event_time_id)
+        for event_time in selected_event_times_list:
             selected_event_times[event_time.location_name].append(event_time.date)
-        formatted_result = self.format_date_list(selected_event_times)
+        formatted_result = Email.format_date_list(selected_event_times)
         return formatted_result
     
-    def format_date_list(self, selected_event_times):
+    @staticmethod
+    def format_date_list(selected_event_times):
         formatted_result = []
         for location, dates in selected_event_times.items():
             dates.sort()  # 確保日期是按順序排列的
@@ -185,7 +214,7 @@ class Email():
 def handle_invitation_response(request, token):
     if request.method == 'POST':
         response = request.POST.get('response')
-        join_people_count = request.POST.get('join_people_count')
+        join_people_count = int(request.POST.get('join_people_count') or 0)
         event_time_id = request.POST.get('eventTime')
         participation = get_object_or_404(ProjectParticipation, token=token)
         participation.handle_response(response, join_people_count, event_time_id)
@@ -195,8 +224,10 @@ def handle_invitation_response(request, token):
 
     participation = get_object_or_404(ProjectParticipation, token=token)
     project = participation.project
+    selected_event_times_list = participation.get_wish_attend_list()
     context = {
         'participation': participation,
-        'project': project
+        'project': project,
+        'selected_event_times': Email.filter_selected_event_times(selected_event_times_list)
     }
     return render(request, 'VIPSystem/form.html', context)  # 創建一個感謝頁面

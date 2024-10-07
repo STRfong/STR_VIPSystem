@@ -19,7 +19,7 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.get_session_display}}</h2>
+            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{section}}區貴賓邀請狀況</h2>
         </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -29,32 +29,34 @@
                       貴賓名單操作
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                      <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.pk %}" class="dropdown-item">新增邀請人員</a></li>
-                      <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">廣發邀請信</a></li>
+                      <li><a href="{% url 'VIPSystem_APP:invite_list_by_section' project.pk section%}" class="dropdown-item">新增邀請人員</a></li>
+                      <li><a href="{% url 'VIPSystem_APP:send_emails_list_by_section' project.pk section%}" class="dropdown-item">廣發邀請信</a></li>
                     </ul>
                 </div>
             </div>
-            {% if participants_list %}
-                <div style="max-height: 70vh; overflow-y: auto;">
-                    <table class="table table-striped mt-3">
-                        <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
+            {% if page_obj %}
+            <div style="max-height: 70vh; overflow-y: auto;">
+                <table class="table table-striped mt-3">
+                    <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
+                        <tr>
+                            <th style="width: 8%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                            <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
+                            <th style="width: 12%;">
+                                希望參加場次 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterWishAttendModal" style="cursor: pointer;"></i>
+                            </th>
+                            <th style="width: 13%;">狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                            <th style="width: 8%;">參加場次</th>
+                            <th style="width: 5%;">票數</th>
+                            <th style="width: 15%;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participant in page_obj %}
                             <tr>
-                                <th style="width: 8%;">姓名</th>
-                                <th style="width: 6%;">邀請人</th>
-                                <th style="width: 10%;">邀請時間</th>
-                                <th style="width: 12%;">希望參加場次</th>
-                                <th style="width: 13%;">狀態</th>
-                                <th style="width: 8%;">參加場次</th>
-                                <th style="width: 5%;">票數</th>
-                                <th style="width: 15%;">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for participant in participants_list %}
-                            <tr>
-                                <td style="width: 8%;">{{ participant.vip.name }}</td>
+                                <td style="width: 8%;">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="right" title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}">{{ participant.vip.name }}</span>
+                                </td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
-                                <td style="width: 10%;">{{ participant.invited_at|date:"Y/m/d H:i" }}</td>
                                 {% if participant.wish_attend == 'all' %}
                                     <td style="width: 12%;">都可以</td>
                                 {% else %}
@@ -109,7 +111,7 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                            <form action="" method="POST" style="display: inline;">
+                                            <form action="{% url 'VIPSystem_APP:remove_participant_by_section' project.pk section %}" method="POST" style="display: inline;">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="participant_id" value="{{ participant.vip.id }}">
                                                 <button type="submit" class="btn btn-danger">確認刪除</button>
@@ -127,7 +129,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form method="post" action="" id="emailForm{{ participant.id }}">
+                                            <form method="post" action="{% url 'VIPSystem_APP:send_email_by_section' project.pk section %}" id="emailForm{{ participant.id }}">
                                                 {% csrf_token %}
                                                 <div class="form-group mb-3 row">
                                                     <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
@@ -157,6 +159,17 @@
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
+                                                <hr>
+                                                <div class="mb-3">
+                                                    <h5>填表死線</h5>
+                                                    <select class="form-select" name="dead_line_date">
+                                                        {% for event_time in participant.get_wish_attend_list %}
+                                                            <option value="{{ event_time.dead_line_date}}">
+                                                                {{ event_time.get_weekday }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
                                                 <div class="d-grid">
                                                     <button type="submit" class="btn btn-dark" id="submitBtn{{ participant.id }}">送出</button>
                                                 </div>
@@ -181,7 +194,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form method="post" action="" id="updateForm{{ participant.id }}">
+                                            <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_section' project.pk section %}" id="updateForm{{ participant.id }}">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
                                                 <div class="row row-cols-1 row-cols-md-2 g-4">
@@ -189,7 +202,7 @@
                                                         <label class="card h-100">
                                                             <div class="card-body">
                                                                 <h5 class="card-title">
-                                                                    <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2 selectAll" id="selectAll{{ participant.id }}" form="updateForm{{ participant.id }}">
+                                                                    <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2 selectAll" id="selectAll{{ participant.id }}" form="updateForm{{ participant.id }}" {% if 'all' in participant.wish_attend %}checked{% endif %}>
                                                                     都可以
                                                                 </h5>
                                                                 <p class="card-text">
@@ -253,16 +266,209 @@
                                 });
                             </script>
                         {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <p class="text-center">目前尚未邀請貴賓！</p>
+            <p class="text-center">目前尚未邀請貴賓！</p>
+            {% endif %}
+            {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="{{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="#" data-page="{{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="{{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             {% endif %}
         </div>
     </div>
-    <div class="mt-3 d-flex">
-        <a href="{% url 'VIPSystem_APP:project_detail' project.pk %}" class="btn btn-outline-secondary">回上層</a>
+    <div class="mt-3 d-flex justify-content-between">
+        <div>
+            <a href="{% url 'VIPSystem_APP:project_detail' project.pk %}" class="btn btn-outline-secondary">返回專案</a>
+        </div>
     </div>
 </div>
+
+<!-- 篩選姓名 Modal -->
+<div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterNameModalLabel">顯示哪些姓名</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterNameForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="nameFilter" name="nameFilter" placeholder="請輸入關鍵字">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterName()" id="applyFilterNameBtn">篩選</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 篩選希望參與時間 Modal -->
+<div class="modal fade" id="filterWishAttendModal" tabindex="-1" aria-labelledby="filterWishAttendModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterWishAttendModalLabel">顯示哪些希望參加場次</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterWishAttendForm">
+                    {% csrf_token %}
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="col">
+                            <label class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2 selectAll" id="selectAll{{ participant.id }}" form="updateForm{{ participant.id }}" {% if 'all' in participant.wish_attend %}checked{% endif %}>
+                                        都可以
+                                    </h5>
+                                    <p class="card-text">
+                                        選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                        {% for event_time in event_times %}
+                        <div class="col">
+                            <label class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <input form="updateForm{{ participant.id }}" type="checkbox" name="selected_event_time_by_section" value="{{ event_time.id }}" class="form-check-input me-2 event-time-checkbox" {% if event_time in participant.get_wish_attend_list %}checked{% endif %}>
+                                        {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }}
+                                    </h5>
+                                    <p class="card-text">
+                                        時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
+                                        地點：{{ event_time.location_name }}<br>
+                                        地址：{{ event_time.location_address }}
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterWishAttend()"id="applyFilterWishAttendBtn">篩選</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+    
+    function applyFilterWishAttend() {
+        var selectedAttendTimes = [];
+        var checkboxes = document.querySelectorAll('#filterWishAttendForm input[type="checkbox"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            selectedAttendTimes.push(checkbox.value);
+        });
+        var url = new URL(window.location.href);
+        url.searchParams.delete('filter_wish_attend');
+        selectedAttendTimes.forEach(function(event_time_id) {
+            url.searchParams.append('filter_wish_attend', event_time_id);
+        });
+        
+        // 重置頁碼到第一頁
+        url.searchParams.set('page', 1);
+        window.location.href = url.toString();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const paginationLinks = document.querySelectorAll('.pagination .page-link[data-page]');
+        
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('page', page);
+                window.location.href = currentUrl.toString();
+            });
+        });
+    });
+
+    document.getElementById('filterWishAttendModal').addEventListener('shown.bs.modal', function (event) {
+        const modal = document.getElementById('filterWishAttendModal');
+        const selectAllCheckbox = modal.querySelector('#selectAll');
+        const eventTimeCheckboxes = modal.querySelectorAll('.event-time-checkbox');
+        
+        // 获取当前 URL 参数中的 filter_wish_attend 项目
+        const currentUrl = new URL(window.location.href);
+        const filterWishAttendParams = currentUrl.searchParams.getAll('filter_wish_attend');
+
+        // 根据获取的参数设置复选框状态
+        filterWishAttendParams.forEach(param => {
+            const checkbox = modal.querySelector(`input[value="${param}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+
+        function updateSelectAllState() {
+            selectAllCheckbox.checked = Array.from(eventTimeCheckboxes).every(checkbox => checkbox.checked);
+        }
+
+        selectAllCheckbox.addEventListener('change', function() {
+            eventTimeCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        eventTimeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (!this.checked) {
+                    selectAllCheckbox.checked = false;
+                } else {
+                    updateSelectAllState();
+                }
+            });
+        });
+    });
+
+    function applyFilterName() {
+        var nameFilter = document.getElementById('nameFilter').value;
+        var url = new URL(window.location.href);
+        if (nameFilter == '') {
+            url.searchParams.delete('nameFilter');
+        } else {
+            url.searchParams.set('nameFilter', nameFilter);
+        }
+        window.location.href = url.toString();
+    }
+</script>
 {% endblock %}

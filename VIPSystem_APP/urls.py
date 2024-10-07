@@ -17,9 +17,9 @@ Including another URLconf
 from django.urls import path, include
 from . import views 
 from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIPDeleteView
-from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView
-from .views import InviteListView, SendEmailListView, ProjectParticipantsEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime
-from .views import EventTimeDetailView
+from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView, ProjectParticipationBySectionView
+from .views import InviteListView, SendEmailListBySectionView, ProjectParticipantsByEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime, InviteListBySectionView, UpdateParticipantsBySectionView, UpdateParticipantsInfoBySectionView
+from .views import EventTimeDetailView, EventTimeCreateView, UpdateEventTimeView, DeleteEventTimeView
 app_name = 'VIPSystem_APP'
 
 urlpatterns = [
@@ -41,25 +41,39 @@ urlpatterns = [
             path('', ProjectDetailView.as_view(), name="project_detail"), # project_list/<int:project_id>/
             path('update/', ProjectUpdateView.as_view(), name="project_update"), # project_list/<int:project_id>/update/
             path('delete/', ProjectDeleteView.as_view(), name="project_delete"), # project_list/<int:project_id>/delete/
-            path('participants/', include([
-                     path('', ProjectParticipantsView.as_view(), name="project_participants"), # project_list/<int:project_id>/participants/
-                     path('<int:participant_id>/', include([   #####檢查到這裡#####
-                        path('remove_participant/', views.remove_participant, name='remove_participant'), # project_list/<int:project_id>/participants/<int:participant_id>/remove_participant/
-                        path('send_email/', views.send_email, name="send_email"), # project_list/<int:project_id>/participants/<int:participant_id>/send_email/
-                     ])),
-                 ])),
+            path('create_event_time/', EventTimeCreateView.as_view(), name="create_event_time"), # project_list/<int:project_id>/create_event_time/
+            path('update_event_time/', UpdateEventTimeView.as_view(), name='update_event_time'),
+            path('delete_event_time/', DeleteEventTimeView.as_view(), name='delete_event_time'),
             path('invite_list/', InviteListView.as_view(), name="invite_list"), # project_list/<int:project_id>/invite_list/
+            path('<str:section>/', include([
+                path('participants/', ProjectParticipationBySectionView.as_view(), name='participation_by_section'),
+                path('remove_participant/', views.remove_participant_by_section, name='remove_participant_by_section'), # project_list/<int:project_id>/participants/<int:participant_id>/remove_participant/
+                path('invite_list/', InviteListBySectionView.as_view(), name='invite_list_by_section'),
+                path('update_participants/', UpdateParticipantsBySectionView.as_view(), name='update_participants_by_section'),
+                path('update_participants_info/', UpdateParticipantsInfoBySectionView.as_view(), name='update_participants_info_by_section'),
+                path('send_email/', views.send_email_by_section, name='send_email_by_section'),
+                path('send_emails_list/', SendEmailListBySectionView.as_view(), name="send_emails_list_by_section"), # project_list/<int:project_id>/send_emails_list/
+                path('event_time/<int:event_time_id>/', include([
+                    path('participants/', ProjectParticipantsByEventTimeView.as_view(), name="participation_by_event_time")
+                ])),
+            ])),
+            path('participants/', include([ # 直接看專案的總表
+                path('', ProjectParticipantsView.as_view(), name="project_participants"), # project_list/<int:project_id>/participants/
+                path('<int:participant_id>/', include([   
+                    path('remove_participant/', views.remove_participant, name='remove_participant'), # project_list/<int:project_id>/participants/<int:participant_id>/remove_participant/
+                    path('send_email/', views.send_email, name="send_email"), # project_list/<int:project_id>/participants/<int:participant_id>/send_email/
+                ])),
+            ])),
             path('send_emails/', views.send_emails, name="send_emails"), # project_list/<int:project_id>/send_emails/
-            path('send_emails_list/', SendEmailListView.as_view(), name="send_emails_list"), # project_list/<int:project_id>/send_emails_list/
+            
             path('update_participants/', views.update_participants, name="update_participants"), # project_list/<int:project_id>/update_participants/
             path('event_time/<int:event_time_id>/', include([
-                path('', EventTimeDetailView.as_view(), name="event_time_detail"),
                 path('invite_list/', InviteListViewEventTime.as_view(), name="invite_list_event_time"),
                 path('send_emails_list/', SendEmailListViewEventTime.as_view(), name="send_emails_list_event_time"),
                 path('update_participants/', views.update_participants_event_time, name="update_participants_event_time"),
                 path('send_emails/', views.send_emails_event_time, name="send_emails_event_time"),
                 path('participants/', include([
-                    path('', ProjectParticipantsEventTimeView.as_view(), name="project_participants_event_time"),
+                    # path('', ProjectParticipantsEventTimeView.as_view(), name="project_participants_event_time"),
                     path('<int:participant_id>/', include([
                         path('remove_participant/', views.remove_participant_event_time, name='remove_participant_event_time'),
                         path('send_email/', views.send_email_event_time, name="send_email_event_time"),

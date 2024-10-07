@@ -3,6 +3,10 @@ from django.contrib import admin
 from django.db.models import Count
 from django.urls import reverse # 新增
 from django.db import models
+from django.utils.timezone import now
+from django.utils.formats import date_format
+from datetime import datetime
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -43,8 +47,10 @@ class Project(models.Model):
 class EventTime(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='event_times')
     date = models.DateField()
+    entry_time = models.TimeField()
     start_time = models.TimeField()
     end_time = models.TimeField()
+    section = models.CharField(max_length=100)
     session_choices = [
         ('morning', '早場'),
         ('afternoon', '午場'),
@@ -54,9 +60,20 @@ class EventTime(models.Model):
     location_name = models.CharField(max_length=100)
     location_address = models.CharField(max_length=200)
     ticket_count = models.IntegerField()
+    dead_line_date = models.DateField()
+    dispatch_date = models.DateField()
+    announce_date = models.DateField()
 
     def __str__(self):
-        return f"{self.project.name} - {self.date} - {self.get_session_display()}"
+         return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
+    
+    def get_weekday(self):
+        weekday_number = self.dead_line_date.weekday()
+        days = ["一", "二", "三", "四", "五", "六", "日"]
+        return f"{self.dead_line_date}（{days[weekday_number]}）"
+    
+    def total_join_people_count(self):
+        return self.participations.aggregate(total=models.Sum('join_people_count'))['total'] or 0
     
 class ProjectParticipation(models.Model):
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')
@@ -72,6 +89,8 @@ class ProjectParticipation(models.Model):
     event_time = models.ForeignKey(EventTime, on_delete=models.SET_NULL, null=True, blank=True, related_name='participations')
     join_people_count = models.IntegerField(default=0)
     token = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    wish_attend = models.CharField(max_length=50, blank=True, default='都可以')
+    wish_attend_section = models.CharField(max_length=50, blank=True, default='台灣')
 
     def handle_response(self, response, join_people_count, event_time_id):
         if response == 'confirmed':
@@ -83,6 +102,12 @@ class ProjectParticipation(models.Model):
         
         self.token = None  # 使令牌失效
         self.save()
+
+    def get_wish_attend_list(self):
+        if 'all' in self.wish_attend:
+            return EventTime.objects.filter(project=self.project, section=self.wish_attend_section)
+        else:
+            return [EventTime.objects.get(id=event_time_id) for event_time_id in self.wish_attend.split(',') if event_time_id.strip()]
 
 @admin.register(VIP)
 class VIPAdmin(admin.ModelAdmin):
