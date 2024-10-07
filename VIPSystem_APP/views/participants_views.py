@@ -5,6 +5,7 @@ from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Prefetch
+from django.contrib.auth.models import User
 
 @method_decorator(login_required, name='dispatch')
 class ProjectParticipantsView(ListView):
@@ -59,6 +60,9 @@ class ProjectParticipationBySectionView(ListView):
         context['project'] = project
         context['section'] = self.kwargs['section']
         context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
+        context['all_users'] = User.objects.all()
+        print(context['all_users'])
+        # context['dead_line_date'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section']).first().dead_line_date
         return context
     
     def check_intersection(self, event_times, participation):
