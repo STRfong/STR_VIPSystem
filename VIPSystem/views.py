@@ -21,3 +21,27 @@ def register(request):
         form = UserCreationForm()
         context = {'form': form}
         return render(request, 'registration/register.html', context)
+    
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from VIPSystem_APP.forms import StaffProfileForm
+from VIPSystem_APP.models import StaffProfile
+from django.contrib.auth.models import User
+@login_required
+def new_user_profile_profile_form(request):
+
+    if hasattr(request.user, 'staffprofile'):
+        return redirect('home')  # 如果已有 StaffProfile，直接重定向到首頁
+    
+    if request.method == 'POST':
+        form = StaffProfileForm(request.POST)
+        if form.is_valid():
+            profile = User.objects.get(id=request.user.id).profile
+            profile.phone_number = form.cleaned_data['phone_number']
+            profile.department = form.cleaned_data['department']
+            profile.save()
+            return redirect('home')  # 或其他適當的頁面
+    else:
+        form = StaffProfileForm()
+    
+    return render(request, 'new_user_profile_profile_form.html', {'form': form})

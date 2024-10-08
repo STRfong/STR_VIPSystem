@@ -8,7 +8,7 @@
         </div>
         <div class="card-body">
             <h3 class="card-title mb-0">廣發邀請信</h3>
-            <form method="post" action="{% url 'VIPSystem_APP:send_emails' project.pk %}" id="sendEmailForm">
+            <form method="post" action="{% url 'VIPSystem_APP:send_emails_by_section' project.pk section %}" id="sendEmailForm">
             {% csrf_token %}
                 <div style="max-height: 400px; overflow-y: auto;">
                     <table class="table table-striped">
@@ -54,7 +54,7 @@
         </div>
     </div>
     <div class="mt-3 d-flex justify-content-between">
-        <a href="{% url 'VIPSystem_APP:project_participants' project.id %}" class="btn btn-outline-secondary">返回{{section}}區邀請列表</a>
+        <a href="{% url 'VIPSystem_APP:participation_by_section' project.id section %}" class="btn btn-outline-secondary">返回{{section}}區邀請列表</a>
         <button type="button" form="sendEmailForm" class="btn btn-primary ms-2" id="submitButton" disabled data-bs-toggle="modal" data-bs-target="#confirmSenderModal">發送邀請信</button>
     </div>
 </div>
@@ -72,31 +72,16 @@
                     <h6>已選擇的貴賓：</h6>
                     <div id="selectedVIPsList" class="border p-2 rounded" style="max-height: 100px; overflow-y: auto;"></div>
                 </div>
-                <hr>
-                <h5>信件資訊確認</h5>
-                <div class="form-group mb-3">
-                    <label class="form-label">選擇邀請場次（可複選）</label>
-                    <div class="row row-cols-1 row-cols-md-2 g-4">
-                        {% for event_time in project.event_times.all %}
-                        <div class="col">
-                            <label class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        <input type="checkbox" name="selected_event_times" value="{{ event_time.id }}" class="form-check-input me-2" form="sendEmailForm">
-                                        {{ event_time.date }} {{ event_time.get_session_display }}
-                                    </h5>
-                                    <p class="card-text">
-                                        時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
-                                        地點：{{ event_time.location_name }}<br>
-                                        地址：{{ event_time.location_address }}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+                <div class="mb-3">
+                    <h5>填表死線</h5>
+                    <select form="sendEmailForm" class="form-select" name="dead_line_date">
+                        {% for event_time in event_times %}
+                            <option value="{{ event_time.dead_line_date}}">
+                                {{ event_time.get_weekday }}
+                            </option>
                         {% endfor %}
-                    </div>
+                    </select>
                 </div>
-                <!-- <input type="hidden" name="vip_id" value="{{ participant.vip.id }}"> -->
                 <div class="mt-3" id="sendProgressContainer" style="display: none;">
                     <h6>發送進度：</h6>
                     <div class="progress">
@@ -163,11 +148,13 @@
 
         updateSubmitButton();
     });
+    
    sendEmailForm.addEventListener('submit', function(e) {
         e.preventDefault();
         document.getElementById('sendProgressContainer').style.display = 'block';
         const formData = new FormData(this);
         const totalEmails = formData.getAll('selected_vips').length;
+        const dead_line_date = formData.get('dead_line_date');
         let sentEmails = 0;
 
         const progressBar = document.getElementById('sendProgress');
@@ -184,22 +171,21 @@
 
             if (sentEmails === totalEmails) {
                 setTimeout(() => {
-                    window.location.href = "{% url 'VIPSystem_APP:project_participants' project.pk %}";
+                    window.location.href = "{% url 'VIPSystem_APP:participation_by_section' project.pk section %}";
                 }, 500); // 500毫秒的延迟
             }
         }
 
-        formData.getAll('selected_vips').forEach((vipId, index) => {
+        formData.getAll('selected_vips').forEach((vipId, index, array) => {
             const singleFormData = new FormData();
             singleFormData.append('selected_vip', vipId);
-            // 获取CSRF令牌
             const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            // 将CSRF令牌添加到表单数据中
             singleFormData.append('csrfmiddlewaretoken', csrftoken);
-            formData.getAll('selected_event_times').forEach(eventTime => {
-                singleFormData.append('selected_event_times', eventTime);
-            });            
-
+            singleFormData.append('dead_line_date', dead_line_date);
+            if (index === array.length - 1) {
+                singleFormData.append('done', true)
+                singleFormData.append('count', totalEmails)
+            }
             fetch(this.action, {
                 method: 'POST',
                 body: singleFormData,
@@ -207,7 +193,12 @@
                     'X-Requested-With': 'XMLHttpRequest',
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
                     updateProgress();

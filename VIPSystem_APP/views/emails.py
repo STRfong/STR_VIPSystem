@@ -133,6 +133,35 @@ def send_emails_event_time(request, project_id, event_time_id):
         except Exception as e:
             print("錯誤訊息: ", e)
             return JsonResponse({'status': 'error', 'message': str(e)})
+        
+@login_required
+def send_emails_by_section(request, project_id, section):
+    
+    if request.method == 'POST':
+        try:
+            project = get_object_or_404(Project, pk=project_id)
+            vip = get_object_or_404(VIP, pk=request.POST['selected_vip'])
+            dead_line_date = request.POST['dead_line_date']
+            pp = ProjectParticipation.objects.get(project=project, vip=vip)
+            random_token = get_random_string(length=32)
+            email = Email(request.user.username, 
+                            vip.email, 
+                            pp.get_wish_attend_list(), 
+                            vip.name,
+                            project, 
+                            dead_line_date,
+                            random_token)
+            email.send_email()        
+            pp.token = random_token
+            pp.status = 'sended'
+            pp.save()
+            if request.POST.get('done'):
+                messages.success(request, f"已成功發送邀請函給 {request.POST.get('count')} 位合作夥伴 !")
+            return JsonResponse({'status': 'success'})
+        
+        except Exception as e:
+            print("錯誤訊息: ", e)
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
     def __init__(self, username, sender, selected_event_times_list, vip_name, project, dead_line_date, token):

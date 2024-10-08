@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import formset_factory
 
-from .models import VIP, Project, Tag, EventTime      
+from .models import VIP, Project, Tag, EventTime, StaffProfile      
 
 class RawVIPForm(forms.Form): # 這個 form 是沒有跟 model 綁定的，所以沒有 save() 的功能
     name = forms.CharField()
@@ -64,3 +64,12 @@ class BaseEventTimeFormSet(forms.BaseFormSet):
                         'Event time must be before end time.'
                     )
 EventTimeFormSet = forms.formset_factory(EventTimeForm, formset=BaseEventTimeFormSet, extra=0)
+
+class StaffProfileForm(forms.ModelForm):
+    class Meta:
+        model = StaffProfile
+        fields = ['phone_number', 'department']
+        labels = {
+            'phone_number': ('員工電話號碼：'),
+            'department': ('員工部門：')
+        }   
