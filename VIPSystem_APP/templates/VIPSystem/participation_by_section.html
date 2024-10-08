@@ -25,7 +25,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">貴賓邀請名單</h3>
                 <div class="btn-group" role="group">
-                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       貴賓名單操作
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
@@ -54,7 +54,11 @@
                         {% for participant in page_obj %}
                             <tr>
                                 <td style="width: 8%;">
-                                    <span data-bs-toggle="tooltip" data-bs-placement="right" title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}">{{ participant.vip.name }}</span>
+                                    <span data-bs-toggle="tooltip" data-bs-placement="right" 
+                                    title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
+                                    上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}">
+                                    {{ participant.vip.name }}
+                                    </span>
                                 </td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
                                 {% if participant.wish_attend == 'all' %}
@@ -70,6 +74,8 @@
                                 <td style="width: 13%;">{{ participant.get_status_display }}</td>
                                 {% if participant.event_time %}
                                     <td style="width: 8% ;">{{ participant.event_time }}</td>
+                                {% elif participant.status == 'declined' %}
+                                    <td style="width: 8% ;">不出席任何場次</td>
                                 {% else %}
                                     <td style="width: 8% ;">尚未回覆</td>
                                 {% endif %}
@@ -333,6 +339,34 @@
         </div>
     </div>
 </div>
+
+<!-- 篩選誰邀請 modal-->
+<div class="modal fade" id="filterInvitedByModal" tabindex="-1" aria-labelledby="filterInvitedByModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterInvitedByModalLabel">篩選主要邀請人</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterInvitedByForm"> 
+                    {% csrf_token %}
+                    <div class="d-flex flex-wrap">
+                        {% for user in staffs %}
+                            <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
+                            <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterInvitedBy()" id="applyFilterInvitedByBtn">篩選</button>   
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 篩選希望參與時間 Modal -->
 <div class="modal fade" id="filterWishAttendModal" tabindex="-1" aria-labelledby="filterWishAttendModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -390,7 +424,20 @@
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
-    
+
+    function applyFilterInvitedBy() {
+        var selectedInvitedBy = [];
+        var checkboxes = document.querySelectorAll('#filterInvitedByForm input[type="checkbox"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            selectedInvitedBy.push(checkbox.value);
+        });
+        var url = new URL(window.location.href);
+        url.searchParams.delete('filter_invited_by');
+        selectedInvitedBy.forEach(function(staff_id) {
+            url.searchParams.append('filter_invited_by', staff_id);
+        });
+        window.location.href = url.toString();
+    }
     function applyFilterWishAttend() {
         var selectedAttendTimes = [];
         var checkboxes = document.querySelectorAll('#filterWishAttendForm input[type="checkbox"]:checked');

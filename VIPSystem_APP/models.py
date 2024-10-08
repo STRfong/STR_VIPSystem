@@ -118,6 +118,7 @@ class ProjectParticipation(models.Model):
         ('declined', '拒絕參加'),
     ], default='added')
     invited_at = models.DateTimeField(auto_now_add=True)
+    last_update_at = models.DateTimeField(auto_now=True)
     event_time = models.ForeignKey(EventTime, on_delete=models.SET_NULL, null=True, blank=True, related_name='participations')
     join_people_count = models.IntegerField(default=0)
     token = models.CharField(max_length=100, unique=True, null=True, blank=True)

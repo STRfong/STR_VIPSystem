@@ -41,7 +41,11 @@ class ProjectParticipationBySectionView(ListView):
         name_filter = self.request.GET.get('nameFilter')
         if name_filter:
             queryset = queryset.filter(vip__name__icontains=name_filter)
-            
+
+        invited_by_filter = self.request.GET.getlist('filter_invited_by')
+        if invited_by_filter:
+            queryset = queryset.filter(invited_by_id__in=invited_by_filter)
+
         filter_wish_attend = self.request.GET.getlist('filter_wish_attend')
         if filter_wish_attend:
             if 'all' in filter_wish_attend:
@@ -60,8 +64,7 @@ class ProjectParticipationBySectionView(ListView):
         context['project'] = project
         context['section'] = self.kwargs['section']
         context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
-        context['all_users'] = User.objects.all()
-        print(context['all_users'])
+        context['staffs'] = User.objects.all()
         # context['dead_line_date'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section']).first().dead_line_date
         return context
     
@@ -205,8 +208,12 @@ class SendEmailListBySectionView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['project'] = get_object_or_404(Project, pk=self.kwargs.get('project_id'))
-        context['section'] = self.kwargs.get('section')
+        project_id = self.kwargs.get('project_id')
+        section = self.kwargs.get('section')
+        project = get_object_or_404(Project, pk=project_id)
+        context['project'] = project
+        context['section'] = section
+        context['event_times'] = EventTime.objects.filter(project_id=project_id, section=section)
         return context
     
 @method_decorator(login_required, name='dispatch') # 發送邀請信

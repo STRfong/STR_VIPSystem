@@ -281,7 +281,7 @@
                             <div class="white-bg">
                                 <div id="eventTimeDiv" class="mb-3">
                                     <label for="eventTime" class="form-label">選擇場次：</label>
-                                    <select id="eventTime" name="eventTime" class="form-select" required>
+                                    <select id="eventTime" name="eventTime" class="form-select">
                                         <option value="">請選擇場次</option>
                                         {% for event_time in participation.get_wish_attend_list %}
                                             <option value="{{ event_time.id }}">

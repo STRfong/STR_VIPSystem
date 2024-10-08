@@ -37,8 +37,6 @@ def new_user_profile_profile_form(request):
         form = StaffProfileForm(request.POST)
         if form.is_valid():
             profile = User.objects.get(id=request.user.id).profile
-            print(profile)
-            print(form.cleaned_data)
             profile.phone_number = form.cleaned_data['phone_number']
             profile.department = form.cleaned_data['department']
             profile.save()
