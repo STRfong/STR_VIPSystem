@@ -6,7 +6,39 @@ from django.db import models
 from django.utils.timezone import now
 from django.utils.formats import date_format
 from datetime import datetime
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
+class StaffProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    department_choices = [
+        ('@operation', '營運部'),
+        ('@lab', '服務科學實驗室'),
+        ('@ceoo', '執行長室'),
+        ('@bd', '商業開發事業部'),
+        ('@burn', '炎上'),
+        ('@tnns', '夜夜秀'),
+        ('@showcase', '拼盤秀'),
+        ('@stream', '串流'),
+        ('@agency', '藝人經紀'),
+        ('@so', '社群'),
+        ('@showdev', '節目開發'),
+    ]
+    department = models.CharField(max_length=100, choices=department_choices, blank=True, null=True)
+
+    def __str__(self):
+        return self.user.username       
+    
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            StaffProfile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.profile.save()
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -144,6 +176,14 @@ class EventTimeAdmin(admin.ModelAdmin):
     search_fields = ('project__name', 'date', 'time', 'session', 'location', 'ticket_count')
     list_filter = ('session',)
     list_editable = ('ticket_count',)
+    list_per_page = 10
+    list_max_show_all = 100
+
+@admin.register(StaffProfile)
+class StaffProfileAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in StaffProfile._meta.fields]
+    search_fields = ('user__username', 'phone_number', 'department')
+    list_filter = ('department',)
     list_per_page = 10
     list_max_show_all = 100
     
