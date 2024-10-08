@@ -1,9 +1,10 @@
 from django.apps import AppConfig
-from django.db.models.signals import post_migrate
+from django.dispatch import receiver
 
 class VipsystemAppConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "VIPSystem_APP"
     
-    # def ready(self):
-    #     post_migrate.connect(initialize_social_app, sender=self)
+    def ready(self):
+        # 導入信號模塊
+        import VIPSystem_APP.adapter
