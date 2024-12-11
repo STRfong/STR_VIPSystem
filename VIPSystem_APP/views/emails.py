@@ -49,7 +49,8 @@ def send_email_by_section(request, project_id, section):
                         vip.name,
                         project, 
                         dead_line_date,
-                        random_token)
+                        random_token, 
+                        request.POST['email_content'])
         email.send_email()
         pp.token = random_token
         pp.status = 'sended'
@@ -164,7 +165,7 @@ def send_emails_by_section(request, project_id, section):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, username, sender, selected_event_times_list, vip_name, project, dead_line_date, token):
+    def __init__(self, username, sender, selected_event_times_list, vip_name, project, dead_line_date, token, email_content):
         self.username = username
         self.sender = sender
         self.selected_event_times_list = selected_event_times_list
@@ -172,7 +173,7 @@ class Email():
         self.project = project
         self.dead_line_date = dead_line_date
         self.token = token
-
+        self.email_content = email_content
     def send_email(self):
         with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
@@ -186,7 +187,8 @@ class Email():
                      'vip_name': self.vip_name,
                      'project': self.project,
                      'dead_line_date': self.get_weekday(self.dead_line_date),
-                     'SITE_URL': os.getenv('SITE_URL')}
+                     'SITE_URL': os.getenv('SITE_URL'),
+                     'email_content': self.email_content}
                 )
                 
                 # 添加 HTML 内容到邮件

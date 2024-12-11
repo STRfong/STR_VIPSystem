@@ -65,6 +65,7 @@ class ProjectParticipationBySectionView(ListView):
         context['section'] = self.kwargs['section']
         context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
         context['staffs'] = User.objects.all()
+        context['username'] = self.request.user.username
         # context['dead_line_date'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section']).first().dead_line_date
         return context
     
