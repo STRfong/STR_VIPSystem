@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 class StaffProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phone_number = models.CharField(max_length=20, blank=True, null=True)
@@ -141,6 +142,14 @@ class ProjectParticipation(models.Model):
             return EventTime.objects.filter(project=self.project, section=self.wish_attend_section)
         else:
             return [EventTime.objects.get(id=event_time_id) for event_time_id in self.wish_attend.split(',') if event_time_id.strip()]
+        
+    def wish_attend_list_email(self):
+        from .views.emails import Email
+        return Email.filter_selected_event_times(self.get_wish_attend_list())
+    
+    def get_dead_line_date(self):
+        date_list = [event.dead_line_date for event in self.get_wish_attend_list()]
+        return min(date_list)
 
 @admin.register(VIP)
 class VIPAdmin(admin.ModelAdmin):

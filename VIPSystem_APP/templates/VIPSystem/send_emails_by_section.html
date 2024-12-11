@@ -1,5 +1,36 @@
 {% extends "base.html" %}
 {% block title %}邀請貴賓{% endblock %}
+<style>
+    .carousel-indicators {
+        position: absolute;
+        bottom: -30px; /* 將控制器向下移動 */
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .carousel-inner {
+        margin-bottom: 100px; /* 為內部內容預留一些空間 */
+    }
+
+    #selectedVIPsListTest {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    #selectedVIPsListTest .btn-check + .btn {
+        flex: 0 1 auto; 
+        margin: 1px;
+        min-width: calc(25% - 0.5rem); /* 調整這個值來控制每行最少的按鈕數 */
+        max-width: 100%;    
+    }
+
+
+
+</style>
 {% block content %}
 <div class="container mt-4">
     <div class="card">
@@ -25,7 +56,7 @@
                         {% for participant in participants_list %}
                             <tr>
                                 <td>
-                                    <input type="checkbox" id="vip_{{ participant.pk }}" name="selected_vips" value="{{ participant.pk }}" class="vip-checkbox"
+                                    <input type="checkbox" id="vip_{{ participant.pk }}" name="selected_vips" value="{{ participant.pk }}" class="vip-checkbox" dead-line-date="{{ participant.get_dead_line_date }}"
                                         {% if participant in current_participants %}checked disabled{% endif %}>
                                 </td>
                                 <td>
@@ -35,7 +66,7 @@
                                 </td>
                                 <td>{{ participant.invited_by.username }}</td>
                                 <td>{{ participant.get_status_display }}</td>
-                                {% if participant.wish_attend == 'all' %}
+                                <!-- {% if participant.wish_attend == 'all' %}
                                     <td>都可以</td>
                                 {% else %}
                                     <td>
@@ -44,7 +75,14 @@
                                             {% if not forloop.last %}<br>{% endif %}
                                         {% endfor %}
                                     </td>
-                                {% endif %}
+                                {% endif %} -->
+                                <td>
+                                    {% for event_time in participant.get_wish_attend_list %}
+                                        {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }} 
+                                        {% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                </td>
+                                
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -55,6 +93,7 @@
     </div>
     <div class="mt-3 d-flex justify-content-between">
         <a href="{% url 'VIPSystem_APP:participation_by_section' project.id section %}" class="btn btn-outline-secondary">返回{{section}}區邀請列表</a>
+        <button type="button" class="btn btn-outline-secondary ms-2" id="testButton" data-bs-toggle="modal" data-bs-target="#testModal">測試</button>
         <button type="button" form="sendEmailForm" class="btn btn-primary ms-2" id="submitButton" disabled data-bs-toggle="modal" data-bs-target="#confirmSenderModal">發送邀請信</button>
     </div>
 </div>
@@ -96,6 +135,139 @@
         </div>
     </div>
 </div>
+
+<!-- 測試用 Modal -->
+<div class="modal fade" id="testModal" tabindex="-1" aria-labelledby="testModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmSenderModalLabel">測試</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6>已選擇的貴賓</h6>
+                    <div id="selectedVIPsListTest" class="border p-2 rounded"></div>
+                </div>
+                <hr>
+                <div id="carouselExampleIndicators" class="carousel" data-bs-interval="false">
+                    <div class="carousel-inner">
+                        <!-- Carousel items will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="sendEmailForm" class="btn btn-primary">確認發送</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const carouselElement = document.querySelector('#carouselExampleIndicators');
+        const selectedVIPsListTest = document.getElementById('selectedVIPsListTest');
+        const carouselInner = carouselElement.querySelector('.carousel-inner');
+        let carousel;
+
+        function createCarouselItem(vip) {
+            const item = document.createElement('div');
+            item.classList.add('carousel-item');
+            item.innerHTML = `
+                <div class="carousel-text">
+                    <div class="mb-3">
+                        <h5>信件開頭（如需換行請在句尾輸入 &lt;br&gt;）</h5>
+                        <textarea class="form-control" name="email_content" rows="1">嗨 ${vip.name} 好久不見！</textarea>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h5>邀請場次：</h5><span>${vip.wishAttend}</span>
+                    </div>
+                    <input type="hidden" name="event_times" value="{{ participant.wish_attend_list_email }}">
+                    <input type="hidden" name="project_name" value="{{ project.name }}">
+                    <input type="hidden" name="project_description" value="{{ project.description }}">
+                    <input type="hidden" name="username" value="{{ username }}">
+                    <hr>
+                    <div class="mb-3">
+                        <h5>填表死線</h5>
+                        <span>${vip.dead_line_date}</span>
+                    </div>
+                </div>
+            `;
+            return item;
+        }
+
+        function updateSelectedVIPsTest() {
+            const checkboxes = document.querySelectorAll('.vip-checkbox:checked:not(:disabled)');
+            selectedVIPsListTest.innerHTML = '';
+            carouselInner.innerHTML = '';
+
+            checkboxes.forEach((checkbox, index) => {
+                const vip_id = checkbox.id;
+                const row = checkbox.closest('tr');
+                const vip = {
+                    name: row.querySelector('td:nth-child(2)').textContent.trim(),
+                    invitedBy: row.querySelector('td:nth-child(3)').textContent.trim(),
+                    status: row.querySelector('td:nth-child(4)').textContent.trim(),
+                    wishAttend: row.querySelector('td:nth-child(5)').textContent.trim(),
+                    dead_line_date: checkbox.getAttribute('dead-line-date')
+                };
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.classList.add('btn', 'btn-outline-dark', 'me-2', 'mb-2');
+                button.textContent = vip.name;
+
+                button.addEventListener('click', function() {
+                    showCarouselItem(index);
+                });
+
+                selectedVIPsListTest.appendChild(button);
+
+                const carouselItem = createCarouselItem(vip);
+                if (index === 0) carouselItem.classList.add('active');
+                carouselInner.appendChild(carouselItem);
+            });
+
+            // 初始化第一個按鈕為激活狀態
+            if (selectedVIPsListTest.children.length > 0) {
+                selectedVIPsListTest.children[0].classList.add('active');
+            }
+
+            // 初始化 carousel
+            carousel = new bootstrap.Carousel(carouselElement, {
+                interval: false,
+                wrap: false
+            });
+        }
+
+        function showCarouselItem(index) {
+            const items = carouselInner.querySelectorAll('.carousel-item');
+            const buttons = selectedVIPsListTest.querySelectorAll('button');
+
+            items.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            buttons.forEach((button, i) => {
+                if (i === index) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+
+        document.getElementById('testButton').addEventListener('click', function() {
+            updateSelectedVIPsTest();
+        });
+    });
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

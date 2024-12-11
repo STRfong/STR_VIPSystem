@@ -6,8 +6,11 @@
 <body>
 
    <h1>{{ vip_name }} 您好</h1>
+
    <p>
-      感謝您一路以來對薩泰爾娛樂的支持，<br>
+      {{ email_content }}
+   </p>
+   <p>
       {% if selected_event_times|length > 1 %}我們將於 <br>{% else %}我們將於 {% endif %}
       {% for event_string in selected_event_times %}
          {{ event_string }}{% if not forloop.last %}；<br>{% else %}舉辦<br>{% endif %}
