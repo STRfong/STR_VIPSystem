@@ -123,8 +123,8 @@ class ProjectParticipation(models.Model):
     event_time = models.ForeignKey(EventTime, on_delete=models.SET_NULL, null=True, blank=True, related_name='participations')
     join_people_count = models.IntegerField(default=0)
     token = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    wish_attend = models.CharField(max_length=50, blank=True, default='都可以')
-    wish_attend_section = models.CharField(max_length=50, blank=True, default='台灣')
+    wish_attend = models.CharField(max_length=50, blank=True, default='all')
+    wish_attend_section = models.CharField(max_length=50, blank=True)
 
     def handle_response(self, response, join_people_count, event_time_id):
         if response == 'confirmed':
@@ -141,7 +141,8 @@ class ProjectParticipation(models.Model):
         if 'all' in self.wish_attend:
             return EventTime.objects.filter(project=self.project, section=self.wish_attend_section)
         else:
-            return [EventTime.objects.get(id=event_time_id) for event_time_id in self.wish_attend.split(',') if event_time_id.strip()]
+            event_time_ids = [event_time_id.strip() for event_time_id in self.wish_attend.split(',') if event_time_id.strip()]
+            return EventTime.objects.filter(id__in=event_time_ids)
         
     def wish_attend_list_email(self):
         from .views.emails import Email

@@ -57,6 +57,7 @@ urlpatterns = [
                 path('event_time/<int:event_time_id>/', include([
                     path('participants/', ProjectParticipantsByEventTimeView.as_view(), name="participation_by_event_time"),
                     path('invite_list/', InviteListViewEventTime.as_view(), name="invite_list_event_time"),
+                    path('update_participants/', views.update_participants_event_time, name="update_participants_event_time"),
                     path('update_participants_info/', UpdateParticipantsInfoByEventTimeView.as_view(), name='update_participants_info_by_event_time'),
                     path('send_email/', views.send_email_event_time, name="send_email_event_time"), # 從場次寄信給貴賓（單獨）
                 ])),
@@ -74,7 +75,7 @@ urlpatterns = [
             path('event_time/<int:event_time_id>/', include([
                 path('invite_list/', InviteListViewEventTime.as_view(), name="invite_list_event_time"),
                 path('send_emails_list/', SendEmailListViewEventTime.as_view(), name="send_emails_list_event_time"),
-                path('update_participants/', views.update_participants_event_time, name="update_participants_event_time"),
+                
                 path('send_emails/', views.send_emails_event_time, name="send_emails_event_time"),
                 path('participants/', include([
                     # path('', ProjectParticipantsEventTimeView.as_view(), name="project_participants_event_time"),
