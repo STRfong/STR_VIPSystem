@@ -91,6 +91,7 @@ class ProjectParticipantsByEventTimeView(ListView):
             event_time = EventTime.objects.get(id=self.kwargs.get('event_time_id'))
             section = self.kwargs.get('section')
             queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section)
+            print(queryset)
             # 篩選名字
             name_filter = self.request.GET.get('nameFilter')
             if name_filter:
@@ -108,7 +109,10 @@ class ProjectParticipantsByEventTimeView(ListView):
             return return_queryset
     
     def check_intersection(self, event_time, participation):
+        print(event_time)
+        print(participation.get_wish_attend_list())
         participation_set = set(participation.get_wish_attend_list())
+        print(event_time in participation_set)
         return event_time in participation_set
 
     def get_context_data(self, **kwargs):
@@ -171,8 +175,7 @@ class InviteListViewEventTime(ListView):
 
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class UpdateParticipantsBySectionView(UpdateView):
-    def post(self, request, *args, **kwargs):
-        print(request.POST)
+    def post(self, request, *args, **kwargs):        
         project_id = kwargs.get('project_id')
         project = Project.objects.get(pk=project_id)
         section = kwargs.get('section')
@@ -304,7 +307,7 @@ def update_participants(request, project_id):
     return redirect('VIPSystem_APP:invite_list', project_id=project.pk)
 
 @login_required
-def update_participants_event_time(request, project_id, event_time_id):
+def update_participants_event_time(request, project_id, section, event_time_id):
     project = get_object_or_404(Project, id=project_id)
     event_time = get_object_or_404(EventTime, id=event_time_id)
     
@@ -318,10 +321,12 @@ def update_participants_event_time(request, project_id, event_time_id):
                 vip=vip,
                 invited_by=request.user,
                 status = 'added',
-                event_time=event_time
+                event_time=event_time, 
+                wish_attend_section=section, 
+                wish_attend=event_time.id
             )
         
-        return redirect('VIPSystem_APP:project_participants_event_time', project_id=project.pk, event_time_id=event_time.pk)
+        return redirect('VIPSystem_APP:participation_by_event_time', project_id=project.pk, section=section, event_time_id=event_time_id)
     
     # 如果不是POST請求，重定向回邀請列表頁面
     return redirect('VIPSystem_APP:invite_list_event_time', project_id=project.pk, event_time_id=event_time.pk)

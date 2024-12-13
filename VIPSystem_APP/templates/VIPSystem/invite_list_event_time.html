@@ -8,7 +8,7 @@
         </div>
         <div class="card-body">
             <h3 class="card-title">VIP 名單總覽</h3>
-            <form method="post" action="{% url 'VIPSystem_APP:update_participants_event_time' project.pk event_time.pk %}" id="inviteForm">
+            <form method="post" action="{% url 'VIPSystem_APP:update_participants_event_time' project.pk event_time.section event_time.pk %}" id="inviteForm">
                 {% csrf_token %}
                 <div style="max-height: 400px; overflow-y: auto;">
                     <table class="table table-striped">
