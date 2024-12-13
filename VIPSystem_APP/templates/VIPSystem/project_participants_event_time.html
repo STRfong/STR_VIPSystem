@@ -1,20 +1,42 @@
 {% extends "base.html" %}
 {% block title %}專案詳細資料{% endblock %}
 {% block content %}
+<style>
+    .pagination .page-link {
+        color: #343a40; /* 字體顏色 */
+        background-color: transparent; /* 背景透明 */
+        border: 1px solid #343a40; /* 黑色邊框 */
+    }
+
+    .pagination .page-item.active .page-link {
+        color: #fff; /* 活動狀態下的字體顏色 */
+        background-color: #343a40; /* 活動狀態下的背景顏色 */
+        border-color: #343a40; /* 活動狀態下的邊框顏色 */
+    }
+
+    .pagination .page-link:hover {
+        color: #fff; /* 懸停時的字體顏色 */
+        background-color: #495057; /* 懸停時的背景顏色 */
+        border-color: #495057; /* 懸停時的邊框顏色 */
+    }
+</style>
 {% if messages %}
-    <div class="container mt-5">
+    <div class="container mt-4" id="message-container">
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-bs-autohide="true" data-bs-delay="3000">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         {% endfor %}
     </div>
     <script>
         setTimeout(function() {
-            $('.alert').alert('close');
+            const container = document.getElementById('message-container');
+            if (container) {
+                container.remove();
+            }
         }, 3000);
-    </script>
+</script>
 {% endif %}
 <div class="container mt-4">
     <div class="card">
@@ -25,11 +47,11 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">貴賓邀請名單</h3>
                 <div class="btn-group" role="group">
-                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       貴賓名單操作
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                      <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.pk %}" class="dropdown-item">新增邀請人員</a></li>
+                      <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">新增邀請人員</a></li>
                       <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">廣發邀請信</a></li>
                     </ul>
                 </div>
@@ -39,11 +61,10 @@
                     <table class="table table-striped mt-3">
                         <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
-                                <th style="width: 8%;">姓名</th>
-                                <th style="width: 6%;">邀請人</th>
-                                <th style="width: 10%;">邀請時間</th>
+                                <th style="width: 8%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                                <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 12%;">希望參加場次</th>
-                                <th style="width: 13%;">狀態</th>
+                                <th style="width: 13%;">狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 8%;">參加場次</th>
                                 <th style="width: 5%;">票數</th>
                                 <th style="width: 15%;">操作</th>
@@ -52,9 +73,14 @@
                         <tbody>
                             {% for participant in participants_list %}
                             <tr>
-                                <td style="width: 8%;">{{ participant.vip.name }}</td>
+                                <td style="width: 8%;">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="right" 
+                                    title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
+                                    上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}">
+                                    {{ participant.vip.name }}
+                                    </span>
+                                </td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
-                                <td style="width: 10%;">{{ participant.invited_at|date:"Y/m/d H:i" }}</td>
                                 {% if participant.wish_attend == 'all' %}
                                     <td style="width: 12%;">都可以</td>
                                 {% else %}
@@ -76,22 +102,13 @@
                                 <td style="width: 15%;">
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
                                         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#emailModal{{ participant.id }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-arrow-up" viewBox="0 0 16 16">
-                                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5a.5.5 0 0 1-1 0V5.383l-7 4.2-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h5.5a.5.5 0 0 1 0 1H2a2 2 0 0 1-2-1.99zm1 7.105 4.708-2.897L1 5.383zM1 4v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1"/>
-                                                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-5.354 1.25 1.25a.5.5 0 0 1-.708.708L13 12.207V14a.5.5 0 0 1-1 0v-1.717l-.28.305a.5.5 0 0 1-.737-.676l1.149-1.25a.5.5 0 0 1 .722-.016"/>
-                                            </svg>
+                                            <i class="bi bi-envelope"></i>
                                         </button>
                                         <button type = "button" class = "btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateModal{{ participant.id }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-                                            </svg>
+                                            <i class="bi bi-pencil-square"></i>
                                         </button> 
                                         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                            </svg>
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -109,7 +126,7 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                            <form action="" method="POST" style="display: inline;">
+                                            <form action="{% url 'VIPSystem_APP:remove_participant_by_section' project.pk event_time.section %}" method="POST" style="display: inline;">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="participant_id" value="{{ participant.vip.id }}">
                                                 <button type="submit" class="btn btn-danger">確認刪除</button>
@@ -119,7 +136,7 @@
                                 </div>
                             </div>
                             <!-- 寄信 Modal -->
-                            <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
+                            <!-- <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -171,6 +188,153 @@
                                     submitBtn.disabled = true;
                                     submitBtn.innerHTML = ' <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> 寄件中請稍候';
                                 });
+                            </script> -->
+                            <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h3 class="modal-title" id="emailModalLabel{{ participant.id }}">寄件資訊確認</h3>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="post" action="{% url 'VIPSystem_APP:send_email_event_time' project.pk event_time.section event_time.pk %}" id="emailForm{{ participant.id }}">
+                                                {% csrf_token %}
+                                                <div class="form-group mb-3 row">
+                                                    <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
+                                                    <label for="recipient_name" class="col-sm-2 col-form-label">收件人名稱</label>
+                                                    <div class="col-sm-3">
+                                                        <input type="text" class="form-control" id="recipient_name" name="recipient_name" required value="{{ participant.vip.name }}" placeholder="請輸入收件人名稱">
+                                                    </div>  
+                                                    <label for="sender" class="col-sm-2 col-form-label">收件人 E-mail</label>
+                                                    <div class="col-sm-5">
+                                                        <input type="email" class="form-control" id="sender" name="sender" required value="{{ participant.vip.email }}" placeholder="請輸入收件人電子郵件">
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div class="mb-3">
+                                                    <h5>信件開頭（如需換行請在句尾輸入 &lt;br&gt;）</h5>
+                                                    <textarea class="form-control" name="email_content" rows="3">嗨 {{ participant.vip.name }} 好久不見！</textarea>
+                                                </div>
+                                                <hr>
+                                                <div class="mb-3">
+                                                    <h5>邀請場次</h5>
+                                                    <ul class="list-group" id="eventList{{ participant.id }}">
+                                                        {% for event_time in participant.get_wish_attend_list %}
+                                                        <li class="list-group-item">
+                                                            <strong>{{ event_time.date }} {{ event_time.get_session_display }}</strong>
+                                                            <br>
+                                                            <small>
+                                                                時間：{{ event_time.start_time }} - {{ event_time.end_time }} | 
+                                                                地點：{{ event_time.location_name }} | 
+                                                                地址：{{ event_time.location_address }}
+                                                            </small>
+                                                        </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                <input type="hidden" name="event_times" value="{{ participant.wish_attend_list_email }}">
+                                                <input type="hidden" name="project_name" value="{{ project.name }}">
+                                                <input type="hidden" name="project_description" value="{{ project.description }}">
+                                                <input type="hidden" name="username" value="{{ username }}">
+                                                <hr>
+                                                <div class="mb-3">
+                                                    <h5>填表死線</h5>
+                                                    <select class="form-select" name="dead_line_date">
+                                                        {% for event_time in participant.get_wish_attend_list %}
+                                                            <option value="{{ event_time.dead_line_date}}">
+                                                                {{ event_time.get_weekday }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="modal-footer justify-content-between">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                                                    <div class="d-flex gap-3">
+                                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#previewModal{{ participant.id }}">信件預覽</button>
+                                                        <button type="submit" class="btn btn-dark" id="submitBtn{{ participant.id }}">送出</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                document.getElementById('emailForm{{ participant.id }}').addEventListener('submit', function(e) {
+                                    var submitBtn = document.getElementById('submitBtn{{ participant.id }}');
+                                    submitBtn.disabled = true;
+                                    submitBtn.innerHTML = ' <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> 寄件中請稍候';
+                                });
+                            </script>
+                            <!-- 信件預覽 Modal -->
+                            <div class="modal fade" id="previewModal{{ participant.id }}" tabindex="-1" aria-labelledby="previewModalLabel{{ participant.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="previewModalLabel{{ participant.id }}">信件預覽</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" id="previewContent{{ participant.id }}"></div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" id="returnEmailModal{{ participant.id }}" data-bs-toggle="modal" data-bs-target="#emailModal{{ participant.id }}" data-bs-dismiss="modal">返回</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+
+                                function convertStringToArray(str) {
+                                    str = str.replace(/^\[|\]$/g, '');
+                                    str = str.replace(/^['"]|['"]$/g, '');
+                                    return [str];
+                                }
+
+                                document.querySelector('[data-bs-target="#previewModal{{ participant.id }}"]').addEventListener('click', function() {
+                                    // 動態生成預覽內容
+                            
+                                    var emailForm = document.getElementById('emailForm{{ participant.id }}');
+                                    var emailContent = document.querySelector('[name="email_content"]').value;
+                                    var formData = new FormData(emailForm);
+                                    var recipientName = formData.get('recipient_name');
+                                    var senderEmail = formData.get('sender');
+                                    var eventTimes = formData.get('event_times'); // 獲取所有的 event_times
+                                    var deadLine = formData.get('dead_line_date');  
+                                    var projectName = formData.get('project_name');
+                                    var projectDescription = formData.get('project_description');
+                                    var username = formData.get('username');
+                            
+                                    // 動態生成 eventTimes 的列表內容
+                                    var eventTimesList = convertStringToArray(eventTimes).map(function(event) {
+                                        return `${event}`;
+                                    }).join(''); // 將陣列轉為字串
+                            
+                                    var previewContent = `
+                                        <h1>${recipientName} 您好</h1>
+                                        <p>
+                                            ${emailContent}
+                                        </p>
+                                        <p>
+                                            我們將於${eventTimesList}舉辦<br>
+                                        </p>
+                                        <p>
+                                            <strong>${projectDescription}《${projectName}》</strong>
+                                        </p>
+                                        <p>
+                                            請於下方連結中填寫資料，敬請於 ${deadLine} 前填寫完成，期待您的蒞臨！
+                                        </p>
+                                        <p>
+                                            <a href="#">☞點擊按鈕確認參加！</a><span>邀請您的夥伴為：${username}</span>
+                                        </p>
+                                        <p>
+                                            賀博台瘋 禮賓統籌<br>
+                                            游幃傑 Jerry Yu<br>
+                                            jerryyu@strnetwork.cc<br>
+                                            0924-109-008
+                                        </p>
+                                    `;
+                                    
+                                    document.getElementById('previewContent{{ participant.id }}').innerHTML = previewContent;
+                                });
                             </script>
                             <!-- 修改 Modal -->
                             <div class="modal fade" id="updateModal{{ participant.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
@@ -181,7 +345,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form method="post" action="" id="updateForm{{ participant.id }}">
+                                            <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_event_time' project.pk event_time.section event_time.pk %}" id="updateForm{{ participant.id }}">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
                                                 <div class="row row-cols-1 row-cols-md-2 g-4">
@@ -189,7 +353,7 @@
                                                         <label class="card h-100">
                                                             <div class="card-body">
                                                                 <h5 class="card-title">
-                                                                    <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2 selectAll" id="selectAll{{ participant.id }}" form="updateForm{{ participant.id }}">
+                                                                    <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2 selectAll" id="selectAll{{ participant.id }}" form="updateForm{{ participant.id }}" {% if 'all' in participant.wish_attend %}checked{% endif %}>
                                                                     都可以
                                                                 </h5>
                                                                 <p class="card-text">
@@ -265,4 +429,132 @@
         <a href="{% url 'VIPSystem_APP:project_detail' project.pk %}" class="btn btn-outline-secondary">回上層</a>
     </div>
 </div>
+
+<!-- 篩選姓名 Modal -->
+<div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterNameModalLabel">顯示哪些姓名</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterNameForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="nameFilter" name="nameFilter" placeholder="請輸入關鍵字">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterName()" id="applyFilterNameBtn">篩選</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 篩選誰邀請 modal-->
+<div class="modal fade" id="filterInvitedByModal" tabindex="-1" aria-labelledby="filterInvitedByModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterInvitedByModalLabel">篩選主要邀請人</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterInvitedByForm"> 
+                    {% csrf_token %}
+                    <div class="d-flex flex-wrap">
+                        {% for user in staffs %}
+                            <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
+                            <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterInvitedBy()" id="applyFilterInvitedByBtn">篩選</button>   
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 篩選狀態modal-->
+<div class="modal fade" id="filterStatusModal" tabindex="-1" aria-labelledby="filterStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterStatusModalLabel">篩選回復狀態</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterStatusForm"> 
+                    {% csrf_token %}
+                    <div class="d-flex flex-wrap">
+                        <input type="checkbox" class="btn-check" value="added" id="added">
+                        <label class="btn btn-outline-dark m-1" for="added"> 已新增尚未寄信 </label>
+                        <input type="checkbox" class="btn-check" value="confirmed" id="confirmed">
+                        <label class="btn btn-outline-dark m-1" for="confirmed"> 確認參加 </label>
+                        <input type="checkbox" class="btn-check" value="sended" id="sended">
+                        <label class="btn btn-outline-dark m-1" for="sended"> 已發送邀請信件等待回覆 </label>
+                        <input type="checkbox" class="btn-check" value="declined" id="declined">
+                        <label class="btn btn-outline-dark m-1" for="declined"> 拒絕參加 </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterStatus()" id="applyFilterStatusBtn">篩選</button>   
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    function applyFilterName() {
+        var nameFilter = document.getElementById('nameFilter').value;
+        var url = new URL(window.location.href);
+        if (nameFilter == '') {
+            url.searchParams.delete('nameFilter');
+        } else {
+            url.searchParams.set('nameFilter', nameFilter);
+        }
+        window.location.href = url.toString();
+    }
+
+    function applyFilterInvitedBy() {
+        var selectedInvitedBy = [];
+        var checkboxes = document.querySelectorAll('#filterInvitedByForm input[type="checkbox"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            selectedInvitedBy.push(checkbox.value);
+        });
+        var url = new URL(window.location.href);
+        url.searchParams.delete('filter_invited_by');
+        selectedInvitedBy.forEach(function(staff_id) {
+            url.searchParams.append('filter_invited_by', staff_id);
+        });
+        window.location.href = url.toString();
+    }
+
+    function applyFilterStatus() {
+        var selectedStatus = [];
+        var checkboxes = document.querySelectorAll('#filterStatusForm input[type="checkbox"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            selectedStatus.push(checkbox.value);
+        });
+        var url = new URL(window.location.href);
+        url.searchParams.delete('filter_status');
+        selectedStatus.forEach(function(status) {
+            url.searchParams.append('filter_status', status);
+        });
+        // 重置頁碼到第一頁
+        url.searchParams.set('page', 1);
+        window.location.href = url.toString();
+    }
+</script>
 {% endblock %}

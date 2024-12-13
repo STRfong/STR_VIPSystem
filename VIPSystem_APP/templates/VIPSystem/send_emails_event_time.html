@@ -41,7 +41,7 @@
         </div>
     </div>
     <div class="mt-3 d-flex justify-content-between">
-            <a href="{% url 'VIPSystem_APP:project_participants_event_time' project.id event_time.id %}" class="btn btn-secondary">返回</a>
+            <a href="{% url 'VIPSystem_APP:participation_by_event_time' project.id event_time.section event_time.id %}" class="btn btn-secondary">返回</a>
         <button type="button" form="sendEmailForm" class="btn btn-primary ms-2" id="submitButton" disabled data-bs-toggle="modal" data-bs-target="#confirmSenderModal">發送邀請信</button>
     </div>
 </div>
@@ -169,7 +169,7 @@
 
             if (sentEmails === totalEmails) {
                 setTimeout(() => {
-                    window.location.href = "{% url 'VIPSystem_APP:project_participants_event_time' project.pk event_time.pk %}";
+                    window.location.href = "{% url 'VIPSystem_APP:participation_by_event_time' project.id event_time.section event_time.id %}";
                 }, 500); // 500毫秒的延迟
             }
         }

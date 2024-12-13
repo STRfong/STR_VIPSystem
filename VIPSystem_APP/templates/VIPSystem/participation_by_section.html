@@ -1,20 +1,42 @@
 {% extends "base.html" %}
 {% block title %}專案詳細資料{% endblock %}
 {% block content %}
+<style>
+    .pagination .page-link {
+        color: #343a40; /* 字體顏色 */
+        background-color: transparent; /* 背景透明 */
+        border: 1px solid #343a40; /* 黑色邊框 */
+    }
+
+    .pagination .page-item.active .page-link {
+        color: #fff; /* 活動狀態下的字體顏色 */
+        background-color: #343a40; /* 活動狀態下的背景顏色 */
+        border-color: #343a40; /* 活動狀態下的邊框顏色 */
+    }
+
+    .pagination .page-link:hover {
+        color: #fff; /* 懸停時的字體顏色 */
+        background-color: #495057; /* 懸停時的背景顏色 */
+        border-color: #495057; /* 懸停時的邊框顏色 */
+    }
+</style>
 {% if messages %}
-    <div class="container mt-5">
+    <div class="container mt-4" id="message-container">
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-bs-autohide="true" data-bs-delay="3000">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         {% endfor %}
     </div>
     <script>
         setTimeout(function() {
-            $('.alert').alert('close');
+            const container = document.getElementById('message-container');
+            if (container) {
+                container.remove();
+            }
         }, 3000);
-    </script>
+</script>
 {% endif %}
 <div class="container mt-4">
     <div class="card">
@@ -34,7 +56,7 @@
                     </ul>
                 </div>
             </div>
-            {% if page_obj %}
+            {% if participation_list %}
             <div style="max-height: 70vh; overflow-y: auto;">
                 <table class="table table-striped mt-3">
                     <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
@@ -51,7 +73,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for participant in page_obj %}
+                        {% for participant in participation_list %}
                             <tr>
                                 <td style="width: 8%;">
                                     <span data-bs-toggle="tooltip" data-bs-placement="right" 
@@ -89,7 +111,7 @@
                                         <button type = "button" class = "btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateModal{{ participant.id }}">
                                            <i class="bi bi-pencil-square"></i>
                                         </button> 
-                                        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-participant-name="{{ participant.vip.name}}" data-bs-participant-id="{{ participant.id }}">
+                                        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -242,6 +264,29 @@
                                     document.getElementById('previewContent{{ participant.id }}').innerHTML = previewContent;
                                 });
                             </script>
+
+                            <!-- 刪除確認 Modal -->
+                            <div class="modal fade" id="deleteModal{{ participant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ participant.id }}">確認刪除</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            您確定要刪除 {{ participant.vip.name }} 嗎？
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <form action="{% url 'VIPSystem_APP:remove_participant_by_section' project.pk section %}" method="POST" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="participant_id" value="{{ participant.vip.id }}">
+                                                <button type="submit" class="btn btn-danger">確認刪除</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <!-- 修改 Modal -->
                             <div class="modal fade" id="updateModal{{ participant.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
@@ -367,30 +412,6 @@
         </div>
     </div>
 </div>
-
-<!-- 刪除參與者 Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" data-bs-backdrop="static" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">確認刪除</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                確定要刪除參與者 <span id="participantName"></span> 嗎？
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form action="{% url 'VIPSystem_APP:remove_participant_by_section' project.pk section %}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <input type="hidden"  id="participantId" name="participant_id">
-                    <button type="submit" class="btn btn-danger">確認刪除</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- 篩選姓名 Modal -->
 <div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -494,6 +515,37 @@
         </div>
     </div>
 </div>
+
+<!-- 篩選狀態modal-->
+<div class="modal fade" id="filterStatusModal" tabindex="-1" aria-labelledby="filterStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterStatusModalLabel">篩選回復狀態</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="filterStatusForm"> 
+                    {% csrf_token %}
+                    <div class="d-flex flex-wrap">
+                        <input type="checkbox" class="btn-check" value="added" id="added">
+                        <label class="btn btn-outline-dark m-1" for="added"> 已新增尚未寄信 </label>
+                        <input type="checkbox" class="btn-check" value="confirmed" id="confirmed">
+                        <label class="btn btn-outline-dark m-1" for="confirmed"> 確認參加 </label>
+                        <input type="checkbox" class="btn-check" value="sended" id="sended">
+                        <label class="btn btn-outline-dark m-1" for="sended"> 已發送邀請信件等待回覆 </label>
+                        <input type="checkbox" class="btn-check" value="declined" id="declined">
+                        <label class="btn btn-outline-dark m-1" for="declined"> 拒絕參加 </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterStatus()" id="applyFilterStatusBtn">篩選</button>   
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -590,6 +642,22 @@
         } else {
             url.searchParams.set('nameFilter', nameFilter);
         }
+        window.location.href = url.toString();
+    }
+
+    function applyFilterStatus() {
+        var selectedStatus = [];
+        var checkboxes = document.querySelectorAll('#filterStatusForm input[type="checkbox"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            selectedStatus.push(checkbox.value);
+        });
+        var url = new URL(window.location.href);
+        url.searchParams.delete('filter_status');
+        selectedStatus.forEach(function(status) {
+            url.searchParams.append('filter_status', status);
+        });
+        // 重置頁碼到第一頁
+        url.searchParams.set('page', 1);
         window.location.href = url.toString();
     }
 

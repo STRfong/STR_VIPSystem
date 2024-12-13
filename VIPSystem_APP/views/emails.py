@@ -60,25 +60,27 @@ def send_email_by_section(request, project_id, section):
     return render(request, 'send_email.html')
 
 @login_required
-def send_email_event_time(request, project_id, event_time_id, participant_id):
+def send_email_event_time(request, project_id, section, event_time_id):
     project = get_object_or_404(Project, pk=project_id)
-    event_time = get_object_or_404(EventTime, pk=event_time_id)
-    vip = get_object_or_404(VIP, pk=participant_id)
+    vip = get_object_or_404(VIP, pk=request.POST['vip_id'])
+    dead_line_date = request.POST['dead_line_date']
     if request.method == 'POST':
-        pp = ProjectParticipation.objects.get(project=project, vip=vip, event_time=event_time)
+        pp = get_object_or_404(ProjectParticipation, project=project, vip=vip)
         random_token = get_random_string(length=32)
         email = Email(request.user.username, 
                         request.POST['sender'], 
-                        request.POST.getlist('selected_event_times'), 
+                        pp.get_wish_attend_list(), 
                         vip.name,
                         project, 
-                        random_token)
+                        dead_line_date,
+                        random_token, 
+                        request.POST['email_content'])
         email.send_email()
         pp.token = random_token
         pp.status = 'sended'
         pp.save()
         messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
-        return redirect('VIPSystem_APP:project_participants_event_time', project_id=project_id, event_time_id=event_time_id)
+        return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
     return render(request, 'send_email.html')
 
 @login_required
