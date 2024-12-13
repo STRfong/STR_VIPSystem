@@ -93,8 +93,10 @@
     </div>
     <div class="mt-3 d-flex justify-content-between">
         <a href="{% url 'VIPSystem_APP:participation_by_section' project.id section %}" class="btn btn-outline-secondary">返回{{section}}區邀請列表</a>
-        <button type="button" class="btn btn-outline-secondary ms-2" id="testButton" data-bs-toggle="modal" data-bs-target="#testModal">測試</button>
-        <button type="button" form="sendEmailForm" class="btn btn-primary ms-2" id="submitButton" disabled data-bs-toggle="modal" data-bs-target="#confirmSenderModal">發送邀請信</button>
+        <div>
+            <button type="button" class="btn btn-outline-secondary ms-2" id="testButton" data-bs-toggle="modal" data-bs-target="#testModal">測試</button>
+            <button type="button" form="sendEmailForm" class="btn btn-primary ms-2" id="submitButton" disabled data-bs-toggle="modal" data-bs-target="#confirmSenderModal">發送邀請信</button>
+        </div>
     </div>
 </div>
 
@@ -151,9 +153,7 @@
                 </div>
                 <hr>
                 <div id="carouselExampleIndicators" class="carousel" data-bs-interval="false">
-                    <div class="carousel-inner">
-                        <!-- Carousel items will be dynamically inserted here -->
-                    </div>
+                    <div class="carousel-inner"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -273,10 +273,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         const checkboxes = document.querySelectorAll('.vip-checkbox:not(:disabled)');
         const submitButton = document.getElementById('submitButton');
+        const testButton = document.getElementById('testButton');
 
         function updateSubmitButton() {
             const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
             submitButton.disabled = !anyChecked;
+            testButton.disabled = !anyChecked;
         }
 
         checkboxes.forEach(checkbox => {

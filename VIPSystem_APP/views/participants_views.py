@@ -29,7 +29,7 @@ class ProjectParticipationBySectionView(ListView):
     model = ProjectParticipation
     template_name = 'VIPSystem/participation_by_section.html'
     context_object_name = 'participation_list'
-    paginate_by = 10  # 每页显示10条记录
+    paginate_by = 8  # 每页显示10条记录
 
     def get_queryset(self):
         project = get_object_or_404(Project, id=self.kwargs['project_id'])
@@ -45,6 +45,10 @@ class ProjectParticipationBySectionView(ListView):
         invited_by_filter = self.request.GET.getlist('filter_invited_by')
         if invited_by_filter:
             queryset = queryset.filter(invited_by_id__in=invited_by_filter)
+
+        status_filter = self.request.GET.getlist('filter_status')
+        if status_filter:
+            queryset = queryset.filter(status__in=status_filter)
 
         filter_wish_attend = self.request.GET.getlist('filter_wish_attend')
         if filter_wish_attend:
@@ -80,12 +84,26 @@ class ProjectParticipantsByEventTimeView(ListView):
     template_name = 'VIPSystem/project_participants_event_time.html'
     context_object_name = 'participants_list'
     pk_url_kwarg = 'project_id'
+    paginate_by = 8
 
     def get_queryset(self):
             project_id = self.kwargs.get('project_id')
             event_time = EventTime.objects.get(id=self.kwargs.get('event_time_id'))
             section = self.kwargs.get('section')
             queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section)
+            # 篩選名字
+            name_filter = self.request.GET.get('nameFilter')
+            if name_filter:
+                queryset = queryset.filter(vip__name__icontains=name_filter)
+
+            invited_by_filter = self.request.GET.getlist('filter_invited_by')
+            if invited_by_filter:
+                queryset = queryset.filter(invited_by_id__in=invited_by_filter)
+
+            status_filter = self.request.GET.getlist('filter_status')
+            if status_filter:
+                queryset = queryset.filter(status__in=status_filter)
+
             return_queryset = [ participation for participation in queryset if self.check_intersection(event_time, participation)]
             return return_queryset
     
@@ -99,6 +117,9 @@ class ProjectParticipantsByEventTimeView(ListView):
         event_time_id = self.kwargs.get('event_time_id')
         context['project'] = get_object_or_404(Project, pk=project_id)
         context['event_time'] = get_object_or_404(EventTime, pk=event_time_id)
+        context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
+        context['staffs'] = User.objects.all()
+        context['username'] = self.request.user.username
         return context
     
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
@@ -195,6 +216,25 @@ class UpdateParticipantsInfoBySectionView(UpdateView):
         else:
             return ','.join(event_time_list)
         
+@method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
+class UpdateParticipantsInfoByEventTimeView(UpdateView):
+    def post(self, request, *args, **kwargs):
+        print(request.POST)
+        project_id = kwargs.get('project_id')
+        event_time_id = kwargs.get('event_time_id')
+        vip_id = request.POST.get('vip_id')
+        vip = VIP.objects.get(id=vip_id)
+        project_participation = ProjectParticipation.objects.get(project=project_id, vip=vip)
+        project_participation.wish_attend = self.event_time_selected(request.POST.getlist('selected_event_time_by_section'))
+        project_participation.save()
+        return redirect('VIPSystem_APP:project_participants_event_time', project_id=project_id, event_time_id=event_time_id)
+    
+    def event_time_selected(self, event_time_list):
+        if 'all' in event_time_list:
+            return 'all'
+        else:
+            return ','.join(event_time_list)
+        
 
     
 @method_decorator(login_required, name='dispatch') # 發送邀請信
@@ -226,7 +266,15 @@ class SendEmailListViewEventTime(ListView):
     def get_queryset(self):
         project_id = self.kwargs.get('project_id')
         event_time_id = self.kwargs.get('event_time_id')
-        return ProjectParticipation.objects.filter(project_id=project_id, event_time_id=event_time_id).exclude(status='confirmed')
+        event_time = get_object_or_404(EventTime, id=event_time_id)
+        
+        queryset = ProjectParticipation.objects.filter(project_id=project_id)
+        filtered_queryset = [
+            participation for participation in queryset 
+            if event_time in participation.get_wish_attend_list()
+        ]
+    
+        return [participation for participation in filtered_queryset if participation.status != 'confirmed']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -296,7 +344,12 @@ def remove_participant_by_section(request, project_id, section):
         project_participation = get_object_or_404(ProjectParticipation, project=project, vip=participant)
         project_participation.delete()
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
-    return redirect('VIPSystem_APP:participation_by_section', project_id=project_id, section=section)
+    # 使用 HTTP_REFERER 返回到觸發此 function 的 URL
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    else:
+        return redirect('VIPSystem_APP:participation_by_section', project_id=project_id, section=section)
 
 @login_required
 def remove_participant_event_time(request, project_id, event_time_id, participant_id):
