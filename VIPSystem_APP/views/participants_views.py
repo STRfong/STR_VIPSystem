@@ -29,7 +29,7 @@ class ProjectParticipationBySectionView(ListView):
     model = ProjectParticipation
     template_name = 'VIPSystem/participation_by_section.html'
     context_object_name = 'participation_list'
-    paginate_by = 8  # 每页显示10条记录
+    paginate_by = 20  # 每页显示10条记录
 
     def get_queryset(self):
         project = get_object_or_404(Project, id=self.kwargs['project_id'])
@@ -84,7 +84,7 @@ class ProjectParticipantsByEventTimeView(ListView):
     template_name = 'VIPSystem/project_participants_event_time.html'
     context_object_name = 'participants_list'
     pk_url_kwarg = 'project_id'
-    paginate_by = 8
+    paginate_by = 20
 
     def get_queryset(self):
             project_id = self.kwargs.get('project_id')
