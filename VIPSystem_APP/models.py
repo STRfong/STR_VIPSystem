@@ -125,6 +125,7 @@ class ProjectParticipation(models.Model):
     token = models.CharField(max_length=100, unique=True, null=True, blank=True)
     wish_attend = models.CharField(max_length=50, blank=True, default='all')
     wish_attend_section = models.CharField(max_length=50, blank=True)
+    wish_ticket_count = models.IntegerField(default=2)
 
     def handle_response(self, response, join_people_count, event_time_id):
         if response == 'confirmed':

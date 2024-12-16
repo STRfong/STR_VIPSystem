@@ -64,9 +64,10 @@
                                 <th style="width: 8%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 12%;">希望參加場次</th>
+                                <th style="width: 8%;">希望發放票數</th>
                                 <th style="width: 13%;">狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
-                                <th style="width: 8%;">參加場次</th>
-                                <th style="width: 5%;">票數</th>
+                                <th style="width: 12%;">參加場次</th>
+                                <th style="width: 8%;">確定索取票數</th>
                                 <th style="width: 15%;">操作</th>
                             </tr>
                         </thead>
@@ -91,14 +92,17 @@
                                         {% endfor %}
                                     </td>
                                 {% endif %}
+                                <td style="width: 8%;">{{ participant.wish_ticket_count }}</td>
                                 <td style="width: 13%;">{{ participant.get_status_display }}</td>
                                 {% if participant.event_time %}
-                                    <td style="width: 8% ;">{{ participant.event_time }}</td>
+                                    <td style="width: 12% ;">{{ participant.event_time }}</td>
+                                {% elif participant.status == 'declined' %}
+                                    <td style="width: 12% ;">不出席任何場次</td>
                                 {% else %}
-                                    <td style="width: 8% ;">尚未回覆</td>
+                                    <td style="width: 12% ;">尚未回覆</td>
                                 {% endif %}
                                
-                                <td style="width: 5%;">{{ participant.join_people_count }}</td>
+                                <td style="width: 8%;">{{ participant.join_people_count }}</td>
                                 <td style="width: 15%;">
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
                                         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#emailModal{{ participant.id }}">
@@ -287,13 +291,14 @@
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="updateModalLabel{{ participant.id }}">修改 {{ participant.vip.name }} 的希望參加場次</h5>
+                                            <h5 class="modal-title" id="updateModalLabel{{ participant.id }}">修改 {{ participant.vip.name }} 的參與資訊</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
                                             <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_event_time' project.pk event_time.section event_time.pk %}" id="updateForm{{ participant.id }}">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
+                                                <h6>參與場次修改</h6>
                                                 <div class="row row-cols-1 row-cols-md-2 g-4">
                                                     <div class="col">
                                                         <label class="card h-100">
@@ -325,6 +330,13 @@
                                                         </label>
                                                     </div>
                                                     {% endfor %}
+                                                </div>
+                                                <hr>
+                                                <h6>希望發放票數調整</h6>
+                                                <div class="row row-cols-1 row-cols-md-2 g-4">
+                                                    <div class="col">
+                                                        <input type="number" class="form-control" name="wish_ticket_count" value="{{ participant.wish_ticket_count }}">
+                                                    </div>
                                                 </div>
                                             </form>
                                         </div>
