@@ -91,7 +91,7 @@ class ProjectParticipantsByEventTimeView(ListView):
             event_time = EventTime.objects.get(id=self.kwargs.get('event_time_id'))
             section = self.kwargs.get('section')
             queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section)
-            print(queryset)
+            
             # 篩選名字
             name_filter = self.request.GET.get('nameFilter')
             if name_filter:
@@ -109,10 +109,7 @@ class ProjectParticipantsByEventTimeView(ListView):
             return return_queryset
     
     def check_intersection(self, event_time, participation):
-        print(event_time)
-        print(participation.get_wish_attend_list())
         participation_set = set(participation.get_wish_attend_list())
-        print(event_time in participation_set)
         return event_time in participation_set
 
     def get_context_data(self, **kwargs):
@@ -203,7 +200,6 @@ class UpdateParticipantsBySectionView(UpdateView):
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class UpdateParticipantsInfoBySectionView(UpdateView):
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         project_id = kwargs.get('project_id')
         section = kwargs.get('section')
         vip_id = request.POST.get('vip_id')
@@ -222,7 +218,6 @@ class UpdateParticipantsInfoBySectionView(UpdateView):
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class UpdateParticipantsInfoByEventTimeView(UpdateView):
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         project_id = kwargs.get('project_id')
         event_time_id = kwargs.get('event_time_id')
         vip_id = request.POST.get('vip_id')
