@@ -84,7 +84,7 @@ class ProjectParticipantsByEventTimeView(ListView):
     template_name = 'VIPSystem/project_participants_event_time.html'
     context_object_name = 'participants_list'
     pk_url_kwarg = 'project_id'
-    paginate_by = 8
+    paginate_by = 20
 
     def get_queryset(self):
             project_id = self.kwargs.get('project_id')
