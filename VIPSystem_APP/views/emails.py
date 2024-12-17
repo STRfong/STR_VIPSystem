@@ -206,8 +206,47 @@ class Email():
         weekday_number = date_object.weekday()
         days = ["一", "二", "三", "四", "五", "六", "日"]
         return f"{date_string}（{days[weekday_number]}）"
-
+    
+    @staticmethod # 新增於2024/12/17，用於篩選出不同地點的活動時間
+    def filter_selected_event_location_name(selected_event_times_list):
+        selected_event_session = defaultdict(list)
+        for event_time in selected_event_times_list:
+            selected_event_session[event_time.location_name].append(event_time.session)
+        formatted_result = Email.format_location_name_list(selected_event_session)
+        return formatted_result
+    
     @staticmethod
+    def format_location_name_list(selected_event_session):
+        # 如果沒有資料，直接返回空列表
+        if not selected_event_session:
+            return []
+        
+        # 獲取所有地點
+        locations = list(selected_event_session.keys())
+        
+        # 獲取所有不重複的場次（從所有地點的場次中）
+        all_sessions = set()
+        for sessions in selected_event_session.values():
+            all_sessions.update(sessions)
+        unique_sessions = sorted(all_sessions)  # 排序場次
+        
+        # 格式化地點字串
+        if len(locations) == 1:
+            location_str = f"在 {locations[0]}"
+        elif len(locations) == 2:
+            location_str = f"在 {locations[0]} 和 {locations[1]}"
+        else:
+            location_str = "在 " + "、".join(locations[:-1]) + "、和" + locations[-1]
+        
+        # 格式化場次字串
+        session_str = "、".join(unique_sessions)
+        
+        # 組合最終結果
+        formatted_result = f"{location_str} 舉辦 {session_str}"
+        return formatted_result
+
+
+    @staticmethod 
     def filter_selected_event_times(selected_event_times_list):
         selected_event_times = defaultdict(list)
         for event_time in selected_event_times_list:
@@ -261,6 +300,7 @@ def handle_invitation_response(request, token):
     context = {
         'participation': participation,
         'project': project,
-        'selected_event_times': Email.filter_selected_event_times(selected_event_times_list)
+        'selected_event_times': Email.filter_selected_event_times(selected_event_times_list),
+        'selected_event_location_name': Email.filter_selected_event_location_name(selected_event_times_list)
     }
     return render(request, 'VIPSystem/form.html', context)  # 創建一個感謝頁面

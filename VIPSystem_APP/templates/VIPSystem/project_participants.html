@@ -55,7 +55,8 @@
                                     <td style="width: 10%;">{{ participant.invited_by.username }}</td>
                                     <td style="width: 15%;">{{ participant.invited_at }}</td>
                                     <td style="width: 15%;">{{ participant.get_status_display }}</td>
-                                    <td style="width: 8% ;">{{ participant.event_time.get_session_display }}</td>
+                                    <!-- <td style="width: 8% ;">{{ participant.event_time.get_session_display }}</td> -->
+                                    <td style="width: 8% ;">{{ participant.event_time.session }}</td>
                                     <td style="width: 10%;">{{ participant.join_people_count }}</td>
                                     <td style="width: 15%;">
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
@@ -133,7 +134,8 @@
                                                                     <div class="card-body">
                                                                         <h5 class="card-title">
                                                                             <input type="checkbox" name="selected_event_times" value="{{ event_time.id }}" class="form-check-input me-2">
-                                                                            {{ event_time.date }} {{ event_time.get_session_display }}
+                                                                            <!-- {{ event_time.date }} {{ event_time.get_session_display }} -->
+                                                                            {{ event_time.date }} {{ event_time.session }}
                                                                         </h5>
                                                                         <p class="card-text">
                                                                             時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>

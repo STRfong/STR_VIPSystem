@@ -53,7 +53,8 @@ class EventTimeCreateView(CreateView):
             announce_date=request.POST.get('announce_date')
         )
         event_time.save()
-        messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.get_session_display()}已成功新增。')
+        # messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.get_session_display()}已成功新增。')
+        messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.session}已成功新增。')
         return redirect('VIPSystem_APP:project_detail', project_id=project_id)
 
 @method_decorator(login_required, name='dispatch')
@@ -74,7 +75,8 @@ class UpdateEventTimeView(UpdateView):
         event_time.dispatch_date = request.POST.get('dispatch_date')
         event_time.announce_date = request.POST.get('announce_date')
         event_time.save()
-        messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.get_session_display()}已成功更新。')
+        # messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.get_session_display()}已成功更新。')
+        messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.session}已成功更新。')
         return redirect('VIPSystem_APP:project_detail', project_id=event_time.project.id)
 
 
@@ -85,5 +87,6 @@ class DeleteEventTimeView(DeleteView):
         event_time_id = request.POST.get('event_time_id')
         event_time = get_object_or_404(EventTime, pk=event_time_id)
         event_time.delete()
-        messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.get_session_display()}已成功刪除。')
+        # messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.get_session_display()}已成功刪除。')
+        messages.success(request, f'場次 {event_time.date} {event_time.section} {event_time.session}已成功刪除。')
         return redirect('VIPSystem_APP:project_detail', project_id=event_time.project.id)

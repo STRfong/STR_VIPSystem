@@ -67,7 +67,8 @@
                                     {% endif %}
                                     <td>
                                         <a href="{% url 'VIPSystem_APP:participation_by_event_time' project.id section event.id %}" class="text-decoration-none">
-                                            {{ event.date|date:"m/d" }} {{ event.get_session_display }}
+                                            <!-- {{ event.date|date:"m/d" }} {{ event.get_session_display }} -->
+                                            {{ event.date|date:"m/d" }} {{ event.session }}
                                         </a>
                                     </td>
                                     <td>{{ event.start_time }} - {{ event.end_time }}</td>
@@ -177,12 +178,13 @@
                     <div class="row mb-3">
                         <div class="col-md-2">
                             <label for="session" class="form-label me-2">場次</label>
-                            <select class="form-control" id="session" name="session" required>
+                            <input type="text" class="form-control" id="session" name="session" required>
+                            <!-- <select class="form-control" id="session" name="session" required>
                                 <option value="" disabled selected>選擇場次</option>
                                 <option value="morning">早場</option>
                                 <option value="afternoon">午場</option>
                                 <option value="evening">晚場</option>
-                            </select>
+                            </select> -->
                         </div>
                         <div class="col-md-2">
                             <label for="ticketCount" class="form-label me-2">票數</label>
@@ -251,7 +253,8 @@
                                                         "announce_date": "{{ event_time.announce_date|date:"Y-m-d" }}",
                                                         "location_name": "{{ event_time.location_name }}",
                                                         "location_address": "{{ event_time.location_address }}"}'>
-                                        {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }}
+                                        <!-- {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }} -->
+                                        {{ event_time.date }} {{event_time.section}}{{ event_time.session }}
                                     </h5>
                                     <p class="card-text">
                                         時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
@@ -309,12 +312,13 @@
                     <div class="row mb-3">
                         <div class="col-md-2">
                             <label for="edit_session" class="form-label me-2">場次</label>
-                            <select class="form-control" id="edit_session" name="session" required>
+                            <!-- <select class="form-control" id="edit_session" name="session" required>
                                 <option value="" disabled selected>選擇場次</option>
                                 <option value="morning">早場</option>
                                 <option value="afternoon">午場</option>
                                 <option value="evening">晚場</option>
-                            </select>
+                            </select> -->
+                            <input type="text" class="form-control" id="edit_session" name="session" required>
                         </div>
                         <div class="col-md-2">
                             <label for="edit_ticketCount" class="form-label me-2">票數</label>

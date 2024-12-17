@@ -4,7 +4,8 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.get_session_display}}</h2>
+            <!-- <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.get_session_display}}</h2> -->
+            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.session}}</h2>
         </div>
         <div class="card-body">
             <h3 class="card-title mb-0">廣發邀請信</h3>
@@ -69,7 +70,8 @@
                                 <div class="card-body">
                                     <h5 class="card-title">
                                         <input type="checkbox" name="selected_event_times" value="{{ event_time.id }}" class="form-check-input me-2" form="sendEmailForm">
-                                        {{ event_time.date }} {{ event_time.get_session_display }}
+                                        <!-- {{ event_time.date }} {{ event_time.get_session_display }} -->
+                                        {{ event_time.date }} {{ event_time.session }}
                                     </h5>
                                     <p class="card-text">
                                         時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>

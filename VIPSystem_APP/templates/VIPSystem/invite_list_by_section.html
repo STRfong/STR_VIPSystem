@@ -74,7 +74,8 @@
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <input form="inviteFormBySection" type="checkbox" name="selected_event_time_by_section" value="{{ event_time.id }}" class="form-check-input me-2 event-time-checkbox">
-                                    {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }}
+                                    <!-- {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }} -->
+                                    {{ event_time.date }} {{event_time.section}}{{ event_time.session }}
                                 </h5>
                                 <p class="card-text">
                                     時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
