@@ -78,7 +78,8 @@
                                 {% endif %} -->
                                 <td>
                                     {% for event_time in participant.get_wish_attend_list %}
-                                        {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }} 
+                                        <!-- {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }}  -->
+                                        {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.session }} 
                                         {% if not forloop.last %}<br>{% endif %}
                                     {% endfor %}
                                 </td>

@@ -231,14 +231,17 @@
                             </div>
                         <div class="card-body">
                             <div class="white-bg">
-                                <h3 class="card-title mb-4">親愛的 {{ participation.vip.name }}！</h3>
+                                <h3 class="card-title mb-4">親愛的 {{ participation.vip.name }} 您好：</h3>
                                 <p>感謝您一路以來對薩泰爾娛樂的支持，</p>
-                                <p>我們誠摯地邀請您參加在</p>
+                                <p>我們近期將{{selected_event_location_name}} 
+                                <!-- <p>我們誠摯地邀請您參加在</p>
                                 {% if selected_event_times|length > 1 %}我們將於 <br>{% else %}我們將於 {% endif %}
                                     {% for event_string in selected_event_times %}
                                         {{ event_string }}{% if not forloop.last %}；<br>{% else %} 舉辦<br>{% endif %}
-                                    {% endfor %}
-                                <h4 class="mt-4">{{ participation.project.description }} 《{{ participation.project.name }}》</h4> 
+                                    {% endfor %} -->
+                                <!-- <h4 class="mt-4">{{ participation.project.description }} 《{{ participation.project.name }}》</h4>  -->
+                                <p> 誠摯地邀請您一同參與，本次活動提供您 <strong>{{participation.wish_ticket_count}}</strong> 張票券，最晚請於活動當週三前完成表單填寫～ </p>
+                                <p>薩泰爾全體同仁 敬上</p>
                             </div>
                         </div>
                         <div class="card-action d-flex justify-content-end">
@@ -285,7 +288,8 @@
                                         <option value="">請選擇場次</option>
                                         {% for event_time in participation.get_wish_attend_list %}
                                             <option value="{{ event_time.id }}">
-                                                {{ event_time.date }} {{ event_time.get_session_display }}
+                                                <!-- {{ event_time.date }} {{ event_time.get_session_display }} -->
+                                                {{ event_time.date }} {{ event_time.session }}
                                                 ({{ event_time.start_time }} - {{ event_time.end_time }})
                                                 at {{ event_time.location_name }}
                                             </option>

@@ -41,7 +41,8 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.get_session_display}}</h2>
+            <!-- <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.get_session_display}}</h2> -->
+            <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.session}}</h2>
         </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -87,7 +88,8 @@
                                 {% else %}
                                     <td style="width: 12%;">
                                         {% for event_time in participant.get_wish_attend_list %}
-                                            {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }} 
+                                            <!-- {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }}  -->
+                                            {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.session }} 
                                             {% if not forloop.last %}<br>{% endif %}
                                         {% endfor %}
                                     </td>
@@ -171,7 +173,8 @@
                                                     <ul class="list-group" id="eventList{{ participant.id }}">
                                                         {% for event_time in participant.get_wish_attend_list %}
                                                         <li class="list-group-item">
-                                                            <strong>{{ event_time.date }} {{ event_time.get_session_display }}</strong>
+                                                            <!-- <strong>{{ event_time.date }} {{ event_time.get_session_display }}</strong> -->
+                                                            <strong>{{ event_time.date }} {{ event_time.session }}</strong>
                                                             <br>
                                                             <small>
                                                                 時間：{{ event_time.start_time }} - {{ event_time.end_time }} | 
@@ -319,7 +322,8 @@
                                                             <div class="card-body">
                                                                 <h5 class="card-title">
                                                                     <input form="updateForm{{ participant.id }}" type="checkbox" name="selected_event_time_by_section" value="{{ event_time.id }}" class="form-check-input me-2 event-time-checkbox" {% if event_time in participant.get_wish_attend_list %}checked{% endif %}>
-                                                                    {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }}
+                                                                    <!-- {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }} -->
+                                                                    {{ event_time.date }} {{event_time.section}}{{ event_time.session }}
                                                                 </h5>
                                                                 <p class="card-text">
                                                                     時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>

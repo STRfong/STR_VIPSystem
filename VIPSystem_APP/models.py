@@ -84,12 +84,13 @@ class EventTime(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     section = models.CharField(max_length=100)
-    session_choices = [
-        ('morning', '早場'),
-        ('afternoon', '午場'),
-        ('evening', '晚場'),
-    ]
-    session = models.CharField(max_length=10, choices=session_choices)
+    # session_choices = [
+    #     ('morning', '早場'),
+    #     ('afternoon', '午場'),
+    #     ('evening', '晚場'),
+    # ]
+    # session = models.CharField(max_length=10, choices=session_choices)
+    session = models.CharField(max_length=20)
     location_name = models.CharField(max_length=100)
     location_address = models.CharField(max_length=200)
     ticket_count = models.IntegerField()
@@ -98,7 +99,8 @@ class EventTime(models.Model):
     announce_date = models.DateField()
 
     def __str__(self):
-         return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
+        #  return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
+        return f"{date_format(self.date, 'Y/m/d')} {self.session}"
     
     def get_weekday(self):
         weekday_number = self.dead_line_date.weekday()
