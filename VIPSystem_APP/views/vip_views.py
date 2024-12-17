@@ -87,25 +87,115 @@ class VIPDeleteView(DeleteView):
         return JsonResponse({'status': 'success'})
     
 @login_required
+@require_http_methods(["GET", "POST"])
 def vip_create_from_excel(request):
     if request.method == 'POST':
         excel_file = request.FILES.get('excel_file')
+        required_sheet_name = '貴賓名單'
+        required_columns = [
+            '中／英文本名', '稱呼／綽號', '貴賓性質', '單位', '職稱', 
+            '電話號碼', 'e-mail', '貴賓聯絡人', '聯絡人職稱', 
+            '聯絡人電話', '聯絡人信箱', 'STR 窗口', '備註', '收件地址'
+        ]
+
         if excel_file:
             try:
-                df = pd.read_excel(excel_file)
+                # 檢查工作表是否存在
+                xl = pd.ExcelFile(excel_file)
+                if required_sheet_name not in xl.sheet_names:
+                    messages.error(request, f'Excel 檔案中找不到「{required_sheet_name}」工作表')
+                    return redirect('VIPSystem_APP:vip_list')
+
+                # 讀取指定工作表
+                df = pd.read_excel(excel_file, sheet_name=required_sheet_name)
+                
+                # 檢查必要欄位
+                missing_columns = [col for col in required_columns if col not in df.columns]
+                if missing_columns:
+                    messages.error(
+                        request, 
+                        f'工作表缺少以下必要欄位：{", ".join(missing_columns)}'
+                    )
+                    return redirect('VIPSystem_APP:vip_list')
+
                 created_count = 0
+                skipped_count = 0
+                
+                # Excel 欄位與 model 欄位的映射
+                field_mapping = {
+                    '中／英文本名': 'name',
+                    '稱呼／綽號': 'nickname',
+                    '單位': 'organization',
+                    '職稱': 'position',
+                    '電話號碼': 'phone_number',
+                    'e-mail': 'email',
+                    '貴賓聯絡人': 'poc',
+                    '聯絡人職稱': 'poc_position',
+                    '聯絡人電話': 'poc_phone_number',
+                    '聯絡人信箱': 'poc_email',
+                    'STR 窗口': 'str_connect',
+                    '備註': 'notes',
+                    '收件地址': 'address'
+                }
+
                 for index, row in df.iterrows():
-                    name = row.get('名稱') or row.get('中／英文本名')
+                    # 檢查必填欄位
+                    name = row.get('中／英文本名')
                     if not name:
                         continue
                     
-                    phone = str(row.get('電話號碼', '')).replace('_', '')
-                    email = row.get('e-mail', '')
+                    # 處理 email（取第一個）
+                    email_value = row.get('e-mail', '')
+                    if pd.notna(email_value):
+                        email = email_value.split(',')[0].strip()
+                    else:
+                        email = ''
                     
-                    VIP.objects.create(name=name, email=email, phone_number=phone)
+                    # 檢查重複
+                    if VIP.objects.filter(name=name, email=email).exists():
+                        skipped_count += 1
+                        continue
+                    
+                    # 準備創建 VIP 的數據
+                    vip_data = {}
+                    for excel_field, model_field in field_mapping.items():
+                        value = row.get(excel_field, '')
+                        # 處理電話號碼格式
+                        if 'phone' in model_field:
+                            value = str(value).replace('_', '').strip() if pd.notna(value) else ''
+                        # 處理 email 欄位
+                        elif model_field == 'email':
+                            value = email
+                        # 處理其他可能的 NaN 值
+                        elif pd.isna(value):
+                            value = ''
+                        vip_data[model_field] = value
+
+                    # 創建 VIP 記錄
+                    vip = VIP.objects.create(**vip_data)
+
+                    # 處理貴賓性質（tags）
+                    tags_str = row.get('貴賓性質', '')
+                    if tags_str and pd.notna(tags_str):
+                        # 先用逗號加空格分隔，然後對每個標籤執行 split("_")
+                        tag_items = tags_str.split(", ")
+                        for tag_item in tag_items:
+                            if tag_item:
+                                # 使用下劃線分割並取出必要資訊
+                                tag_parts = tag_item.split("_")
+                                if len(tag_parts) > 0:
+                                    tag_name = tag_parts[1].strip()
+                                    if tag_name:
+                                        tag, _ = Tag.objects.get_or_create(name=tag_name)
+                                        vip.tags.add(tag)
+
                     created_count += 1
+
+                message = f'成功創建 {created_count} 個 VIP 記錄'
+                if skipped_count > 0:
+                    message += f'，跳過 {skipped_count} 個重複記錄'
+                messages.success(request, message)
                 
-                messages.success(request, f'成功創建 {created_count} 個 VIP 記錄')
             except Exception as e:
                 messages.error(request, f'處理 Excel 文件時出錯：{str(e)}')
             return redirect('VIPSystem_APP:vip_list')

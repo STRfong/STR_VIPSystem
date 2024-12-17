@@ -38,7 +38,7 @@
             <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{section}}區場次邀請信件寄送</h2>
         </div>
         <div class="card-body">
-            <h3 class="card-title mb-0">廣發邀請信</h3>
+            <h3 class="card-title mb-0">批量寄出邀請信</h3>
             <form method="post" action="{% url 'VIPSystem_APP:send_emails_by_section' project.pk section %}" id="sendEmailForm">
             {% csrf_token %}
                 <div style="max-height: 400px; overflow-y: auto;">

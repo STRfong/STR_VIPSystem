@@ -49,9 +49,19 @@ class Tag(models.Model):
 
 class VIP(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20, blank=True, null=True)  # 新增的字段
+    nickname = models.CharField(max_length=100, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)  # 新增的字段
+    organization = models.CharField(max_length=100, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)  # 新增的字段
+    email = models.EmailField(blank=True)
+    poc = models.CharField(max_length=100, blank=True)
+    poc_position = models.CharField(max_length=20, blank=True, null=True)
+    poc_phone_number = models.CharField(max_length=20, blank=True, null=True)
+    poc_email = models.EmailField(blank=True)
+    str_connect = models.CharField(max_length=100, blank=True)
+    notes = models.TextField(blank=True)
+    address = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.name
@@ -65,7 +75,7 @@ class VIP(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     participants = models.ManyToManyField(VIP, through='ProjectParticipation', related_name='projects')
 
     def __str__(self):
