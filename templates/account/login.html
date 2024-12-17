@@ -1,10 +1,26 @@
 {% extends "base.html" %}
 {% load socialaccount %}
 {% load static %}
-{% block title %}
-登入
-{% endblock title %}
+{% block title %}登入系統{% endblock title %}
 {% block content %}
+{% if messages %}
+    <div class="container mt-4" id="message-container">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            const container = document.getElementById('message-container');
+            if (container) {
+                container.remove();
+            }
+        }, 3000);
+</script>
+{% endif %}
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-6">
@@ -12,6 +28,20 @@
         <div class="card-body">
           <h2 class="card-title text-center mb-4">登入薩泰爾禮賓系統</h2>
             <img src="{% static 'img/banner.png' %}" alt="封面" class="img-fluid">
+            <form action="{% url 'login' %}" method="POST">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="email" class="form-label">電子信箱：</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">密碼：</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+              </div>
+              <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-primary">以帳號登入</button>
+              </div>
+            </form>
             <div class="d-grid gap-2">
               <a href="{% provider_login_url 'google' method='oauth2' %}" class="btn btn-danger">使用 @strnetwork.cc 帳號登入</a>
             </div>
