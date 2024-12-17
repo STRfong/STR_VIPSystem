@@ -121,7 +121,7 @@ class ProjectParticipantsByEventTimeView(ListView):
         context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
         context['staffs'] = User.objects.all()
         context['username'] = self.request.user.username
-        context['event_ticket'] = EventTicket.objects.get(event_time_id=event_time_id, staff_id=self.request.user.id).ticket_count
+        # context['event_ticket'] = EventTicket.objects.get(event_time_id=event_time_id, staff_id=self.request.user.id).ticket_count
         return context
     
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案

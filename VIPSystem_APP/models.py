@@ -145,15 +145,6 @@ class EventTicket(models.Model):
     def __str__(self):
         return f"{self.staff.user.username} - {self.event_time.project.name} - {self.ticket_count}"
     
-    # def remaining_ticket_count(self):
-        
-
-    #     def total_wish_ticket_count(self):
-    #         return ProjectParticipation.objects.filter(
-    #             event_time=self.event_time,
-    #             invited_by=self.staff.user
-    #         ).aggregate(total=Sum('wish_ticket_count'))['total'] or 0
-    #     return self.event_time.ticket_count - self.ticket_count
     
 class ProjectParticipation(models.Model):
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')
