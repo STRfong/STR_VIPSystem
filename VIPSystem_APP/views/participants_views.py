@@ -122,7 +122,8 @@ class ProjectParticipantsByEventTimeView(ListView):
             context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
             context['staffs'] = User.objects.all()
             context['username'] = self.request.user.username
-            context['event_ticket'] = EventTicket.objects.get(event_time_id=event_time_id, staff_id=self.request.user.id).ticket_count
+            event_ticket = EventTicket.objects.get(event_time_id=event_time_id, staff_id=self.request.user.id).ticket_count
+            context['event_ticket'] = event_ticket if event_ticket is not None else 0
             return context
         except Exception as e:
             print(f"Error: {e}")
