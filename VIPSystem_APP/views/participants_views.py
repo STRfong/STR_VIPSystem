@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required   
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, UpdateView
-from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime
+from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime, EventTicket
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Prefetch
@@ -87,26 +87,26 @@ class ProjectParticipantsByEventTimeView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
-            project_id = self.kwargs.get('project_id')
-            event_time = EventTime.objects.get(id=self.kwargs.get('event_time_id'))
-            section = self.kwargs.get('section')
-            queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section)
-            
-            # 篩選名字
-            name_filter = self.request.GET.get('nameFilter')
-            if name_filter:
-                queryset = queryset.filter(vip__name__icontains=name_filter)
+        project_id = self.kwargs.get('project_id')
+        event_time = EventTime.objects.get(id=self.kwargs.get('event_time_id'))
+        section = self.kwargs.get('section')
+        queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section)
+        
+        # 篩選名字
+        name_filter = self.request.GET.get('nameFilter')
+        if name_filter:
+            queryset = queryset.filter(vip__name__icontains=name_filter)
 
-            invited_by_filter = self.request.GET.getlist('filter_invited_by')
-            if invited_by_filter:
-                queryset = queryset.filter(invited_by_id__in=invited_by_filter)
+        invited_by_filter = self.request.GET.getlist('filter_invited_by')
+        if invited_by_filter:
+            queryset = queryset.filter(invited_by_id__in=invited_by_filter)
 
-            status_filter = self.request.GET.getlist('filter_status')
-            if status_filter:
-                queryset = queryset.filter(status__in=status_filter)
+        status_filter = self.request.GET.getlist('filter_status')
+        if status_filter:
+            queryset = queryset.filter(status__in=status_filter)
 
-            return_queryset = [ participation for participation in queryset if self.check_intersection(event_time, participation)]
-            return return_queryset
+        return_queryset = [ participation for participation in queryset if self.check_intersection(event_time, participation)]
+        return return_queryset
     
     def check_intersection(self, event_time, participation):
         participation_set = set(participation.get_wish_attend_list())
@@ -121,6 +121,7 @@ class ProjectParticipantsByEventTimeView(ListView):
         context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
         context['staffs'] = User.objects.all()
         context['username'] = self.request.user.username
+        context['event_ticket'] = EventTicket.objects.get(event_time_id=event_time_id, staff_id=self.request.user.id).ticket_count
         return context
     
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
