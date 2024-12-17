@@ -30,6 +30,9 @@ class StaffProfile(models.Model):
     ]
     department = models.CharField(max_length=100, choices=department_choices, blank=True, null=True)
 
+    class Meta:
+        ordering = ['id']  # 或其他適合的欄位
+
     def __str__(self):
         return self.user.username       
     
@@ -64,6 +67,9 @@ class VIP(models.Model):
     str_connect = models.CharField(max_length=100, blank=True)
     notes = models.TextField(blank=True)
     address = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -104,6 +110,9 @@ class EventTime(models.Model):
     dispatch_date = models.DateField()
     announce_date = models.DateField()
 
+    class Meta:
+        ordering = ['id']
+
     def __str__(self):
         #  return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
         return f"{date_format(self.date, 'Y/m/d')} {self.session}"
@@ -136,15 +145,15 @@ class EventTicket(models.Model):
     def __str__(self):
         return f"{self.staff.user.username} - {self.event_time.project.name} - {self.ticket_count}"
     
-    def remaining_ticket_count(self):
+    # def remaining_ticket_count(self):
         
 
-        def total_wish_ticket_count(self):
-            return ProjectParticipation.objects.filter(
-                event_time=self.event_time,
-                invited_by=self.staff.user
-            ).aggregate(total=Sum('wish_ticket_count'))['total'] or 0
-        return self.event_time.ticket_count - self.ticket_count
+    #     def total_wish_ticket_count(self):
+    #         return ProjectParticipation.objects.filter(
+    #             event_time=self.event_time,
+    #             invited_by=self.staff.user
+    #         ).aggregate(total=Sum('wish_ticket_count'))['total'] or 0
+    #     return self.event_time.ticket_count - self.ticket_count
     
 class ProjectParticipation(models.Model):
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')
@@ -164,6 +173,9 @@ class ProjectParticipation(models.Model):
     wish_attend = models.CharField(max_length=50, blank=True, default='all')
     wish_attend_section = models.CharField(max_length=50, blank=True)
     wish_ticket_count = models.IntegerField(default=2)
+
+    class Meta:
+        ordering = ['id']
 
     def handle_response(self, response, join_people_count, event_time_id):
         if response == 'confirmed':
@@ -195,6 +207,9 @@ class ProjectParticipation(models.Model):
 class VIPAdmin(admin.ModelAdmin):
     list_display = [field.name for field in VIP._meta.fields] + ['project_count']
     search_fields = ('name', 'email')
+
+    class Meta:
+        ordering = ['id']
 
     def project_count(self, obj):
         return obj.projects__count
