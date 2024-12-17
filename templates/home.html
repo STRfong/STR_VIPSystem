@@ -6,6 +6,24 @@
 {% endblock title %}
 
 {% block content %}
+{% if messages %}
+    <div class="container mt-4" id="message-container">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            const container = document.getElementById('message-container');
+            if (container) {
+                container.remove();
+            }
+        }, 3000);
+</script>
+{% endif %}
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-8">

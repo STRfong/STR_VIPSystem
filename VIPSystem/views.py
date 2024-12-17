@@ -1,12 +1,38 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect, render
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.template.loader import render_to_string
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import os
-from django.template.loader import render_to_string
+from VIPSystem_APP.forms import StaffProfileForm
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+def login_view(request):
+    # 如果用戶已經登入，直接重定向到首頁
+    if request.user.is_authenticated:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        try:
+            # 先用 email 找到對應的用戶
+            user = User.objects.get(email=email)
+            # 使用用戶名和密碼進行驗證
+            user = authenticate(request, username=user.username, password=password)
+            
+            if user is not None:
+                login(request, user)
+                # 獲取 next 參數，如果沒有就導向首頁
+                next_url = request.GET.get('next', 'home')
+                return redirect(next_url)
+            else:
+                messages.error(request, '密碼錯誤')
+        except User.DoesNotExist:
+            messages.error(request, '找不到此電子信箱的帳號')
+        
+        return render(request, 'account/login.html')
+    
+    return render(request, 'account/login.html')
 
 def register(request):
     if request.method == 'POST':
@@ -22,11 +48,7 @@ def register(request):
         context = {'form': form}
         return render(request, 'registration/register.html', context)
     
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from VIPSystem_APP.forms import StaffProfileForm
-from VIPSystem_APP.models import StaffProfile
-from django.contrib.auth.models import User
+
 @login_required
 def new_user_profile_profile_form(request):
 
