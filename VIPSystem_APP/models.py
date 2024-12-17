@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib import admin
+from django.db.models import Sum
 from django.db.models import Count
 from django.urls import reverse # 新增
 from django.db import models
@@ -40,6 +41,7 @@ class StaffProfile(models.Model):
     @receiver(post_save, sender=User)
     def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -94,12 +96,6 @@ class EventTime(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     section = models.CharField(max_length=100)
-    # session_choices = [
-    #     ('morning', '早場'),
-    #     ('afternoon', '午場'),
-    #     ('evening', '晚場'),
-    # ]
-    # session = models.CharField(max_length=10, choices=session_choices)
     session = models.CharField(max_length=20)
     location_name = models.CharField(max_length=100)
     location_address = models.CharField(max_length=200)
@@ -119,6 +115,36 @@ class EventTime(models.Model):
     
     def total_join_people_count(self):
         return self.participations.aggregate(total=models.Sum('join_people_count'))['total'] or 0
+    
+class EventTicket(models.Model):
+    staff = models.ForeignKey(
+        StaffProfile, 
+        on_delete=models.CASCADE, 
+        related_name='event_tickets'  # 注意這裡改為複數
+    )
+    event_time = models.ForeignKey(
+        EventTime, 
+        on_delete=models.CASCADE, 
+        related_name='event_tickets'  # 注意這裡改為複數
+    )
+    ticket_count = models.IntegerField(default=0)  # 給予預設值比用 null 更好
+    
+    class Meta:
+        # 添加唯一性約束，確保同一員工不會重複獲得同一場次的票
+        unique_together = ['staff', 'event_time']
+
+    def __str__(self):
+        return f"{self.staff.user.username} - {self.event_time.project.name} - {self.ticket_count}"
+    
+    def remaining_ticket_count(self):
+        
+
+        def total_wish_ticket_count(self):
+            return ProjectParticipation.objects.filter(
+                event_time=self.event_time,
+                invited_by=self.staff.user
+            ).aggregate(total=Sum('wish_ticket_count'))['total'] or 0
+        return self.event_time.ticket_count - self.ticket_count
     
 class ProjectParticipation(models.Model):
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')
@@ -210,4 +236,11 @@ class StaffProfileAdmin(admin.ModelAdmin):
     list_filter = ('department',)
     list_per_page = 10
     list_max_show_all = 100
-    
+
+@admin.register(EventTicket)
+class EventTicketAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in EventTicket._meta.fields]
+    search_fields = ('staff__user__username', 'event_time__project__name')
+    list_filter = ('event_time__project__name',)
+    list_per_page = 10
+    list_max_show_all = 100
