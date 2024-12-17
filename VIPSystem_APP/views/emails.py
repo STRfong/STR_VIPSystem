@@ -195,7 +195,7 @@ class Email():
                 
                 # 添加 HTML 内容到邮件
                 msg = MIMEText(html_content, 'html', 'utf-8')
-                msg['From'] = Header("lab@strnetwork.cc",'utf-8')
+                msg['From'] = Header("contact@strnetwork.cc",'utf-8')
                 msg['To'] =  Header(self.sender,'utf-8')            
                 subject = f" 【薩泰爾娛樂】《{self.project.name}》合作夥伴現場觀賞邀請"
                 msg['Subject'] = Header(subject, 'utf-8')
@@ -224,11 +224,11 @@ class Email():
         # 獲取所有地點
         locations = list(selected_event_session.keys())
         
-        # 獲取所有不重複的場次（從所有地點的場次中）
-        all_sessions = set()
-        for sessions in selected_event_session.values():
-            all_sessions.update(sessions)
-        unique_sessions = sorted(all_sessions)  # 排序場次
+        # # 獲取所有不重複的場次（從所有地點的場次中）
+        # all_sessions = set()
+        # for sessions in selected_event_session.values():
+        #     all_sessions.update(sessions)
+        # unique_sessions = sorted(all_sessions)  # 排序場次
         
         # 格式化地點字串
         if len(locations) == 1:
@@ -238,11 +238,11 @@ class Email():
         else:
             location_str = "在 " + "、".join(locations[:-1]) + "、和" + locations[-1]
         
-        # 格式化場次字串
-        session_str = "、".join(unique_sessions)
+        # # 格式化場次字串
+        # session_str = "、".join(unique_sessions)
         
         # 組合最終結果
-        formatted_result = f"{location_str} 舉辦 {session_str}"
+        formatted_result = f"{location_str}" # 舉辦 {session_str}"
         return formatted_result
 
 

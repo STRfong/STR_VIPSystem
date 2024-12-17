@@ -10,10 +10,7 @@
             <h3 class="card-title">貴賓名稱：{{ vip.name }}</h3>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
-                    <strong>貴賓 email：</strong> {{ vip.email }}
-                </li>
-                <li class="list-group-item">
-                    <strong>貴賓電話號碼：</strong> {{ vip.phone_number }}
+                    <strong>貴賓綽號：</strong> {{ vip.nickname }}
                 </li>
                 <li class="list-group-item">
                     <strong>貴賓標籤：</strong>
@@ -23,6 +20,36 @@
                         <span class="text-muted">無標籤</span>
                     {% endfor %}
                 </li>
+                <li class="list-group-item">
+                    <strong>貴賓單位：</strong> {{ vip.organization }}
+                </li>
+                <li class="list-group-item">
+                    <strong>貴賓職稱：</strong> {{ vip.position }}
+                </li>
+                <li class="list-group-item">
+                    <strong>貴賓電話號碼：</strong> {{ vip.phone_number }}
+                </li>
+                <li class="list-group-item">
+                    <strong>貴賓 email：</strong> {{ vip.email }}
+                </li>
+                <li class="list-group-item">
+                    <strong>聯絡窗口：</strong> {{ vip.poc }}
+                </li>
+                <li class="list-group-item">
+                    <strong>窗口職稱：</strong> {{ vip.poc_position }}
+                </li>
+                <li class="list-group-item">
+                    <strong>窗口電話：</strong> {{ vip.poc_phone_number }}
+                </li>
+                <li class="list-group-item">
+                    <strong>窗口信箱：</strong> {{ vip.poc_email }}
+                </li>
+                <li class="list-group-item">
+                    <strong>STR 窗口：</strong> {{ vip.str_connect }}
+                </li>
+                <li class="list-group-item">
+                    <strong>備註：</strong> {{ vip.notes }}
+                </li>
             </ul>
         </div>
     </div>
@@ -31,7 +58,7 @@
             <a href="{% url 'VIPSystem_APP:vip_list' %}" class="btn btn-secondary">返回列表</a>
         </div>
         <div>
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteVIPModal">
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteVIPModal">
                 刪除貴賓
             </button>
             <a href="{% url 'VIPSystem_APP:vip_update' vip.id %}" class="btn btn-primary">修改貴賓資料</a>
