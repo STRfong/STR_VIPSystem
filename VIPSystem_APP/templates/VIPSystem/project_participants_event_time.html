@@ -47,17 +47,42 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">貴賓邀請名單 
-                    {% if ticket_count != 0 %}
-                        <span class="text-muted" style="font-size: 20px;" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true"
-                        title="已使用票數：{{invited_ticket_count}} 張 <br>剩餘票數：{{remaining_ticket_count}} 張">
-                        {{username}} 本場次可使用 {{ticket_count}} 張票
-                        </span>
-                    {% else %}
-                        <span class="text-muted" style="font-size: 20px;">
-                        {{username}} 本場次暫無可使用票數，如有需要請洽禮賓統籌
-                        </span>
-                    {% endif %}
+                    
                 </h3>
+                <div class="d-flex justify-content-around gap-3">
+
+                    <div class="card text-center" style="width: 10rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">已邀請組數</h5>
+                            <p class="card-text">{{invited_amount}} 組</p>
+                        </div>
+                    </div>
+                    <div class="card text-center" style="width: 10rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">可使用票數</h5>
+                            <p class="card-text">
+                                {% if ticket_count != 0 %}
+                                    {{ticket_count}} 張
+                                    
+                                {% else %}
+                                    無可使用票數
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card text-center" style="width: 10rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">已使用票數</h5>
+                            <p class="card-text">{{invited_ticket_count}} 張</p>
+                        </div>
+                    </div>
+                    <div class="card text-center" style="width: 10rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">剩餘票數</h5>
+                            <p class="card-text">{{remaining_ticket_count}} 張</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="btn-group" role="group">
                     <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       貴賓名單操作
@@ -334,7 +359,7 @@
                                         <p>
                                             填寫時麻煩留意以下資訊：
                                             <ul>
-                                                <li>出席人數以 <<${wish_ticket_count}>> 人為限</li>
+                                                <li>出席人數以 ${wish_ticket_count} 人為限</li>
                                                 <li>報名成功後，薩泰爾娛樂最晚將於活動當週週四寄出電子「出席確認信」，若逾期仍未收到「出席確認信」，請儘速與邀請您的夥伴或禮賓統籌聯繫。</li>
                                             </ul>
                                         </p>
