@@ -3,6 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView, UpdateView
 from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime, EventTicket
 from django.shortcuts import get_object_or_404, redirect
+from django.db import transaction
 from django.contrib import messages
 from django.db.models import Prefetch
 from django.contrib.auth.models import User
@@ -238,6 +239,112 @@ class UpdateParticipantsInfoBySectionView(UpdateView):
         else:
             return ','.join(event_time_list)
         
+@method_decorator(login_required, name='dispatch')
+class UpdateParticipantsByEventTimeView(UpdateView):
+    def post(self, request, *args, **kwargs):
+        project_id = kwargs.get('project_id')
+        section = kwargs.get('section')
+        event_time_id = kwargs.get('event_time_id')
+        
+        project = get_object_or_404(Project, id=project_id)
+        event_time = get_object_or_404(EventTime, id=event_time_id)
+        
+        selected_vips = request.POST.getlist('selected_vips')
+        
+        # 添加選中的VIP到參與者列表
+        for vip_id in selected_vips:
+            vip = get_object_or_404(VIP, id=vip_id)
+            ProjectParticipation.objects.update_or_create(
+                project=project,
+                vip=vip,
+                invited_by=request.user,
+                status='added',
+                event_time=event_time,
+                wish_attend_section=section,
+                wish_attend=str(event_time.id)
+            )
+        
+        messages.success(request, f'已新增 {len(selected_vips)} 位貴賓至 {event_time} 場次。')
+        return redirect('VIPSystem_APP:participation_by_event_time', 
+                       project_id=project_id, 
+                       section=section, 
+                       event_time_id=event_time_id)
+
+    def get(self, request, *args, **kwargs):
+        # 如果是GET請求，重定向回邀請列表頁面
+        return redirect('VIPSystem_APP:invite_list_event_time', 
+                       project_id=kwargs.get('project_id'), 
+                       event_time_id=kwargs.get('event_time_id'))
+        
+@method_decorator(login_required, name='dispatch')
+class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
+    def post(self, request, *args, **kwargs):
+        project_id = kwargs.get('project_id')
+        section = kwargs.get('section')
+        event_time_id = kwargs.get('event_time_id')
+        
+        # 獲取表單數據
+        vip_name = request.POST.get('name')
+        vip_phone = request.POST.get('phone')
+        vip_email = request.POST.get('email')
+        wish_ticket_count = request.POST.get('wish_ticket_count')
+        
+        try:
+            with transaction.atomic():
+                # 檢查是否存在完全匹配的 VIP
+                try:
+                    vip = VIP.objects.get(
+                        name=vip_name,
+                        email=vip_email,
+                        phone_number=vip_phone
+                    )
+                    messages.info(request, f'找到現有貴賓：{vip.name}')
+                except VIP.DoesNotExist:
+                    # 創建新的 VIP
+                    vip = VIP.objects.create(
+                        name=vip_name,
+                        email=vip_email,
+                        phone_number=vip_phone
+                    )
+                    messages.success(request, f'已創建新貴賓：{vip.name}')
+                
+                # 獲取項目和場次
+                project = get_object_or_404(Project, id=project_id)
+                event_time = get_object_or_404(EventTime, id=event_time_id)
+                
+                # 創建或更新參與記錄
+                participation, created = ProjectParticipation.objects.update_or_create(
+                    project=project,
+                    vip=vip,
+                    event_time=event_time,
+                    defaults={
+                        'invited_by': request.user,
+                        'status': 'added',
+                        'wish_attend': str(event_time.id),
+                        'wish_attend_section': section,
+                        'wish_ticket_count': wish_ticket_count,
+                        'join_people_count': 0  # 新增時設置默認值
+                    }
+                )
+                
+                if created:
+                    messages.success(request, f'已成功將貴賓加入本場次')
+                else:
+                    messages.info(request, f'已更新貴賓的參與資訊')
+                
+        except Exception as e:
+            messages.error(request, f'處理過程中發生錯誤：{str(e)}') 
+            
+        return redirect('VIPSystem_APP:participation_by_event_time', 
+                       project_id=project_id, 
+                       section=section, 
+                       event_time_id=event_time_id)
+    
+    def get(self, request, *args, **kwargs):
+        return redirect('VIPSystem_APP:participation_by_event_time',
+                       project_id=kwargs.get('project_id'),
+                       section=kwargs.get('section'),
+                       event_time_id=kwargs.get('event_time_id'))
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class UpdateParticipantsInfoByEventTimeView(UpdateView):
     def post(self, request, *args, **kwargs):
@@ -327,30 +434,30 @@ def update_participants(request, project_id):
     # 如果不是POST請求，重定向回邀請列表頁面
     return redirect('VIPSystem_APP:invite_list', project_id=project.pk)
 
-@login_required
-def update_participants_event_time(request, project_id, section, event_time_id):
-    project = get_object_or_404(Project, id=project_id)
-    event_time = get_object_or_404(EventTime, id=event_time_id)
+# @login_required
+# def update_participants_event_time(request, project_id, section, event_time_id):
+#     project = get_object_or_404(Project, id=project_id)
+#     event_time = get_object_or_404(EventTime, id=event_time_id)
     
-    if request.method == 'POST':
-        selected_vips = set(map(int, request.POST.getlist('selected_vips')))
-        # 添加選中的VIP到參與者列表
-        for vip_id in selected_vips:
-            vip = VIP.objects.get(id=vip_id)
-            ProjectParticipation.objects.update_or_create(
-                project=project,
-                vip=vip,
-                invited_by=request.user,
-                status = 'added',
-                event_time=event_time, 
-                wish_attend_section=section, 
-                wish_attend=event_time.id
-            )
+#     if request.method == 'POST':
+#         selected_vips = set(map(int, request.POST.getlist('selected_vips')))
+#         # 添加選中的VIP到參與者列表
+#         for vip_id in selected_vips:
+#             vip = VIP.objects.get(id=vip_id)
+#             ProjectParticipation.objects.update_or_create(
+#                 project=project,
+#                 vip=vip,
+#                 invited_by=request.user,
+#                 status = 'added',
+#                 event_time=event_time, 
+#                 wish_attend_section=section, 
+#                 wish_attend=event_time.id
+#             )
         
-        return redirect('VIPSystem_APP:participation_by_event_time', project_id=project.pk, section=section, event_time_id=event_time_id)
+#         return redirect('VIPSystem_APP:participation_by_event_time', project_id=project.pk, section=section, event_time_id=event_time_id)
     
-    # 如果不是POST請求，重定向回邀請列表頁面
-    return redirect('VIPSystem_APP:invite_list_event_time', project_id=project.pk, event_time_id=event_time.pk)
+#     # 如果不是POST請求，重定向回邀請列表頁面
+#     return redirect('VIPSystem_APP:invite_list_event_time', project_id=project.pk, event_time_id=event_time.pk)
 
 @login_required
 def remove_participant(request, project_id, participant_id):
