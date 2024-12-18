@@ -25,6 +25,7 @@ def send_email(request, project_id, participant_id):
         email = Email(request.user.username, 
                         request.POST['sender'], 
                         request.POST.getlist('selected_event_times'), 
+                        pp.wish_ticket_count,
                         vip.name,
                         project, 
                         random_token)
@@ -46,6 +47,7 @@ def send_email_by_section(request, project_id, section):
         email = Email(request.user.username, 
                         request.POST['sender'], 
                         pp.get_wish_attend_list(), 
+                        pp.wish_ticket_count,
                         vip.name,
                         project, 
                         dead_line_date,
@@ -70,6 +72,7 @@ def send_email_event_time(request, project_id, section, event_time_id):
         email = Email(request.user.username, 
                         request.POST['sender'], 
                         pp.get_wish_attend_list(), 
+                        pp.wish_ticket_count,
                         vip.name,
                         project, 
                         dead_line_date,
@@ -96,6 +99,7 @@ def send_emails(request, project_id):
             email = Email(request.user.username, 
                         vip.email, 
                         request.POST.getlist('selected_event_times'), 
+                        pp.wish_ticket_count,
                         vip.name,
                         project, 
                         random_token) 
@@ -124,6 +128,7 @@ def send_emails_event_time(request, project_id, event_time_id):
             email = Email(request.user.username, 
                         vip.email, 
                         request.POST.getlist('selected_event_times'), 
+                        pp.wish_ticket_count,
                         vip.name,
                         project, 
                         random_token) 
@@ -150,6 +155,7 @@ def send_emails_by_section(request, project_id, section):
             email = Email(request.user.username, 
                             vip.email, 
                             pp.get_wish_attend_list(), 
+                            pp.wish_ticket_count,
                             vip.name,
                             project, 
                             dead_line_date,
@@ -167,10 +173,11 @@ def send_emails_by_section(request, project_id, section):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, username, sender, selected_event_times_list, vip_name, project, dead_line_date, token, email_content):
+    def __init__(self, username, sender, selected_event_times_list, wish_ticket_count, vip_name, project, dead_line_date, token, email_content):
         self.username = username
         self.sender = sender
         self.selected_event_times_list = selected_event_times_list
+        self.wish_ticket_count = wish_ticket_count
         self.vip_name = vip_name
         self.project = project
         self.dead_line_date = dead_line_date
@@ -184,9 +191,9 @@ class Email():
                 html_content = render_to_string(
                     'VIPSystem/email_template.html',
                     {'username': self.username, 
-                     'selected_event_times': self.filter_selected_event_times(self.selected_event_times_list), 
                      'token': self.token, 
                      'vip_name': self.vip_name,
+                     'wish_ticket_count': self.wish_ticket_count,
                      'project': self.project,
                      'dead_line_date': self.get_weekday(self.dead_line_date),
                      'SITE_URL': os.getenv('SITE_URL'),
@@ -197,7 +204,7 @@ class Email():
                 msg = MIMEText(html_content, 'html', 'utf-8')
                 msg['From'] = Header("contact@strnetwork.cc",'utf-8')
                 msg['To'] =  Header(self.sender,'utf-8')            
-                subject = f" 【薩泰爾娛樂】《{self.project.name}》合作夥伴現場觀賞邀請"
+                subject = f" 【薩泰爾娛樂】【{self.project.name}】合作夥伴現場觀賞邀請"
                 msg['Subject'] = Header(subject, 'utf-8')
                 smtp.send_message(msg)  
 

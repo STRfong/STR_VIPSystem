@@ -110,7 +110,12 @@ class ProjectParticipantsByEventTimeView(ListView):
     
     def check_intersection(self, event_time, participation):
         participation_set = set(participation.get_wish_attend_list())
-        return event_time in participation_set
+        if participation.status == 'added' or participation.status == 'sended':
+            return event_time in participation_set
+        elif participation.status == 'confirmed':
+            return event_time == participation.event_time
+        else:
+            return False
 
     def get_context_data(self, **kwargs):
         try:
@@ -122,11 +127,19 @@ class ProjectParticipantsByEventTimeView(ListView):
             context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
             context['staffs'] = User.objects.all()
             context['username'] = self.request.user.username
-            event_ticket = EventTicket.objects.filter(
-                event_time_id=event_time_id, 
-                staff_id=self.request.user.id
-            ).values_list('ticket_count', flat=True).first() or 0
-            context['event_ticket'] = event_ticket
+            try:
+                event_ticket = EventTicket.objects.get(
+                    event_time_id=event_time_id, 
+                    staff__user=self.request.user
+                )
+                context['ticket_count'] = event_ticket.ticket_count
+                context['invited_ticket_count'] = event_ticket.total_invited_tickets()
+                context['remaining_ticket_count'] = event_ticket.total_remaining_tickets()
+            except EventTicket.DoesNotExist:
+                context['ticket_count'] = 0
+                context['invited_ticket_count'] = 0
+                context['remaining_ticket_count'] = 0
+            
             return context
         except Exception as e:
             print(f"Error: {e}")

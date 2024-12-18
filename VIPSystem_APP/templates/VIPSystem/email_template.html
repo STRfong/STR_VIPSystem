@@ -11,27 +11,47 @@
       {{ email_content }}
    </p>
    <p>
-      {% if selected_event_times|length > 1 %}我們將於 <br>{% else %}我們將於 {% endif %}
-      {% for event_string in selected_event_times %}
-         {{ event_string }}{% if not forloop.last %}；<br>{% else %}舉辦<br>{% endif %}
-      {% endfor %}
-      <strong>{{project.description}}《{{project.name}}》</strong><br>
+      感謝您一路以來對薩泰爾娛樂的支持，<br>
+      我們將於近期舉辦【{{project.name}}】的錄影活動<br>
    </p>
    <p>
-      請於下方連結中填寫資料，敬請於 {{dead_line_date}}前填寫完成，期待您的蒞臨！
+      請於下方連結中填寫資料，敬請於 <strong style="color:darkred;">活動當週星期三</strong> 前填寫完成，期待您的蒞臨！
+   </p>
+
+   <p>
+      <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}">☞點擊按鈕確認參加！</a>
+   </p>
+
+   <p>
+      場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
+      進場時間：<strong>17:00 - 18:00</strong><br>
+      演出時間：<strong>18:00 - 21:00</strong>
+   </p>
+
+   <p>
+      填寫時麻煩留意以下資訊：
+      <ul>
+         <li>出席人數以 <<{{wish_ticket_count}}>> 人為限</li>
+         <li>報名成功後，薩泰爾娛樂最晚將於活動當週週四寄出電子「出席確認信」，若逾期仍未收到「出席確認信」，請儘速與邀請您的夥伴或禮賓統籌聯繫。</li>
+      </ul>
    </p>
    <p>
-      <a href="{{ SITE_URL }}{% url 'VIPSystem_APP:respond' token %}">☞點擊按鈕確認參加！</a><span>邀請您的夥伴為：{{username}}</span>
-   </p>
-   
-   <p>
-      賀博台瘋 禮賓統籌<br>
+      <strong>【{{project.name}}】禮賓統籌</strong><br>
       游幃傑 Jerry Yu<br>
       jerryyu@strnetwork.cc<br>
       0924-109-008
    </p>
-   <p>
-      保留席有限，敬請把握登記！
-   </p>
+   <p>保留席有限，敬請把握登記！</p>
+   <p>薩泰爾娛樂 敬上</p>
+   <h3>▶現場注意事項</h3>
+   <ol>
+      <li>本節目錄影全長約 110 至 140 分鐘（含中場休息）。遲到觀眾須於主辦單位安排之時間點，在工作人員的引導之下入場，不得異議。</li>
+      <li>未經主辦單位同意，場內禁止錄影、錄音、拍照、限時動態。</li>
+      <li>主辦單位未公開節目內容前，需對內容完全保密。</li>
+      <li>本節目禁止攜帶外食、飲料、任何種類之金屬、玻璃、雷射筆、煙火或任何危險物品。</li>
+      <li>本節目無尺度限制，18 歲以下觀眾建議由成年人陪同觀賞。</li>
+      <li>全場次皆為錄影場，入場即代表您同意個人肖像權可作為薩泰爾娛樂股份有限公司 -【 賀瓏夜夜秀 】使用。</li>
+      <li>全場次皆為現場錄影，攝影機架設、移動尊重現場導播指示，如有部分阻擋視線敬請見諒。</li>
+   </ol>
 </body>
 </html>
