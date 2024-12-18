@@ -128,6 +128,7 @@ class ProjectParticipantsByEventTimeView(ListView):
             context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
             context['staffs'] = User.objects.all()
             context['username'] = self.request.user.username
+            context['invited_amount'] = ProjectParticipation.objects.filter(project_id=project_id, event_time_id=event_time_id, invited_by=self.request.user).count()
             try:
                 event_ticket = EventTicket.objects.get(
                     event_time_id=event_time_id, 
