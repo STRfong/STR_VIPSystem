@@ -46,7 +46,18 @@
         </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">貴賓邀請名單 <span class="text-muted" style="font-size: 20px;">{{username}} 本場次可使用 {{event_ticket}} 張票</span></h3>
+                <h3 class="card-title mb-0">貴賓邀請名單 
+                    {% if ticket_count != 0 %}
+                        <span class="text-muted" style="font-size: 20px;" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true"
+                        title="已使用票數：{{invited_ticket_count}} 張 <br>剩餘票數：{{remaining_ticket_count}} 張">
+                        {{username}} 本場次可使用 {{ticket_count}} 張票
+                        </span>
+                    {% else %}
+                        <span class="text-muted" style="font-size: 20px;">
+                        {{username}} 本場次暫無可使用票數，如有需要請洽禮賓統籌
+                        </span>
+                    {% endif %}
+                </h3>
                 <div class="btn-group" role="group">
                     <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       貴賓名單操作
@@ -141,6 +152,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- 寄件 Modal -->
                             <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
@@ -153,6 +165,7 @@
                                                 {% csrf_token %}
                                                 <div class="form-group mb-3 row">
                                                     <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
+                                                    <input type="hidden" name="wish_ticket_count" value="{{ participant.wish_ticket_count }}">
                                                     <label for="recipient_name" class="col-sm-2 col-form-label">收件人名稱</label>
                                                     <div class="col-sm-3">
                                                         <input type="text" class="form-control" id="recipient_name" name="recipient_name" required value="{{ participant.vip.name }}" placeholder="請輸入收件人名稱">
@@ -235,55 +248,69 @@
                                 </div>
                             </div>
                             <script>
-
-                                function convertStringToArray(str) {
-                                    str = str.replace(/^\[|\]$/g, '');
-                                    str = str.replace(/^['"]|['"]$/g, '');
-                                    return [str];
-                                }
-
                                 document.querySelector('[data-bs-target="#previewModal{{ participant.id }}"]').addEventListener('click', function() {
                                     // 動態生成預覽內容
                             
                                     var emailForm = document.getElementById('emailForm{{ participant.id }}');
-                                    var emailContent = document.querySelector('[name="email_content"]').value;
                                     var formData = new FormData(emailForm);
+                                    var emailContent = formData.get('email_content');
                                     var recipientName = formData.get('recipient_name');
                                     var senderEmail = formData.get('sender');
-                                    var eventTimes = formData.get('event_times'); // 獲取所有的 event_times
-                                    var deadLine = formData.get('dead_line_date');  
+                                    var eventTimes = formData.get('event_times'); // 獲取所有的 event_times 
                                     var projectName = formData.get('project_name');
-                                    var projectDescription = formData.get('project_description');
                                     var username = formData.get('username');
-                            
+                                    var wish_ticket_count = formData.get('wish_ticket_count');
                                     // 動態生成 eventTimes 的列表內容
-                                    var eventTimesList = convertStringToArray(eventTimes).map(function(event) {
-                                        return `${event}`;
-                                    }).join(''); // 將陣列轉為字串
                             
                                     var previewContent = `
                                         <h1>${recipientName} 您好</h1>
+
                                         <p>
                                             ${emailContent}
                                         </p>
                                         <p>
-                                            我們將於${eventTimesList}舉辦<br>
+                                            感謝您一路以來對薩泰爾娛樂的支持，<br>
+                                            我們將於近期舉辦【${projectName}】的錄影活動<br>
                                         </p>
                                         <p>
-                                            <strong>${projectDescription}《${projectName}》</strong>
+                                            請於下方連結中填寫資料，敬請於 <strong style="color:darkred;">活動當週星期三</strong> 前填寫完成，期待您的蒞臨！
+                                        </p>
+
+                                        <p>
+                                            <a href="#">☞點擊按鈕確認參加！</a>
+                                        </p>
+
+                                        <p>
+                                            場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
+                                            進場時間：<strong>17:00 - 18:00</strong><br>
+                                            演出時間：<strong>18:00 - 21:00</strong>
+                                        </p>
+
+                                        <p>
+                                            填寫時麻煩留意以下資訊：
+                                            <ul>
+                                                <li>出席人數以 <<${wish_ticket_count}>> 人為限</li>
+                                                <li>報名成功後，薩泰爾娛樂最晚將於活動當週週四寄出電子「出席確認信」，若逾期仍未收到「出席確認信」，請儘速與邀請您的夥伴或禮賓統籌聯繫。</li>
+                                            </ul>
                                         </p>
                                         <p>
-                                            請於下方連結中填寫資料，敬請於 ${deadLine} 前填寫完成，期待您的蒞臨！
-                                        </p>
-                                        <p>
-                                            <a href="#">☞點擊按鈕確認參加！</a><span>邀請您的夥伴為：${username}</span>
-                                        </p>
-                                        <p>
-                                            賀博台瘋 禮賓統籌<br>
+                                            <strong>【${projectName}】禮賓統籌</strong><br>
                                             游幃傑 Jerry Yu<br>
                                             jerryyu@strnetwork.cc<br>
                                             0924-109-008
                                         </p>
+                                        <p>保留席有限，敬請把握登記！</p>
+                                        <p>薩泰爾娛樂 敬上</p>
+                                        <h3>▶現場注意事項</h3>
+                                        <ol>
+                                            <li>本節目錄影全長約 110 至 140 分鐘（含中場休息）。遲到觀眾須於主辦單位安排之時間點，在工作人員的引導之下入場，不得異議。</li>
+                                            <li>未經主辦單位同意，場內禁止錄影、錄音、拍照、限時動態。</li>
+                                            <li>主辦單位未公開節目內容前，需對內容完全保密。</li>
+                                            <li>本節目禁止攜帶外食、飲料、任何種類之金屬、玻璃、雷射筆、煙火或任何危險物品。</li>
+                                            <li>本節目無尺度限制，18 歲以下觀眾建議由成年人陪同觀賞。</li>
+                                            <li>全場次皆為錄影場，入場即代表您同意個人肖像權可作為薩泰爾娛樂股份有限公司 -【 賀瓏夜夜秀 】使用。</li>
+                                            <li>全場次皆為現場錄影，攝影機架設、移動尊重現場導播指示，如有部分阻擋視線敬請見諒。</li>
+                                        </ol>
                                     `;
                                     
                                     document.getElementById('previewContent{{ participant.id }}').innerHTML = previewContent;

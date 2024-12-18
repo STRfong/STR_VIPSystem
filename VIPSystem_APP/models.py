@@ -1,9 +1,7 @@
 from django.db import models
 from django.contrib import admin
-from django.db.models import Sum
-from django.db.models import Count
+from django.db.models import Q, Sum, Case, When, IntegerField, Count
 from django.urls import reverse # 新增
-from django.db import models
 from django.utils.timezone import now
 from django.utils.formats import date_format
 from datetime import datetime
@@ -115,7 +113,7 @@ class EventTime(models.Model):
 
     def __str__(self):
         #  return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
-        return f"{date_format(self.date, 'Y/m/d')} {self.session}"
+        return f"{date_format(self.date, 'm/d')} {self.session}"
     
     def get_weekday(self):
         weekday_number = self.dead_line_date.weekday()
@@ -144,6 +142,26 @@ class EventTicket(models.Model):
 
     def __str__(self):
         return f"{self.staff.user.username} - {self.event_time.project.name} - {self.ticket_count}"
+
+    def total_invited_tickets(self):
+        participations_invited_by_staff = ProjectParticipation.objects.filter(
+            invited_by=self.staff.user,
+            event_time=self.event_time
+        )
+
+        return participations_invited_by_staff.aggregate(
+                total=Sum(
+                        Case(
+                            When(status='confirmed', then='join_people_count'),
+                            When(Q(status='added') | Q(status='sended'), then='wish_ticket_count'),
+                            default=0,
+                            output_field=IntegerField(),
+                        )
+                    )
+                )['total'] or 0
+    
+    def total_remaining_tickets(self): # 計算本場次剩餘可邀請票數
+        return self.ticket_count - self.total_invited_tickets()
     
     
 class ProjectParticipation(models.Model):
