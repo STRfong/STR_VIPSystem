@@ -64,9 +64,54 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                       <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
+                      <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
                       <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
                     </ul>
                 </div>
+            </div>
+            <!-- 直接新增貴賓 Modal -->
+            <div class="modal fade" id="addParticipantDirectlyModal" tabindex="-1" aria-labelledby="addParticipantDirectlyModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="addParticipantDirectlyModalLabel">直接新增貴賓</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body"> 
+                    <form action="{% url 'VIPSystem_APP:update_participants_event_time_directly' project.pk event_time.section event_time.pk %}" method="POST">
+                      {% csrf_token %}
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">姓名</label>
+                        <div class="col-sm-9">
+                          <input type="text" class="form-control" name="name" placeholder="請輸入貴賓姓名" required>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">電話</label>
+                        <div class="col-sm-9">
+                          <input type="tel" class="form-control" name="phone" placeholder="請輸入貴賓電話" required>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">電子信箱</label>
+                        <div class="col-sm-9">
+                          <input type="email" class="form-control" name="email" placeholder="請輸入貴賓電子信箱" required>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">希望票數</label>
+                        <div class="col-sm-9">
+                          <input type="number" class="form-control" name="wish_ticket_count" placeholder="請輸入希望給的張數" min="1" required>
+                        </div>
+                      </div>
+                      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">新增</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
             </div>
             {% if participants_list %}
                 <div style="max-height: 70vh; overflow-y: auto;">
