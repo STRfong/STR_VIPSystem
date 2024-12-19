@@ -15,26 +15,90 @@
                     <table class="table table-striped">
                         <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
-                                <th>選擇</th>
-                                <th>姓名</th>
-                                <th>標籤</th>
-                                <th>電子郵件</th>
+                                <th style="width: 3%;">選擇</th>
+                                <th style="width: 4%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                                <!-- 篩選姓名 Modal -->
+                                <div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="filterNameModalLabel">顯示哪些姓名</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body"> 
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control" id="nameFilter" name="nameFilter" placeholder="請輸入關鍵字">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer justify-content-between">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                                                <button type="button" class="btn btn-primary" onclick="applyFilterName()" id="applyFilterNameBtn">篩選</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <th style="width: 10%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
+                                <!-- 篩選單位 Modal -->
+                                <div class="modal fade" id="filterOrganizationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterOrganizationModal" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="filterOrganizationModalLabel">顯示哪些單位</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control" id="organizationFilter" name="organizationFilter" placeholder="請輸入關鍵字">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer justify-content-between">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                                                <button type="button" class="btn btn-primary" onclick="applyFilterOrganization()" id="applyFilterOrganizationBtn">篩選</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <th style="width: 10%;">職稱 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterPositionModal" style="cursor: pointer;"></i></th>
+                                <!-- 篩選職稱 Modal -->
+                                <div class="modal fade" id="filterPositionModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterPositionModal" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="filterPositionModalLabel">顯示哪些職稱</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control" id="positionFilter" name="positionFilter" placeholder="請輸入關鍵字">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer justify-content-between">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                                                <button type="button" class="btn btn-primary" onclick="applyFilterPosition()" id="applyFilterPositionBtn">篩選</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <th style="width: 10%;">標籤 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#tagFilterModal" style="cursor: pointer;"></i></th>
+                                <th style="width: 10%;">電子郵件</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for vip in vip_list %}
                                 <tr>
-                                    <td>
+                                    <td style="width: 3%;">
                                         <input type="checkbox" id="vip_{{ vip.pk }}" name="selected_vips" value="{{ vip.pk }}" class="vip-checkbox"
                                             {% if vip in current_participants %}checked disabled{% endif %}>
                                     </td>
-                                    <td>
+                                    <td style="width: 4%;">
                                         <label for="vip_{{ vip.pk }}" style="cursor: pointer; display: block; width: 100%;">
                                             {{ vip.name }}
                                         </label>
                                     </td>
-                                    <td>{{ vip.tags.all|join:", " }}</td>
-                                    <td>{{ vip.email }}</td>
+                                    <td style="width: 10%;">{{ vip.organization }}</td>
+                                    <td style="width: 10%;">{{ vip.position }}</td>
+                                    <td style="width: 10%;">{{ vip.tags.all|join:", " }}</td>
+                                    <td style="width: 10%;">{{ vip.email }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -47,6 +111,33 @@
     <div class="mt-3 d-flex justify-content-between">
         <a href="{% url 'VIPSystem_APP:participation_by_event_time' project.id event_time.section event_time.id %}" class="btn btn-secondary">返回</a>
         <button type="submit" form="inviteForm" class="btn btn-primary ms-2" id="submitButton" disabled>更新參與者</button>
+    </div>
+</div>
+<!-- 標籤篩選 Modal -->
+<div class="modal fade" id="tagFilterModal" tabindex="-1" aria-labelledby="tagFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tagFilterModalLabel">篩選標籤</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="tagFilterForm">
+                    {% for tag in all_tags %}
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="tag_{{ tag.id }}" name="tags" value="{{ tag.id }}" onchange="this.nextElementSibling.querySelector('span').classList.toggle('bg-primary'); this.nextElementSibling.querySelector('span').classList.toggle('bg-secondary');">
+                        <label class="form-check-label" for="tag_{{ tag.id }}">
+                            <span class="badge rounded-pill bg-secondary">{{ tag.name }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                <button type="button" class="btn btn-primary" onclick="applyTagFilter()" id="applyTagFilterButton">應用篩選</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -66,6 +157,56 @@
 
         updateSubmitButton();
     });
+
+    function applyFilterName() {
+        var nameFilter = document.getElementById('nameFilter').value;
+        var url = new URL(window.location.href);
+        if (nameFilter == '') {
+            url.searchParams.delete('nameFilter');
+        } else {
+            url.searchParams.set('nameFilter', nameFilter);
+        }
+        window.location.href = url.toString();
+    }
+
+    function applyFilterOrganization() {
+        var organizationFilter = document.getElementById('organizationFilter').value;
+        var url = new URL(window.location.href);
+        if (organizationFilter == '') {
+            url.searchParams.delete('organizationFilter');
+        } else {
+            url.searchParams.set('organizationFilter', organizationFilter);
+        }
+        window.location.href = url.toString();
+    }
+
+    function applyFilterPosition() {
+        var positionFilter = document.getElementById('positionFilter').value;
+        var url = new URL(window.location.href);
+        if (positionFilter == '') {
+            url.searchParams.delete('positionFilter');
+        } else {
+            url.searchParams.set('positionFilter', positionFilter);
+        }
+        window.location.href = url.toString();
+    }
+
+    function applyTagFilter() {
+      var selectedTags = [];
+      var checkboxes = document.querySelectorAll('#tagFilterForm input[type="checkbox"]:checked');
+      console.log(checkboxes);
+      checkboxes.forEach(function(checkbox) {
+          selectedTags.push(checkbox.value);
+      });
+      
+      var url = new URL(window.location.href);
+      url.searchParams.delete('tags');
+      selectedTags.forEach(function(tag) {
+          url.searchParams.append('tags', tag);
+      });
+
+      window.location.href = url.toString();
+    }
 
 </script>
 {% endblock %}

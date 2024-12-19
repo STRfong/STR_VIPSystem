@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required   
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, UpdateView
-from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime, EventTicket
+from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime, EventTicket, Tag
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
 from django.contrib import messages
@@ -184,6 +184,22 @@ class InviteListViewEventTime(ListView):
     template_name = 'VIPSystem/invite_list_event_time.html'
     context_object_name = 'vip_list'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        name_filter = self.request.GET.get('nameFilter')
+        if name_filter:
+            queryset = queryset.filter(name__icontains=name_filter)
+        organization_filter = self.request.GET.get('organizationFilter')
+        if organization_filter:
+            queryset = queryset.filter(organization__icontains=organization_filter)
+        position_filter = self.request.GET.get('positionFilter')
+        if position_filter:
+            queryset = queryset.filter(position__icontains=position_filter)
+        tag_filter = self.request.GET.getlist('tags')
+        if tag_filter:
+            queryset = queryset.filter(tags__in=tag_filter)
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project_id = self.kwargs.get('project_id')
@@ -191,6 +207,7 @@ class InviteListViewEventTime(ListView):
         project = get_object_or_404(Project, pk=project_id)
         context['project'] = project
         context['current_participants'] = project.participants.all()
+        context['all_tags'] = Tag.objects.all()
         context['event_time'] = get_object_or_404(EventTime, pk=event_time_id)
         return context
 
@@ -349,7 +366,6 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class UpdateParticipantsInfoByEventTimeView(UpdateView):
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         project_id = kwargs.get('project_id')
         event_time_id = kwargs.get('event_time_id')
         section = kwargs.get('section')
@@ -435,30 +451,6 @@ def update_participants(request, project_id):
     # 如果不是POST請求，重定向回邀請列表頁面
     return redirect('VIPSystem_APP:invite_list', project_id=project.pk)
 
-# @login_required
-# def update_participants_event_time(request, project_id, section, event_time_id):
-#     project = get_object_or_404(Project, id=project_id)
-#     event_time = get_object_or_404(EventTime, id=event_time_id)
-    
-#     if request.method == 'POST':
-#         selected_vips = set(map(int, request.POST.getlist('selected_vips')))
-#         # 添加選中的VIP到參與者列表
-#         for vip_id in selected_vips:
-#             vip = VIP.objects.get(id=vip_id)
-#             ProjectParticipation.objects.update_or_create(
-#                 project=project,
-#                 vip=vip,
-#                 invited_by=request.user,
-#                 status = 'added',
-#                 event_time=event_time, 
-#                 wish_attend_section=section, 
-#                 wish_attend=event_time.id
-#             )
-        
-#         return redirect('VIPSystem_APP:participation_by_event_time', project_id=project.pk, section=section, event_time_id=event_time_id)
-    
-#     # 如果不是POST請求，重定向回邀請列表頁面
-#     return redirect('VIPSystem_APP:invite_list_event_time', project_id=project.pk, event_time_id=event_time.pk)
 
 @login_required
 def remove_participant(request, project_id, participant_id):
