@@ -157,11 +157,11 @@
                             {% for participant in participants_list %}
                             <tr>
                                 <td style="width: 8%;">
-                                    <span data-bs-toggle="tooltip" data-bs-placement="right" 
+                                    <a href="{% url 'VIPSystem_APP:vip_detail' participant.vip.pk %}" data-bs-toggle="tooltip" data-bs-placement="right" 
                                     title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
                                     上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}">
                                     {{ participant.vip.name }}
-                                    </span>
+                                    </a>
                                 </td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
                                 {% if participant.wish_attend == 'all' %}
