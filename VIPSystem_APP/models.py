@@ -165,11 +165,12 @@ class EventTicket(models.Model):
     
     
 class ProjectParticipation(models.Model):
+    pp_id = models.IntegerField(editable=False)
     vip = models.ForeignKey(VIP, on_delete=models.CASCADE, related_name='project_participations')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='vip_participations')
     invited_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, related_name='invitations')
     status = models.CharField(max_length=20, choices=[
-        ('added', '已新增尚未寄信'),
+        ('added', '尚未寄出邀請信'),
         ('confirmed', '確認參加'),
         ('sended', '已發送邀請信件等待回覆'),
         ('declined', '拒絕參加'),
@@ -185,6 +186,20 @@ class ProjectParticipation(models.Model):
 
     class Meta:
         ordering = ['id']
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # 只在創建新對象時執行
+            # 獲取當前專案的最大序號
+            max_sequence = ProjectParticipation.objects.filter(
+                project=self.project
+            ).aggregate(
+                max_sequence=models.Max('pp_id')
+            )['max_sequence'] or 0
+            
+            # 設置新的序號
+            self.pp_id = max_sequence + 1
+            
+        super().save(*args, **kwargs)
 
     def handle_response(self, response, join_people_count, event_time_id):
         if response == 'confirmed':

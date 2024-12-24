@@ -143,11 +143,12 @@
                     <table class="table table-striped mt-3">
                         <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
-                                <th style="width: 8%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                                <th style="width: 6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                                <th style="width: 8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
-                                <th style="width: 12%;">希望參加場次</th>
-                                <th style="width: 8%;">預期發放票數</th>
-                                <th style="width: 13%;">狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                                <!-- <th style="width: 12%;">希望參加場次</th> -->
+                                <th style="width: 8%;">提供票數</th>
+                                <th style="width: 13%;">回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 12%;">參加場次</th>
                                 <th style="width: 8%;">確定索取票數</th>
                                 <th style="width: 15%;">操作</th>
@@ -156,25 +157,25 @@
                         <tbody>
                             {% for participant in participants_list %}
                             <tr>
-                                <td style="width: 8%;">
+                                <td style="width: 6%;">
                                     <a href="{% url 'VIPSystem_APP:vip_detail' participant.vip.pk %}" data-bs-toggle="tooltip" data-bs-placement="right" 
                                     title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
                                     上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}">
                                     {{ participant.vip.name }}
                                     </a>
                                 </td>
+                                <td style="width: 6%;">{{ participant.vip.organization }}</td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
-                                {% if participant.wish_attend == 'all' %}
+                                <!-- {% if participant.wish_attend == 'all' %}
                                     <td style="width: 12%;">都可以</td>
                                 {% else %}
                                     <td style="width: 12%;">
                                         {% for event_time in participant.get_wish_attend_list %}
-                                            <!-- {{ event_time.date | date:"Y/m/d" }} {{ event_time.section }}{{ event_time.get_session_display }}  -->
                                             {{ event_time.date | date:"m/d" }} {{ event_time.session }} 
                                             {% if not forloop.last %}<br>{% endif %}
                                         {% endfor %}
                                     </td>
-                                {% endif %}
+                                {% endif %} -->
                                 <td style="width: 8%;">{{ participant.wish_ticket_count }}</td>
                                 <td style="width: 13%;">{{ participant.get_status_display }}</td>
                                 {% if participant.event_time %}
@@ -333,7 +334,7 @@
                                     // 動態生成 eventTimes 的列表內容
                             
                                     var previewContent = `
-                                        <h1>${recipientName} 您好</h1>
+                                        <h4>親愛的薩泰爾夥伴 您好：</h4>
 
                                         <p>
                                             ${emailContent}
@@ -581,7 +582,7 @@
                     {% csrf_token %}
                     <div class="d-flex flex-wrap">
                         <input type="checkbox" class="btn-check" value="added" id="added">
-                        <label class="btn btn-outline-dark m-1" for="added"> 已新增尚未寄信 </label>
+                        <label class="btn btn-outline-dark m-1" for="added"> 尚未寄出邀請信 </label>
                         <input type="checkbox" class="btn-check" value="confirmed" id="confirmed">
                         <label class="btn btn-outline-dark m-1" for="confirmed"> 確認參加 </label>
                         <input type="checkbox" class="btn-check" value="sended" id="sended">
