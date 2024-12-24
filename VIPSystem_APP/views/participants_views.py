@@ -303,26 +303,54 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
         
         # 獲取表單數據
         vip_name = request.POST.get('name')
+        vip_organization = request.POST.get('organization')
+        vip_position = request.POST.get('position')
         vip_phone = request.POST.get('phone')
         vip_email = request.POST.get('email')
+        str_connect = request.POST.get('str_connect')
+        notes = request.POST.get('notes')
         wish_ticket_count = request.POST.get('wish_ticket_count')
+        poc = request.POST.get('poc')
+        poc_position = request.POST.get('poc_position')
+        poc_phone_number = request.POST.get('poc_phone_number')
+        poc_email = request.POST.get('poc_email')
         
         try:
             with transaction.atomic():
                 # 檢查是否存在完全匹配的 VIP
                 try:
                     vip = VIP.objects.get(
-                        name=vip_name,
                         email=vip_email,
-                        phone_number=vip_phone
                     )
                     messages.info(request, f'找到現有貴賓：{vip.name}')
+                    # 更新 VIP 实例的字段
+                    vip.name = vip_name
+                    vip.email = vip_email
+                    vip.phone_number = vip_phone
+                    vip.organization = vip_organization
+                    vip.position = vip_position
+                    vip.str_connect = str_connect
+                    vip.notes = notes
+                    vip.poc = poc
+                    vip.poc_position = poc_position
+                    vip.poc_phone_number = poc_phone_number
+                    vip.poc_email = poc_email
+                    # 保存更改
+                    vip.save()
                 except VIP.DoesNotExist:
                     # 創建新的 VIP
                     vip = VIP.objects.create(
                         name=vip_name,
                         email=vip_email,
-                        phone_number=vip_phone
+                        phone_number=vip_phone,
+                        organization=vip_organization,
+                        position=vip_position,
+                        str_connect=str_connect,
+                        notes=notes,
+                        poc=poc,
+                        poc_position=poc_position,
+                        poc_phone_number=poc_phone_number,
+                        poc_email=poc_email
                     )
                     messages.success(request, f'已創建新貴賓：{vip.name}')
                 

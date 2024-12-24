@@ -106,27 +106,77 @@
                     <form action="{% url 'VIPSystem_APP:update_participants_event_time_directly' project.pk event_time.section event_time.pk %}" method="POST">
                       {% csrf_token %}
                       <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label">姓名</label>
-                        <div class="col-sm-9">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓姓名<span style="color: red;">*</span></label>
+                        <div class="col-sm-8">
                           <input type="text" class="form-control" name="name" placeholder="請輸入貴賓姓名" required>
                         </div>
                       </div>
                       <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label">電話</label>
-                        <div class="col-sm-9">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓單位</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="organization" placeholder="請輸入貴賓單位">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓職稱</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="position" placeholder="請輸入貴賓職稱">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓電話<span style="color: red;">*</span></label>
+                        <div class="col-sm-8">
                           <input type="tel" class="form-control" name="phone" placeholder="請輸入貴賓電話" required>
                         </div>
                       </div>
                       <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label">電子信箱</label>
-                        <div class="col-sm-9">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓電子信箱<span style="color: red;">*</span></label>
+                        <div class="col-sm-8">
                           <input type="email" class="form-control" name="email" placeholder="請輸入貴賓電子信箱" required>
                         </div>
                       </div>
                       <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label">希望票數</label>
-                        <div class="col-sm-9">
-                          <input type="number" class="form-control" name="wish_ticket_count" placeholder="請輸入希望給的張數" min="1" required>
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >STR 聯絡人<span style="color: red;">*</span></label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="str_connect" placeholder="請輸入 STR 聯絡人" required>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >備註</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="notes" placeholder="備註">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >提供票數<span style="color: red;">*</span></label>
+                        <div class="col-sm-8">
+                          <input type="number" class="form-control" name="wish_ticket_count" placeholder="請輸入提供票數" min="1" required>
+                        </div>
+                      </div>
+                      <hr>
+                      <h6>聯繫人資訊（若貴賓聯繫人非本人才需要填以下資訊）</h6>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >聯繫人姓名</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="poc" placeholder="請輸入聯繫人姓名">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >聯繫人職稱</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="poc_position" placeholder="請輸入聯繫人職稱">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >聯繫人電話</label>
+                        <div class="col-sm-8">
+                          <input type="tel" class="form-control" name="poc_phone_number" placeholder="請輸入聯繫人電話">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >聯繫人電子信箱</label>
+                        <div class="col-sm-8">
+                          <input type="email" class="form-control" name="poc_email" placeholder="請輸入聯繫人電子信箱">
                         </div>
                       </div>
                       <div class="modal-footer" style="display: flex; justify-content: space-between;">
@@ -149,7 +199,7 @@
                                 <!-- <th style="width: 12%;">希望參加場次</th> -->
                                 <th style="width: 8%;">提供票數</th>
                                 <th style="width: 13%;">回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
-                                <th style="width: 12%;">參加場次</th>
+                                <!-- <th style="width: 12%;">參加場次</th> -->
                                 <th style="width: 8%;">確定索取票數</th>
                                 <th style="width: 15%;">操作</th>
                             </tr>
@@ -158,11 +208,11 @@
                             {% for participant in participants_list %}
                             <tr>
                                 <td style="width: 6%;">
-                                    <a href="{% url 'VIPSystem_APP:vip_detail' participant.vip.pk %}" data-bs-toggle="tooltip" data-bs-placement="right" 
+                                    <span data-bs-toggle="tooltip" data-bs-placement="right" 
                                     title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
-                                    上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}">
+                                    上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}" style="cursor: pointer;">
                                     {{ participant.vip.name }}
-                                    </a>
+                                    </span>
                                 </td>
                                 <td style="width: 6%;">{{ participant.vip.organization }}</td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
@@ -178,13 +228,13 @@
                                 {% endif %} -->
                                 <td style="width: 8%;">{{ participant.wish_ticket_count }}</td>
                                 <td style="width: 13%;">{{ participant.get_status_display }}</td>
-                                {% if participant.event_time %}
+                                <!-- {% if participant.event_time %}
                                     <td style="width: 12% ;">{{ participant.event_time }}</td>
                                 {% elif participant.status == 'declined' %}
                                     <td style="width: 12% ;">不出席任何場次</td>
                                 {% else %}
                                     <td style="width: 12% ;">尚未回覆</td>
-                                {% endif %}
+                                {% endif %} -->
                                
                                 <td style="width: 8%;">{{ participant.join_people_count }}</td>
                                 <td style="width: 15%;">
