@@ -183,6 +183,7 @@ class ProjectParticipation(models.Model):
     wish_attend = models.CharField(max_length=50, blank=True, default='all')
     wish_attend_section = models.CharField(max_length=50, blank=True)
     wish_ticket_count = models.IntegerField(default=2)
+    notes = models.TextField(blank=True)
 
     class Meta:
         ordering = ['id']
@@ -201,11 +202,12 @@ class ProjectParticipation(models.Model):
             
         super().save(*args, **kwargs)
 
-    def handle_response(self, response, join_people_count, event_time_id):
+    def handle_response(self, response, join_people_count, event_time_id, notes):
         if response == 'confirmed':
             self.status = 'confirmed'
             self.join_people_count = join_people_count
             self.event_time = EventTime.objects.get(id=event_time_id)
+            self.notes = notes
         elif response == 'declined':
             self.status = 'declined'
         
@@ -262,7 +264,7 @@ class ProjectParticipationAdmin(admin.ModelAdmin):
 @admin.register(EventTime)
 class EventTimeAdmin(admin.ModelAdmin):
     list_display = [field.name for field in EventTime._meta.fields]
-    search_fields = ('project__name', 'date', 'time', 'session', 'location', 'ticket_count')
+    search_fields = ('project__name', 'date', 'session', 'location_name', 'ticket_count', 'project__description')
     list_filter = ('session',)
     list_editable = ('ticket_count',)
     list_per_page = 10
@@ -283,3 +285,7 @@ class EventTicketAdmin(admin.ModelAdmin):
     list_filter = ('event_time__project__name',)
     list_per_page = 10
     list_max_show_all = 100
+    
+    # 加入自動完成欄位
+    autocomplete_fields = ['staff', 'event_time']
+

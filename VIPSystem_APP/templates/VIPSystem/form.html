@@ -264,8 +264,8 @@
                                     </select>
                                 </div>
                                 <div id="join_people_countDiv" class="mb-3 d-none">
-                                    <label for="join_people_count" class="form-label"><i class="bi bi-people"></i> 參與人數：</label>
-                                    <input type="number" id="join_people_count" name="join_people_count" class="form-control" min="1" max="{{ participation.wish_ticket_count }}" value="1">
+                                    <label for="join_people_count" class="form-label"><i class="bi bi-people"></i> 參與人數：(至多 {{participation.wish_ticket_count}} 位)</label>
+                                    <input type="number" id="join_people_count" name="join_people_count" class="form-control" min="1" max="{{ participation.wish_ticket_count }}" value='{{participation.wish_ticket_count}}'>
                                 </div>
                             </div>
                         </div>
@@ -285,7 +285,7 @@
                                 <div id="eventTimeDiv" class="mb-3">
                                     <label for="eventTime" class="form-label">選擇場次：</label>
                                     <select id="eventTime" name="eventTime" class="form-select">
-                                        <option value="">請選擇場次</option>
+                                        <option value=''>請選擇場次</option>
                                         {% for event_time in participation.get_wish_attend_list %}
                                             <option value="{{ event_time.id }}">
                                                 <!-- {{ event_time.date }} {{ event_time.get_session_display }} -->
@@ -311,10 +311,24 @@
                         </div>
                         <div class="card-body">
                             <div class="white-bg">
-                                <h5 class="card-title">再次確認您的填寫內容！</h5>
+                                <h5 class="card-title mb-3">再次確認您的填寫內容！</h5>
                                 <p class="card-text"><strong>參與意願：</strong> <span id="summaryResponse"></span></p>
                                 <p class="card-text" id="summaryJoinPeopleCountRow"><strong>參與人數：</strong> <span id="summaryJoinPeopleCount"></span></p>
                                 <p class="card-text" id="summaryEventTimeRow"><strong>選擇場次：</strong> <span id="summaryEventTime"></span></p>
+                                <hr>
+                                <p class="card-text"><strong>單位：</strong> <span id="summaryOrganization">{{participation.vip.organization}}</span></p>
+                                <p class="card-text"><strong>職稱：</strong> <span id="summaryPosition">{{participation.vip.position}}</span></p>
+                                <p class="card-text"><strong>手機：</strong> <span id="summaryPhoneNumber">{{participation.vip.phone_number}}</span></p>
+                                <p class="card-text"><strong>Email：</strong> <span id="summaryEmail">{{participation.vip.email}}</span></p>
+                                <p style="font-size: small;">（若聯繫人非本人，請留下聯繫人資訊，例如：經紀人、助理）</p>
+                                <p class="card-text"><strong>聯繫人名稱：</strong> <span id="summaryPoc">{{participation.vip.poc}}</span></p>
+                                <p class="card-text"><strong>聯繫人職稱：</strong> <span id="summaryPocPosition">{{participation.vip.poc_position}}</span></p>
+                                <p class="card-text"><strong>聯繫人電話：</strong> <span id="summaryPocPhoneNumber">{{participation.vip.poc_phone_number}}</span></p>
+                                <p class="card-text"><strong>聯繫人Email：</strong> <span id="summaryPocEmail">{{participation.vip.poc_email}}</span></p>
+                                <p class="card-text d-flex align-items-center">
+                                    <strong class="me-2">備註：</strong>
+                                    <input id="notes" name="notes" class="form-control" style="width: 85%;" placeholder="若有上述資訊修改可留於備註"></input>
+                                </p>
                             </div>
                         </div>
                         <div class="card-action d-flex justify-content-between">
