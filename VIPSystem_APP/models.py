@@ -8,6 +8,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+# from .views.emails import Email
 
 
 class StaffProfile(models.Model):
@@ -123,6 +124,9 @@ class EventTime(models.Model):
     def total_join_people_count(self):
         return self.participations.aggregate(total=models.Sum('join_people_count'))['total'] or 0
     
+    def format_date_mm_dd(self):
+        return self.date.strftime('%m/%d')
+    
 class EventTicket(models.Model):
     staff = models.ForeignKey(
         StaffProfile, 
@@ -210,6 +214,19 @@ class ProjectParticipation(models.Model):
             self.join_people_count = join_people_count
             self.event_time = EventTime.objects.get(id=event_time_id)
             self.notes = notes
+            from .views.emails import Email
+            email = Email(
+                username = "temp_username", 
+                sender = self.vip.email, 
+                selected_event_times_list = None, 
+                wish_ticket_count = None,
+                vip_name = self.vip.name,
+                project = self.project, 
+                event_time = self.event_time,
+                dead_line_date = None,
+                token = self.token) 
+            email.send_check_reply_email()
+            self.send_check_email = True
         elif response == 'declined':
             self.status = 'declined'
         
