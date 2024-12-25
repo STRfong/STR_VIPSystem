@@ -184,6 +184,8 @@ class ProjectParticipation(models.Model):
     wish_attend_section = models.CharField(max_length=50, blank=True)
     wish_ticket_count = models.IntegerField(default=2)
     notes = models.TextField(blank=True)
+    send_check_email = models.BooleanField(default=False)
+    send_remind_email = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['id']
