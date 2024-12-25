@@ -175,7 +175,7 @@ def send_emails_by_section(request, project_id, section):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, username, sender, selected_event_times_list, wish_ticket_count, vip_name, project, event_time, dead_line_date, token, email_content):
+    def __init__(self, username, sender, selected_event_times_list, wish_ticket_count, vip_name, project, event_time, dead_line_date, token, email_content = None):
         self.username = username
         self.sender = sender
         self.selected_event_times_list = selected_event_times_list
@@ -208,9 +208,36 @@ class Email():
                 msg = MIMEText(html_content, 'html', 'utf-8')
                 msg['From'] = Header("contact@strnetwork.cc",'utf-8')
                 msg['To'] =  Header(self.sender,'utf-8')            
-                subject = f" 【薩泰爾娛樂】【{self.project.name}】合作夥伴現場觀賞邀請"
+                subject = f" 【薩泰爾娛樂】《{self.project.name}》合作夥伴現場觀賞邀請"
                 msg['Subject'] = Header(subject, 'utf-8')
                 smtp.send_message(msg)  
+
+    def send_check_reply_email(self):
+        pp = ProjectParticipation.objects.get(token=self.token)
+        try:
+            with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+                    smtp.ehlo()
+                    smtp.starttls()
+                    smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+                    html_content = render_to_string(
+                        'VIPSystem/email_check_reply_template.html',
+                        {
+                        'project': self.project,
+                        'participant': pp,
+                        'event_time': self.event_time
+                        
+                        }
+                    )
+                    
+                    # 添加 HTML 内容到邮件
+                    msg = MIMEText(html_content, 'html', 'utf-8')
+                    msg['From'] = Header("contact@strnetwork.cc",'utf-8')
+                    msg['To'] =  Header(self.sender,'utf-8')            
+                    subject = f" 【出席確認信】《{self.project.name}》{self.event_time.format_date_mm_dd()} - 薩泰爾娛樂"
+                    msg['Subject'] = Header(subject, 'utf-8')
+                    smtp.send_message(msg)  
+        except Exception as e:
+            print("錯誤訊息: ", e)
 
     def get_weekday(self, date_string):
         date_object = datetime.strptime(date_string, "%Y年%m月%d日")
