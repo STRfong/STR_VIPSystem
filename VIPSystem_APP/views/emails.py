@@ -65,6 +65,7 @@ def send_email_by_section(request, project_id, section):
 def send_email_event_time(request, project_id, section, event_time_id):
     project = get_object_or_404(Project, pk=project_id)
     vip = get_object_or_404(VIP, pk=request.POST['vip_id'])
+    event_time = get_object_or_404(EventTime, pk=event_time_id)
     dead_line_date = request.POST['dead_line_date']
     if request.method == 'POST':
         pp = get_object_or_404(ProjectParticipation, project=project, vip=vip)
@@ -75,6 +76,7 @@ def send_email_event_time(request, project_id, section, event_time_id):
                         pp.wish_ticket_count,
                         vip.name,
                         project, 
+                        event_time,
                         dead_line_date,
                         random_token, 
                         request.POST['email_content'])
@@ -173,13 +175,14 @@ def send_emails_by_section(request, project_id, section):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, username, sender, selected_event_times_list, wish_ticket_count, vip_name, project, dead_line_date, token, email_content):
+    def __init__(self, username, sender, selected_event_times_list, wish_ticket_count, vip_name, project, event_time, dead_line_date, token, email_content):
         self.username = username
         self.sender = sender
         self.selected_event_times_list = selected_event_times_list
         self.wish_ticket_count = wish_ticket_count
         self.vip_name = vip_name
         self.project = project
+        self.event_time = event_time
         self.dead_line_date = dead_line_date
         self.token = token
         self.email_content = email_content
@@ -195,7 +198,8 @@ class Email():
                      'vip_name': self.vip_name,
                      'wish_ticket_count': self.wish_ticket_count,
                      'project': self.project,
-                     'dead_line_date': self.get_weekday(self.dead_line_date),
+                     'dead_line_date': self.dead_line_date,
+                     'event_time': self.event_time,
                      'SITE_URL': os.getenv('SITE_URL'),
                      'email_content': self.email_content}
                 )
@@ -294,9 +298,10 @@ def handle_invitation_response(request, token):
     if request.method == 'POST':
         response = request.POST.get('response')
         join_people_count = int(request.POST.get('join_people_count') or 0)
+        notes = request.POST.get('notes')
         event_time_id = request.POST.get('eventTime')
         participation = get_object_or_404(ProjectParticipation, token=token)
-        participation.handle_response(response, join_people_count, event_time_id)
+        participation.handle_response(response, join_people_count, event_time_id, notes)
         return render(request, 'VIPSystem/thank_you_page.html')
 
 

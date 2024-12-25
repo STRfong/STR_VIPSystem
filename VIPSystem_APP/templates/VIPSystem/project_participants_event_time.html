@@ -193,20 +193,23 @@
                     <table class="table table-striped mt-3">
                         <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
+                                <th style="width: 3%;">序號</th>
                                 <th style="width: 6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
                                 <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
                                 <!-- <th style="width: 12%;">希望參加場次</th> -->
-                                <th style="width: 8%;">提供票數</th>
-                                <th style="width: 13%;">回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                                <th style="width: 5%;">提供票數</th>
+                                <th style="width: 10%;">回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                                 <!-- <th style="width: 12%;">參加場次</th> -->
                                 <th style="width: 8%;">確定索取票數</th>
+                                <th style="width: 10%;">備註</th>
                                 <th style="width: 15%;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for participant in participants_list %}
                             <tr>
+                                <td style="width: 3%;">{{ participant.pp_id }}</td>
                                 <td style="width: 6%;">
                                     <span data-bs-toggle="tooltip" data-bs-placement="right" 
                                     title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
@@ -226,8 +229,8 @@
                                         {% endfor %}
                                     </td>
                                 {% endif %} -->
-                                <td style="width: 8%;">{{ participant.wish_ticket_count }}</td>
-                                <td style="width: 13%;">{{ participant.get_status_display }}</td>
+                                <td style="width: 5%;">{{ participant.wish_ticket_count }}</td>
+                                <td style="width: 10%;">{{ participant.get_status_display }}</td>
                                 <!-- {% if participant.event_time %}
                                     <td style="width: 12% ;">{{ participant.event_time }}</td>
                                 {% elif participant.status == 'declined' %}
@@ -237,6 +240,7 @@
                                 {% endif %} -->
                                
                                 <td style="width: 8%;">{{ participant.join_people_count }}</td>
+                                <td style="width: 10%;">{{ participant.notes }}</td>
                                 <td style="width: 15%;">
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
                                         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#emailModal{{ participant.id }}">
@@ -320,15 +324,16 @@
                                                     </ul>
                                                 </div>
                                                 <input type="hidden" name="event_times" value="{{ participant.wish_attend_list_email }}">
+                                                <input type="hidden" name="event_time_date" value="{{ participant.event_time.date }}">
+                                                <input type="hidden" name="event_time_session" value="{{ participant.event_time.session }}">
                                                 <input type="hidden" name="project_name" value="{{ project.name }}">
                                                 <input type="hidden" name="project_description" value="{{ project.description }}">
                                                 <input type="hidden" name="username" value="{{ username }}">
-                                                <hr>
                                                 <div class="mb-3">
                                                     <h5>填表死線</h5>
                                                     <select class="form-select" name="dead_line_date">
                                                         {% for event_time in participant.get_wish_attend_list %}
-                                                            <option value="{{ event_time.dead_line_date}}">
+                                                            <option value="{{ event_time.get_weekday}}">
                                                                 {{ event_time.get_weekday }}
                                                             </option>
                                                         {% endfor %}
@@ -378,23 +383,27 @@
                                     var recipientName = formData.get('recipient_name');
                                     var senderEmail = formData.get('sender');
                                     var eventTimes = formData.get('event_times'); // 獲取所有的 event_times 
+                                    var eventTimeDate = formData.get('event_time_date'); // 獲取 event_time 
+                                    var eventTimeSession = formData.get('event_time_session'); // 獲取 event_time 
                                     var projectName = formData.get('project_name');
                                     var username = formData.get('username');
                                     var wish_ticket_count = formData.get('wish_ticket_count');
+                                    var dead_line_date = formData.get('dead_line_date');
                                     // 動態生成 eventTimes 的列表內容
                             
                                     var previewContent = `
-                                        <h4>親愛的薩泰爾夥伴 您好：</h4>
+                                        <h4>親愛的貴賓 您好：</h4>
 
                                         <p>
                                             ${emailContent}
                                         </p>
                                         <p>
                                             感謝您一路以來對薩泰爾娛樂的支持，<br>
-                                            我們將於近期舉辦【${projectName}】的錄影活動<br>
+                                            我們將於 <strong style="color:darkred;">${eventTimeDate}</strong> 舉辦<strong >【${projectName} ${eventTimeSession}】的錄影活動</strong> <br>
                                         </p>
                                         <p>
-                                            請於下方連結中填寫資料，敬請於 <strong style="color:darkred;">活動當週星期三</strong> 前填寫完成，期待您的蒞臨！
+                                            請於下方連結中填寫資料，敬請於 <strong style="color:darkred;">${dead_line_date}</strong> 前填寫完成，期待您的蒞臨！
+                                        </p>
                                         </p>
 
                                         <p>
@@ -409,8 +418,8 @@
 
                                         <p>
                                             填寫時麻煩留意以下資訊：
-                                            <ul>
-                                                <li>出席人數以 ${wish_ticket_count} 人為限</li>
+                                                <ul>
+                                                    <li>出席人數以 <strong style="color:darkred;">${wish_ticket_count}</strong> 人為限</li>
                                                 <li>報名成功後，薩泰爾娛樂最晚將於活動當週週四寄出電子「出席確認信」，若逾期仍未收到「出席確認信」，請儘速與邀請您的夥伴或禮賓統籌聯繫。</li>
                                             </ul>
                                         </p>
