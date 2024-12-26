@@ -321,13 +321,12 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
         
         try:
             with transaction.atomic():
-                # 檢查是否存在完全匹配的 VIP
-                try:
-                    vip = VIP.objects.filter(
-                        email=vip_email,
-                    ).first()
+                # 嘗試查找或創建 VIP
+                vip = VIP.objects.filter(email=vip_email).first()
+                
+                if vip:
+                    # 更新現有 VIP
                     messages.info(request, f'找到現有貴賓：{vip.name}')
-                    # 更新 VIP 实例的字段
                     vip.name = vip_name
                     vip.email = vip_email
                     vip.phone_number = vip_phone
@@ -339,9 +338,8 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                     vip.poc_position = poc_position
                     vip.poc_phone_number = poc_phone_number
                     vip.poc_email = poc_email
-                    # 保存更改
                     vip.save()
-                except VIP.DoesNotExist:
+                else:
                     # 創建新的 VIP
                     vip = VIP.objects.create(
                         name=vip_name,
@@ -373,23 +371,22 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                         'wish_attend': str(event_time.id),
                         'wish_attend_section': section,
                         'wish_ticket_count': wish_ticket_count,
-                        'join_people_count': 0  # 新增時設置默認值
+                        'join_people_count': 0
                     }
                 )
                 
                 if created:
-                    messages.success(request, f'已成功將貴賓加入本場次')
+                    messages.success(request, '已成功將貴賓加入本場次')
                 else:
-                    messages.info(request, f'已更新貴賓的參與資訊')
+                    messages.info(request, '已更新貴賓的參與資訊')
                 
         except Exception as e:
-            messages.error(request, f'處理過程中發生錯誤：{str(e)}') 
+            messages.error(request, f'處理過程中發生錯誤：{str(e)}')
             
         return redirect('VIPSystem_APP:participation_by_event_time', 
                        project_id=project_id, 
                        section=section, 
                        event_time_id=event_time_id)
-    
     def get(self, request, *args, **kwargs):
         return redirect('VIPSystem_APP:participation_by_event_time',
                        project_id=kwargs.get('project_id'),
