@@ -174,7 +174,7 @@
                                                     <select class="form-select" name="dead_line_date">
                                                         {% for event_time in participant.get_wish_attend_list %}
                                                             <option value="{{ event_time.dead_line_date}}">
-                                                                {{ event_time.get_weekday }}
+                                                                {{ event_time.get_dead_line_weekday }}
                                                             </option>
                                                         {% endfor %}
                                                     </select>
