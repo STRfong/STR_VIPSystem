@@ -206,10 +206,11 @@
                         <tbody>
                             {% for participant in participants_list %}
                             <tr class="vip-row" data-vip-name="{{ participant.vip.name }}"
+                            data-vip-id="{{ participant.vip.id }}"
                             data-vip-nickname="{{ participant.vip.nickname }}"
                             data-vip-organization="{{ participant.vip.organization }}"
                             data-vip-position="{{ participant.vip.position }}"
-                            data-vip-phone="{{ participant.vip.phone }}"
+                            data-vip-phone-number="{{ participant.vip.phone_number }}"
                             data-vip-email="{{ participant.vip.email }}"
                             data-invited-by="{{ participant.invited_by.username }}"
                             data-wish-ticket-count="{{ participant.wish_ticket_count }}"
@@ -693,26 +694,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" method="POST">
+                <form action="{% url 'VIPSystem_APP:update_vip_info_by_event_time' project.pk event_time.section event_time.pk %}" method="POST">
                     {% csrf_token %}
+                    <input type="hidden" name="vipId" id="vipId">
                     <div class="row mb-3">
-                      <label class="col-3 col-form-label text-center" style="justify-content: center;" >姓名<span style="color:red;">*</span></label>
+                      <label class="col-2 col-form-label text-center" style="justify-content: center;" >姓名<span style="color:red;">*</span></label>
                       <div class="col-3">
                         <input id="vipName" type="text" class="form-control" name="name" placeholder="請輸入貴賓姓名" required>
                       </div>
                       <label class="col-3 col-form-label text-center" style="justify-content: center;" >綽號</label>
-                      <div class="col-3">
+                      <div class="col-4">
                         <input id="vipNickname" type="text" class="form-control" name="nickname" placeholder="請輸入貴賓綽號">
                       </div>
                     </div>
                     <div class="row mb-3">
-                        <label class="col-3 col-form-label text-center" style="justify-content: center;" >單位<span style="color:red;">*</span></label>
+                        <label class="col-2 col-form-label text-center" style="justify-content: center;" >單位<span style="color:red;">*</span></label>
                         <div class="col-3">
                           <input id="vipOrganization" type="text" class="form-control" name="organization" placeholder="請輸入貴賓單位" required>
                         </div>
                         <label class="col-3 col-form-label text-center" style="justify-content: center;" >職稱</label>
+                        <div class="col-4">
+                          <input id="vipPosition" type="text" class="form-control" name="position" placeholder="請輸入貴賓職稱" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="col-2 col-form-label text-center" style="justify-content: center;" >電話<span style="color:red;">*</span></label>
                         <div class="col-3">
-                          <input id="vipPosition" type="text" class="form-control" name="position" placeholder="請輸入貴賓職稱">
+                          <input id="vipPhoneNumber" type="text" class="form-control" name="phone_number" placeholder="請輸入貴賓電話" required>
+                        </div>
+                        <label class="col-3 col-form-label text-center" style="justify-content: center;" >Email</label>
+                        <div class="col-4">
+                          <input id="vipEmail" type="text" class="form-control" name="email" placeholder="請輸入貴賓Email" required>
                         </div>
                     </div>
                     <div class="modal-footer" style="display: flex; justify-content: space-between;">
@@ -742,10 +754,13 @@
             
             if (parentRow) {
                 // 更新 Modal 內容
+                vipDetailModal.querySelector('#vipId').value = parentRow.dataset.vipId;
                 vipDetailModal.querySelector('#vipName').value = parentRow.dataset.vipName;
                 vipDetailModal.querySelector('#vipNickname').value = parentRow.dataset.vipNickname;
                 vipDetailModal.querySelector('#vipOrganization').value = parentRow.dataset.vipOrganization;
                 vipDetailModal.querySelector('#vipPosition').value = parentRow.dataset.vipPosition;
+                vipDetailModal.querySelector('#vipPhoneNumber').value = parentRow.dataset.vipPhoneNumber;
+                vipDetailModal.querySelector('#vipEmail').value = parentRow.dataset.vipEmail;
             }
         });
     });

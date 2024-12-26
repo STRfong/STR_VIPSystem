@@ -11,7 +11,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 @method_decorator(login_required, name='dispatch')
 class VIPListView(ListView):
     model = VIP
@@ -201,3 +201,23 @@ def vip_create_from_excel(request):
             return redirect('VIPSystem_APP:vip_list')
     
     return render(request, 'VIPSystem/vip_create.html')
+
+@method_decorator(login_required, name='dispatch')
+class UpdateVipInfoByEventTimeView(LoginRequiredMixin, UpdateView):
+    model = VIP
+
+    def post(self, request, *args, **kwargs):
+        vip_id = request.POST.get('vipId')
+        vip = VIP.objects.get(id=vip_id)
+        vip.name = request.POST.get('name')
+        vip.nickname = request.POST.get('nickname')
+        vip.organization = request.POST.get('organization')
+        vip.position = request.POST.get('position')
+        vip.phone_number = request.POST.get('phone_number')
+        vip.email = request.POST.get('email')
+        vip.save()
+        project_id = kwargs['project_id']
+        section = kwargs['section']
+        event_time_id = kwargs['event_time_id'] 
+        messages.success(request, f'{vip.name} 資訊已被更新')
+        return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)

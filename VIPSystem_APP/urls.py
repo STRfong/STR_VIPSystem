@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.urls import path, include
 from . import views 
-from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIPDeleteView
+from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIPDeleteView, UpdateVipInfoByEventTimeView
 from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView, ProjectParticipationBySectionView
 from .views import InviteListView, SendEmailListBySectionView, ProjectParticipantsByEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime, InviteListBySectionView, UpdateParticipantsBySectionView, UpdateParticipantsInfoBySectionView, UpdateParticipantsInfoByEventTimeView, UpdateParticipantsByEventTimeView 
 from .views import UpdateParticipantsByEventTimeView, UpdateParticipantsByEventTimeDirectlyView
@@ -61,6 +61,7 @@ urlpatterns = [
                     path('update_participants/', UpdateParticipantsByEventTimeView.as_view(), name="update_participants_event_time"),
                     path('update_participants_directly/', UpdateParticipantsByEventTimeDirectlyView.as_view(), name="update_participants_event_time_directly"),
                     path('update_participants_info/', UpdateParticipantsInfoByEventTimeView.as_view(), name='update_participants_info_by_event_time'),
+                    path('update_vip_info/', UpdateVipInfoByEventTimeView.as_view(), name='update_vip_info_by_event_time'),
                     path('send_email/', views.send_email_event_time, name="send_email_event_time"), # 從場次寄信給貴賓（單獨）
                 ])),
             ])),
