@@ -109,6 +109,12 @@
                         </div>
                       </div>
                       <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓暱稱</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="nickname" placeholder="請輸入貴賓暱稱">
+                        </div>
+                      </div>
+                      <div class="row mb-3">
                         <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓單位</label>
                         <div class="col-sm-8">
                           <input type="text" class="form-control" name="organization" placeholder="請輸入貴賓單位">
@@ -195,7 +201,7 @@
                                 <th style="width:  8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  6%; text-align: center;">提供票數</th>
-                                <th style="width: 13%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                                <th style="width: 14%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  6%; text-align: center;">索取票數</th>
                                 <th style="width:  5%; text-align: center;">確認信</th>
                                 <th style="width:  5%; text-align: center;">提醒信</th>
@@ -226,7 +232,7 @@
                                 <td style="width: 6%;">{{ participant.vip.organization }}</td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
                                 <td style="width: 6%; text-align: center;">{{ participant.wish_ticket_count }}</td>
-                                <td style="width: 13%; text-align: center;">{{ participant.get_status_display }}</td>
+                                <td style="width: 14%; text-align: center;">{{ participant.get_status_display }}</td>
                                
                                 <td style="width: 6%; text-align: center;">{{ participant.join_people_count }}</td>
                                 
@@ -592,12 +598,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" id="filterNameForm">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <input type="text" class="form-control" id="nameFilter" name="nameFilter" placeholder="請輸入關鍵字">
-                    </div>
-                </form>
+                
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="nameFilter" name="nameFilter" placeholder="請輸入關鍵字">
+                </div>
+                
             </div>
             <div class="modal-footer justify-content-between">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
@@ -616,15 +621,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" id="filterInvitedByForm"> 
-                    {% csrf_token %}
-                    <div class="d-flex flex-wrap">
-                        {% for user in staffs %}
-                            <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
-                            <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
-                        {% endfor %}
-                    </div>
-                </form>
+                <div class="d-flex flex-wrap">
+                    {% for user in staffs %}
+                        <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
+                        <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
+                    {% endfor %}
+                </div>
             </div>
             <div class="modal-footer justify-content-between">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
