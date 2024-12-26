@@ -323,9 +323,9 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
             with transaction.atomic():
                 # 檢查是否存在完全匹配的 VIP
                 try:
-                    vip = VIP.objects.get(
+                    vip = VIP.objects.filter(
                         email=vip_email,
-                    )
+                    ).first()
                     messages.info(request, f'找到現有貴賓：{vip.name}')
                     # 更新 VIP 实例的字段
                     vip.name = vip_name
