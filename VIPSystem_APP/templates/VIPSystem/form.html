@@ -234,7 +234,7 @@
                                 <h3 class="card-title mb-4">親愛的 {{ participation.vip.name }} 您好：</h3>
                                 <p>感謝您一路以來對薩泰爾娛樂的支持，</p>
                                 <p>我們近期將{{selected_event_location_name}} 舉辦 {{ participation.project.description }} 《{{ participation.project.name }}》</p>
-                                <p> 誠摯地邀請您一同參與，本次活動提供您 <strong>{{participation.wish_ticket_count}}</strong> 張票券，最晚請於 {{dead_line_date}} 前完成表單填寫～ </p>
+                                <p> 誠摯地邀請您一同參與，本次活動提供您 <strong>{{participation.wish_ticket_count}}</strong> 張票券，最晚請於 <strong>{{dead_line_date}}</strong> 前完成表單填寫～ </p>
                                 <p>薩泰爾全體同仁 敬上</p>
                             </div>
                         </div>
@@ -305,11 +305,12 @@
                         </div>
                         <div class="card-body">
                             <div class="white-bg">
-                                <h5 class="card-title mb-3">再次確認您的填寫內容！</h5>
+                                <h5 class="card-title mb-3">再次確認您的填寫內容與聯絡資訊！</h5>
                                 <p class="card-text"><strong>參與意願：</strong> <span id="summaryResponse"></span></p>
                                 <p class="card-text" id="summaryJoinPeopleCountRow"><strong>參與人數：</strong> <span id="summaryJoinPeopleCount"></span></p>
                                 <p class="card-text" id="summaryEventTimeRow"><strong>選擇場次：</strong> <span id="summaryEventTime"></span></p>
                                 <hr>
+                                <p class="card-text"><strong>姓名：</strong> <span id="summaryVipInfo">{{participation.vip.name}}</span></p>
                                 <p class="card-text"><strong>單位：</strong> <span id="summaryOrganization">{{participation.vip.organization}}</span></p>
                                 <p class="card-text"><strong>職稱：</strong> <span id="summaryPosition">{{participation.vip.position}}</span></p>
                                 <p class="card-text"><strong>手機：</strong> <span id="summaryPhoneNumber">{{participation.vip.phone_number}}</span></p>

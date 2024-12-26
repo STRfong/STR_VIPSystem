@@ -67,6 +67,7 @@ def send_email_event_time(request, project_id, section, event_time_id):
     vip = get_object_or_404(VIP, pk=request.POST['vip_id'])
     event_time = get_object_or_404(EventTime, pk=event_time_id)
     dead_line_date = request.POST['dead_line_date']
+    print(dead_line_date)
     if request.method == 'POST':
         pp = get_object_or_404(ProjectParticipation, project=project, vip=vip)
         random_token = get_random_string(length=32)
@@ -339,6 +340,7 @@ def handle_invitation_response(request, token):
     context = {
         'participation': participation,
         'project': project,
+        'dead_line_date': participation.event_time.get_dead_line_weekday(),
         'selected_event_times': Email.filter_selected_event_times(selected_event_times_list),
         'selected_event_location_name': Email.filter_selected_event_location_name(selected_event_times_list)
     }
