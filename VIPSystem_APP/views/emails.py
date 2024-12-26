@@ -212,7 +212,7 @@ class Email():
                 msg['Subject'] = Header(subject, 'utf-8')
                 smtp.send_message(msg)  
 
-    def send_check_reply_email(self):
+    def send_check_reply_email(self, join_people_count):
         pp = ProjectParticipation.objects.get(token=self.token)
         try:
             with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
@@ -224,8 +224,8 @@ class Email():
                         {
                         'project': self.project,
                         'participant': pp,
-                        'event_time': self.event_time
-                        
+                        'event_time': self.event_time, 
+                        'join_people_count': join_people_count
                         }
                     )
                     
@@ -239,11 +239,11 @@ class Email():
         except Exception as e:
             print("錯誤訊息: ", e)
 
-    def get_weekday(self, date_string):
-        date_object = datetime.strptime(date_string, "%Y年%m月%d日")
-        weekday_number = date_object.weekday()
-        days = ["一", "二", "三", "四", "五", "六", "日"]
-        return f"{date_string}（{days[weekday_number]}）"
+    # def get_weekday(self, date_string):
+    #     date_object = datetime.strptime(date_string, "%Y年%m月%d日")
+    #     weekday_number = date_object.weekday()
+    #     days = ["一", "二", "三", "四", "五", "六", "日"]
+    #     return f"{date_string}（{days[weekday_number]}）"
     
     @staticmethod # 新增於2024/12/17，用於篩選出不同地點的活動時間
     def filter_selected_event_location_name(selected_event_times_list):

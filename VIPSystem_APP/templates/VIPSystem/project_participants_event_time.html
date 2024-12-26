@@ -41,14 +41,11 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <!-- <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.get_session_display}}</h2> -->
             <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.session}}</h2>
         </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">貴賓邀請名單 
-                    
-                </h3>
+                <h3 class="card-title mb-0">貴賓邀請名單</h3>
                 <div class="d-flex justify-content-around gap-3">
 
                     <div class="card text-center" style="width: 10rem;">
@@ -95,7 +92,7 @@
                 </div>
             </div>
             <!-- 直接新增貴賓 Modal -->
-            <div class="modal fade" id="addParticipantDirectlyModal" tabindex="-1" aria-labelledby="addParticipantDirectlyModalLabel" aria-hidden="true">
+            <div class="modal fade" id="addParticipantDirectlyModal" data-bs-backdrop="static"tabindex="-1" aria-labelledby="addParticipantDirectlyModalLabel" aria-hidden="true">
               <div class="modal-dialog">
                 <div class="modal-content">
                   <div class="modal-header">
@@ -193,26 +190,32 @@
                     <table class="table table-striped mt-3">
                         <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
-                                <th style="width: 5%; text-align: center;">序號</th>
-                                <th style="width: 6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
-                                <th style="width: 8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
-                                <th style="width: 6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
-                                <!-- <th style="width: 12%;">希望參加場次</th> -->
-                                <th style="width: 5%; text-align: center;">提供票數</th>
-                                <th style="width: 13% ; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
-                                <!-- <th style="width: 12%;">參加場次</th> -->
-                                <th style="width: 6%; text-align: center;">索取票數</th>
-                                <th style="width: 5%; text-align: center;">確認信</th>
-                                <th style="width: 5%; text-align: center;">提醒信</th>
+                                <th style="width:  5%; text-align: center;">序號</th>
+                                <th style="width:  6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
+                                <th style="width:  8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
+                                <th style="width:  6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
+                                <th style="width:  6%; text-align: center;">提供票數</th>
+                                <th style="width: 13%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                                <th style="width:  6%; text-align: center;">索取票數</th>
+                                <th style="width:  5%; text-align: center;">確認信</th>
+                                <th style="width:  5%; text-align: center;">提醒信</th>
                                 <th style="width: 10%;">備註</th>
                                 <th style="width: 15%; text-align: center;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for participant in participants_list %}
-                            <tr>
+                            <tr class="vip-row" data-vip-name="{{ participant.vip.name }}"
+                            data-vip-nickname="{{ participant.vip.nickname }}"
+                            data-vip-organization="{{ participant.vip.organization }}"
+                            data-vip-position="{{ participant.vip.position }}"
+                            data-vip-phone="{{ participant.vip.phone }}"
+                            data-vip-email="{{ participant.vip.email }}"
+                            data-invited-by="{{ participant.invited_by.username }}"
+                            data-wish-ticket-count="{{ participant.wish_ticket_count }}"
+                            data-notes="{{ participant.notes }}">
                                 <td style="width: 5%; text-align: center;">{{ participant.pp_id }}</td>
-                                <td style="width: 6%;">
+                                <td data-bs-toggle="modal" data-bs-target="#vipDetailModal" style="cursor: pointer; width: 6%;">
                                     <span data-bs-toggle="tooltip" data-bs-placement="right" 
                                     title="邀請時間：{{ participant.invited_at|date:"Y/m/d H:i" }}
                                     上次更新時間：{{ participant.last_update_at|date:"Y/m/d H:i" }}" style="cursor: pointer;">
@@ -221,7 +224,7 @@
                                 </td>
                                 <td style="width: 6%;">{{ participant.vip.organization }}</td>
                                 <td style="width: 6%;">{{ participant.invited_by.username }}</td>
-                                <td style="width: 5%; text-align: center;">{{ participant.wish_ticket_count }}</td>
+                                <td style="width: 6%; text-align: center;">{{ participant.wish_ticket_count }}</td>
                                 <td style="width: 13%; text-align: center;">{{ participant.get_status_display }}</td>
                                
                                 <td style="width: 6%; text-align: center;">{{ participant.join_people_count }}</td>
@@ -333,8 +336,8 @@
                                                     <h5>填表死線</h5>
                                                     <select class="form-select" name="dead_line_date">
                                                         {% for event_time in participant.get_wish_attend_list %}
-                                                            <option value="{{ event_time.get_weekday}}">
-                                                                {{ event_time.get_weekday }}
+                                                            <option value="{{ event_time.get_dead_line_weekday}}">
+                                                                {{ event_time.get_dead_line_weekday }}
                                                             </option>
                                                         {% endfor %}
                                                     </select>
@@ -628,6 +631,27 @@
         </div>
     </div>
 </div>
+
+<!-- 篩選單位modal-->
+<div class="modal fade" id="filterOrganizationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterOrganizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterOrganizationModalLabel">篩選單位</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"> 
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="organizationFilter" name="organizationFilter" placeholder="請輸入單位關鍵字">
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilterOrganization()" id="applyFilterOrganizationBtn">篩選</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 篩選狀態modal-->
 <div class="modal fade" id="filterStatusModal" tabindex="-1" aria-labelledby="filterStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -658,11 +682,72 @@
         </div>
     </div>
 </div>
+
+<!--顯示資訊的 modal-->
+<div class="modal fade" id="vipDetailModal" tabindex="-1" aria-labelledby="vipDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vipDetailModalLabel">貴賓詳細資訊（可由此直接修改）</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                      <label class="col-3 col-form-label text-center" style="justify-content: center;" >姓名<span style="color:red;">*</span></label>
+                      <div class="col-3">
+                        <input id="vipName" type="text" class="form-control" name="name" placeholder="請輸入貴賓姓名" required>
+                      </div>
+                      <label class="col-3 col-form-label text-center" style="justify-content: center;" >綽號</label>
+                      <div class="col-3">
+                        <input id="vipNickname" type="text" class="form-control" name="nickname" placeholder="請輸入貴賓綽號">
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="col-3 col-form-label text-center" style="justify-content: center;" >單位<span style="color:red;">*</span></label>
+                        <div class="col-3">
+                          <input id="vipOrganization" type="text" class="form-control" name="organization" placeholder="請輸入貴賓單位" required>
+                        </div>
+                        <label class="col-3 col-form-label text-center" style="justify-content: center;" >職稱</label>
+                        <div class="col-3">
+                          <input id="vipPosition" type="text" class="form-control" name="position" placeholder="請輸入貴賓職稱">
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="display: flex; justify-content: space-between;">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                      <button type="submit" class="btn btn-primary">送出更新</button>
+                    </div>
+                  </form>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const vipDetailModal = document.getElementById('vipDetailModal');
+        
+        // 監聽 Modal 的 show 事件
+        vipDetailModal.addEventListener('show.bs.modal', function(event) {
+            // 獲取觸發 Modal 的元素
+            const trigger = event.relatedTarget;
+            // 從觸發元素找到最近的父層 tr
+            const parentRow = trigger.closest('.vip-row');
+            
+            if (parentRow) {
+                // 更新 Modal 內容
+                vipDetailModal.querySelector('#vipName').value = parentRow.dataset.vipName;
+                vipDetailModal.querySelector('#vipNickname').value = parentRow.dataset.vipNickname;
+                vipDetailModal.querySelector('#vipOrganization').value = parentRow.dataset.vipOrganization;
+                vipDetailModal.querySelector('#vipPosition').value = parentRow.dataset.vipPosition;
+            }
+        });
+    });
 
     function applyFilterName() {
         var nameFilter = document.getElementById('nameFilter').value;
@@ -706,6 +791,17 @@
         });
         // 重置頁碼到第一頁
         url.searchParams.set('page', 1);
+        window.location.href = url.toString();
+    }
+
+    function applyFilterOrganization() {
+        var organizationFilter = document.getElementById('organizationFilter').value;
+        var url = new URL(window.location.href);
+        if (organizationFilter == '') {
+            url.searchParams.delete('organizationFilter');
+        } else {
+            url.searchParams.set('organizationFilter', organizationFilter);
+        }
         window.location.href = url.toString();
     }
 </script>

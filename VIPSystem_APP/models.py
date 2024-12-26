@@ -28,6 +28,7 @@ class StaffProfile(models.Model):
         ('@showdev', '節目開發'),
     ]
     department = models.CharField(max_length=100, choices=department_choices, blank=True, null=True)
+    nickname = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ['id']  # 或其他適合的欄位
@@ -116,10 +117,15 @@ class EventTime(models.Model):
         #  return f"{date_format(self.date, 'Y/m/d')} {self.get_session_display()}"
         return f"{date_format(self.date, 'm/d')} {self.session}"
     
-    def get_weekday(self):
+    def get_dead_line_weekday(self):
         weekday_number = self.dead_line_date.weekday()
         days = ["一", "二", "三", "四", "五", "六", "日"]
         return f"{self.dead_line_date}（{days[weekday_number]}）"
+    
+    def get_weekday(self):
+        weekday_number = self.date.weekday()
+        days = ["一", "二", "三", "四", "五", "六", "日"]
+        return f"{self.date}（{days[weekday_number]}）"
     
     def total_join_people_count(self):
         return self.participations.aggregate(total=models.Sum('join_people_count'))['total'] or 0
@@ -214,6 +220,7 @@ class ProjectParticipation(models.Model):
             self.join_people_count = join_people_count
             self.event_time = EventTime.objects.get(id=event_time_id)
             self.notes = notes
+
             from .views.emails import Email
             email = Email(
                 username = "temp_username", 
@@ -225,7 +232,7 @@ class ProjectParticipation(models.Model):
                 event_time = self.event_time,
                 dead_line_date = None,
                 token = self.token) 
-            email.send_check_reply_email()
+            email.send_check_reply_email(join_people_count)
             self.send_check_email = True
         elif response == 'declined':
             self.status = 'declined'

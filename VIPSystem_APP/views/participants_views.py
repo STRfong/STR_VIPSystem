@@ -106,6 +106,10 @@ class ProjectParticipantsByEventTimeView(ListView):
         if status_filter:
             queryset = queryset.filter(status__in=status_filter)
 
+        organization_filter = self.request.GET.get('organizationFilter')
+        if organization_filter:
+            queryset = queryset.filter(vip__organization__icontains=organization_filter)
+
         return_queryset = [ participation for participation in queryset if self.check_intersection(event_time, participation)]
         return return_queryset
     
