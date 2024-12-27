@@ -115,7 +115,7 @@ class ProjectParticipantsByEventTimeView(ListView):
     
     def check_intersection(self, event_time, participation):
         participation_set = set(participation.get_wish_attend_list())
-        if participation.status == 'added' or participation.status == 'sended':
+        if participation.status == 'added' or participation.status == 'sended' or participation.status == 'declined':
             return event_time in participation_set
         elif participation.status == 'confirmed':
             return event_time == participation.event_time
