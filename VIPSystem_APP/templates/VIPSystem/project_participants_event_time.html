@@ -259,14 +259,14 @@
                                         <button type = "button" class = "btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateModal{{ participant.id }}">
                                             <i class="bi bi-pencil-square"></i>
                                         </button> 
-                                        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal{{ participant.id }}">
+                                        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <!-- 刪除確認 Modal -->
-                            <div class="modal fade" id="deleteModal{{ participant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
+                            <!-- <div class="modal fade" id="deleteModal{{ participant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -286,7 +286,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                             <!-- 寄件 Modal -->
                             <div class="modal fade" id="emailModal{{ participant.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
@@ -589,6 +589,27 @@
     </div>
 </div>
 
+<!-- 刪除確認 Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody"></div>
+            <div class="modal-footer" style="display: flex; justify-content: space-between;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form action="{% url 'VIPSystem_APP:remove_participant_by_section' project.pk event_time.section %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" id="participant_id" name="participant_id">
+                    <button type="submit" class="btn btn-danger">確認刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 篩選姓名 Modal -->
 <div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -746,26 +767,38 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const vipDetailModal = document.getElementById('vipDetailModal');
-        
-        // 監聽 Modal 的 show 事件
-        vipDetailModal.addEventListener('show.bs.modal', function(event) {
-            // 獲取觸發 Modal 的元素
-            const trigger = event.relatedTarget;
-            // 從觸發元素找到最近的父層 tr
-            const parentRow = trigger.closest('.vip-row');
-            
-            if (parentRow) {
-                // 更新 Modal 內容
-                vipDetailModal.querySelector('#vipId').value = parentRow.dataset.vipId;
-                vipDetailModal.querySelector('#vipName').value = parentRow.dataset.vipName;
-                vipDetailModal.querySelector('#vipNickname').value = parentRow.dataset.vipNickname;
-                vipDetailModal.querySelector('#vipOrganization').value = parentRow.dataset.vipOrganization;
-                vipDetailModal.querySelector('#vipPosition').value = parentRow.dataset.vipPosition;
-                vipDetailModal.querySelector('#vipPhoneNumber').value = parentRow.dataset.vipPhoneNumber;
-                vipDetailModal.querySelector('#vipEmail').value = parentRow.dataset.vipEmail;
-            }
-        });
+        // 監聽 vipDetailModal 的 show 事件
+        vipDetailModal.addEventListener('show.bs.modal', handleVipDetailModal);
+
+        // 監聽 deleteModal 的 show 事件
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', handleDeleteModal);
     });
+
+    function handleDeleteModal(event) {
+        const trigger = event.relatedTarget;
+        const parentRow = trigger.closest('.vip-row');
+        if (parentRow) {
+            document.getElementById('deleteModalBody').innerHTML = `您確定要刪除 <strong>${parentRow.dataset.vipName}</strong> 嗎？`;
+            document.getElementById('participant_id').value = parentRow.dataset.vipId;
+        }
+    }
+
+    function handleVipDetailModal(event) {
+        const trigger = event.relatedTarget;
+        const parentRow = trigger.closest('.vip-row');
+        
+        if (parentRow) {
+            const vipDetailModal = document.getElementById('vipDetailModal');
+            vipDetailModal.querySelector('#vipId').value = parentRow.dataset.vipId;
+            vipDetailModal.querySelector('#vipName').value = parentRow.dataset.vipName;
+            vipDetailModal.querySelector('#vipNickname').value = parentRow.dataset.vipNickname;
+            vipDetailModal.querySelector('#vipOrganization').value = parentRow.dataset.vipOrganization;
+            vipDetailModal.querySelector('#vipPosition').value = parentRow.dataset.vipPosition;
+            vipDetailModal.querySelector('#vipPhoneNumber').value = parentRow.dataset.vipPhoneNumber;
+            vipDetailModal.querySelector('#vipEmail').value = parentRow.dataset.vipEmail;
+        };
+    }
 
     function applyFilterName() {
         var nameFilter = document.getElementById('nameFilter').value;
