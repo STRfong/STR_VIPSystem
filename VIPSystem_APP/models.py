@@ -204,7 +204,8 @@ class ProjectParticipation(models.Model):
         if not self.pk:  # 只在創建新對象時執行
             # 獲取當前專案的最大序號
             max_sequence = ProjectParticipation.objects.filter(
-                project=self.project
+                project=self.project,
+                event_time=self.event_time
             ).aggregate(
                 max_sequence=models.Max('pp_id')
             )['max_sequence'] or 0
