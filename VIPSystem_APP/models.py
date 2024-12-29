@@ -308,7 +308,7 @@ class StaffProfileAdmin(admin.ModelAdmin):
 @admin.register(EventTicket)
 class EventTicketAdmin(admin.ModelAdmin):
     list_display = [field.name for field in EventTicket._meta.fields]
-    search_fields = ('staff__user__username', 'event_time__project__name')
+    search_fields = ('staff__user__username', 'event_time__project__name', 'event_time__project__description')
     list_filter = ('event_time__project__name',)
     list_per_page = 10
     list_max_show_all = 100
