@@ -275,6 +275,7 @@
                             data-vip-phone-number="{{ participant.vip.phone_number }}"
                             data-vip-email="{{ participant.vip.email }}"
                             data-invited-by="{{ participant.invited_by.profile.nickname }}"
+                            data-invited-by-email="{{ participant.invited_by.email }}"
                             data-wish-attend="{{ participant.wish_attend }}"
                             data-wish-attend-list="{{ participant.get_wish_attend_list_ids }}"
                             data-wish-ticket-count="{{ participant.wish_ticket_count }}"
@@ -291,6 +292,7 @@
                             data-event-time-format-date="{{ participant.event_time.format_date_mm_dd }}"
                             data-pp-id="{{ participant.pp_id }}"
                             data-join-people-count="{{ participant.join_people_count }}"
+                            data-send-check-email="{{ participant.send_check_email }}"
                             >
                                 <td style="width: 5%; text-align: center;">{{ participant.pp_id }}</td>
                                 <td data-bs-toggle="modal" data-bs-target="#vipDetailModal" style="cursor: pointer; width: 6%;">
@@ -412,7 +414,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="emailModalLabel">寄件資訊確認</h3>
+                <h3 class="modal-title" id="emailModalLabel">寄送邀請信</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -440,6 +442,11 @@
                     <div class="mb-3">
                         <h5>信件標題</h5>
                         <input type="text" class="form-control" id="email_title" name="email_title">
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h5>cc對象（預設為邀請人；可輸入多個對象，以半形逗號（,）分隔）</h5>
+                        <input type="text" class="form-control" id="email_cc" name="email_cc" required placeholder="請輸入cc對象">
                     </div>
                     <hr>
                     <div class="mb-3">
@@ -489,6 +496,11 @@
                     <div class="mb-3">
                         <h5>信件標題</h5>
                         <input type="text" class="form-control" id="check_email_email_title" name="check_email_email_title" required placeholder="請輸入信件標題">
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h5>cc對象（預設為邀請人；可輸入多個對象，以半形逗號（,）分隔）</h5>
+                        <input type="text" class="form-control" id="check_email_cc" name="check_email_cc" required placeholder="請輸入cc對象">
                     </div>
                     <hr>
                     <div class="mb-3">
@@ -764,6 +776,7 @@
             checkEmailModal.querySelector('#check_email_recipient_name').value = parentRow.dataset.vipName;
             checkEmailModal.querySelector('#check_email_vip_id').value = parentRow.dataset.vipId;
             checkEmailModal.querySelector('#check_email_sender').value = parentRow.dataset.vipEmail;
+            checkEmailModal.querySelector('#check_email_cc').value = parentRow.dataset.invitedByEmail;
             checkEmailModal.querySelector('#check_email_eventInfo').innerHTML = `
                 <strong>${parentRow.dataset.eventTimeDate} ${parentRow.dataset.eventTimeSession}</strong>
                 <br>
@@ -916,6 +929,13 @@
             document.getElementById('vip_id').value = parentRow.dataset.vipId;
             document.getElementById('sender').value = parentRow.dataset.vipEmail;
             document.getElementById('email_title').value = `【薩泰爾娛樂】《${parentRow.dataset.projectName}》合作夥伴現場觀賞邀請`;
+            document.getElementById('email_cc').value = parentRow.dataset.invitedByEmail;
+            var ticket_count;
+            if (parentRow.dataset.sendCheckEmail) {
+                ticket_count = parentRow.dataset.joinPeopleCount;
+            } else {
+                ticket_count = parentRow.dataset.wishTicketCount;
+            }
             // 建立 Email 完整模板
             const emailTemplate = `
                 <h4 class="mb-3" style="font-size: 24px; font-weight: bold;">親愛的${parentRow.dataset.vipName} 您好：</h4>
@@ -934,7 +954,7 @@
 
                 <p>填寫時麻煩留意以下資訊：
                 <ul>
-                    <li>出席人數以 <strong style="color:darkred;">${parentRow.dataset.wishTicketCount}</strong> 人為限</li>
+                    <li>出席人數以 <strong style="color:darkred;">${ticket_count}</strong> 人為限</li>
                     <li>報名成功後，薩泰爾娛樂最晚將於一週內寄出電子「出席確認信」，若逾期仍未收到「出席確認信」，請儘速與邀請您的夥伴或禮賓統籌聯繫。</li>
                 </ul></p>
 

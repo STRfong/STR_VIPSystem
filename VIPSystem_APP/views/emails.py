@@ -46,6 +46,7 @@ def send_email_event_time(request, project_id, section, event_time_id):
     event_time = get_object_or_404(EventTime, pk=event_time_id)
     email_title = request.POST.get('email_title')
     email_content = request.POST.get('email_content')
+    cc = request.POST.get('email_cc')
     if request.method == 'POST':
         pp = get_object_or_404(ProjectParticipation, project=project, vip=vip, event_time=event_time)
         random_token = get_random_string(length=32)
@@ -54,7 +55,7 @@ def send_email_event_time(request, project_id, section, event_time_id):
         if target_link:
             target_link['href'] = f"{os.getenv('SITE_URL')}/VIPSystem_APP/respond/{random_token}"
         email_content = str(email_content)
-        email = Email(pp, email_title, email_content)
+        email = Email(pp, email_title, email_content, cc)
         email.send_email()
         pp.token = random_token
         pp.status = 'sended'
@@ -70,12 +71,14 @@ def send_check_email_event_time(request, project_id, section, event_time_id):
     event_time = get_object_or_404(EventTime, pk=event_time_id)
     email_title = request.POST.get('check_email_email_title')
     email_content = request.POST.get('check_email_email_content')
+    cc = request.POST.get('check_email_cc')
     if request.method == 'POST':
         pp = get_object_or_404(ProjectParticipation, project=project, vip=vip, event_time=event_time)
-        email = Email(pp, email_title, email_content)
+        email = Email(pp, email_title, email_content, cc)
         email.send_email()
         pp.event_time = event_time
-        pp.join_people_count = pp.wish_ticket_count
+        if pp.send_check_email == False:
+            pp.join_people_count = pp.wish_ticket_count
         pp.send_check_email = True
         pp.status = 'confirmed'
         pp.save()
@@ -170,10 +173,11 @@ def send_emails_by_section(request, project_id, section):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, pp, email_title=None, email_content = None):
+    def __init__(self, pp, email_title=None, email_content = None, cc=None):
         self.pp = pp
         self.email_title = email_title
         self.email_content = email_content
+        self.cc = cc
     def send_email(self):
         with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
@@ -184,8 +188,16 @@ class Email():
                 msg['From'] = Header("contact@strnetwork.cc",'utf-8')
                 msg['To'] =  Header(self.pp.vip.email,'utf-8')            
                 msg['Subject'] = Header(self.email_title, 'utf-8')
-                smtp.send_message(msg)  
-
+                if self.cc:
+                    # 分割字串並去除每個郵箱地址周圍的空白
+                    cc_list = [email.strip() for email in self.cc.split(',')]
+                    msg['Cc'] = Header(", ".join(cc_list), 'utf-8')
+                    recipients = [self.pp.vip.email] + cc_list
+                else:
+                    recipients = [self.pp.vip.email]
+                    
+                smtp.send_message(msg, to_addrs=recipients)
+                
     def send_check_reply_email(self, join_people_count):
         try:
             with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
