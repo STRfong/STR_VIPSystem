@@ -121,7 +121,7 @@ class EventTime(models.Model):
     def get_dead_line_weekday(self):
         weekday_number = self.dead_line_date.weekday()
         days = ["一", "二", "三", "四", "五", "六", "日"]
-        return f"{self.dead_line_date}（{days[weekday_number]}）"
+        return f"{self.dead_line_date.strftime('%Y年%m月%d日')}（{days[weekday_number]}）"
     
     def get_weekday(self):
         weekday_number = self.date.weekday()
@@ -238,16 +238,8 @@ class ProjectParticipation(models.Model):
             self.notes = notes
 
             from .views.emails import Email
-            email = Email(
-                username = "temp_username", 
-                sender = self.vip.email, 
-                selected_event_times_list = None, 
-                wish_ticket_count = None,
-                vip_name = self.vip.name,
-                project = self.project, 
-                event_time = self.event_time,
-                dead_line_date = None,
-                token = self.token) 
+            subject = f" 【出席確認信】《{self.project.name}》{self.event_time.format_date_mm_dd()} - 薩泰爾娛樂"
+            email = Email(self, subject, None) 
             email.send_check_reply_email(join_people_count)
             self.send_check_email = True
         elif response == 'declined':

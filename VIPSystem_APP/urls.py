@@ -65,14 +65,14 @@ urlpatterns = [
                     path('send_email/', views.send_email_event_time, name="send_email_event_time"), # 從場次寄信給貴賓（單獨）
                 ])),
             ])),
-            path('participants/', include([ # 直接看專案的總表
-                path('', ProjectParticipantsView.as_view(), name="project_participants"), # project_list/<int:project_id>/participants/
-                path('<int:participant_id>/', include([   
-                    path('remove_participant/', views.remove_participant, name='remove_participant'), # project_list/<int:project_id>/participants/<int:participant_id>/remove_participant/
-                    path('send_email/', views.send_email, name="send_email"), # project_list/<int:project_id>/participants/<int:participant_id>/send_email/
-                ])),
-            ])),
-            path('send_emails/', views.send_emails, name="send_emails"), # project_list/<int:project_id>/send_emails/
+            # path('participants/', include([ # 直接看專案的總表
+            #     path('', ProjectParticipantsView.as_view(), name="project_participants"), # project_list/<int:project_id>/participants/
+            #     path('<int:participant_id>/', include([   
+            #         path('remove_participant/', views.remove_participant, name='remove_participant'), # project_list/<int:project_id>/participants/<int:participant_id>/remove_participant/
+            #         path('send_email/', views.send_email, name="send_email"), # project_list/<int:project_id>/participants/<int:participant_id>/send_email/
+            #     ])),
+            # ])),
+            # path('send_emails/', views.send_emails, name="send_emails"), # project_list/<int:project_id>/send_emails/
             
             path('update_participants/', views.update_participants, name="update_participants"), # project_list/<int:project_id>/update_participants/
             path('event_time/<int:event_time_id>/', include([
