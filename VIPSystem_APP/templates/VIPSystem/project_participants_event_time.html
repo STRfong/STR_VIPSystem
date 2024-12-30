@@ -506,10 +506,12 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex flex-wrap">
-                    {% for user in staffs %}
+                    <form id="filterInvitedByForm">
+                        {% for user in staffs %}
                         <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
                         <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
-                    {% endfor %}
+                        {% endfor %}
+                    </form>
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
@@ -910,6 +912,7 @@
     }
 
     function applyFilterInvitedBy() {
+        console.log('applyFilterInvitedBy');
         var selectedInvitedBy = [];
         var checkboxes = document.querySelectorAll('#filterInvitedByForm input[type="checkbox"]:checked');
         checkboxes.forEach(function(checkbox) {
