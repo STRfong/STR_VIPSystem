@@ -130,6 +130,10 @@ class ProjectParticipantsByEventTimeView(ListView):
             context['project'] = get_object_or_404(Project, pk=project_id)
             context['event_time'] = get_object_or_404(EventTime, pk=event_time_id)
             context['event_times'] = EventTime.objects.filter(project_id=self.kwargs['project_id'], section=self.kwargs['section'])
+            context['event_times_json'] = EventTime.get_event_times_json(
+                self.kwargs['project_id'], 
+                self.kwargs['section']
+            )
             context['staffs'] = User.objects.all()
             context['username'] = self.request.user.username
             context['invited_amount'] = ProjectParticipation.objects.filter(project_id=project_id, event_time_id=event_time_id, invited_by=self.request.user).count()
@@ -406,6 +410,7 @@ class UpdateParticipantsInfoByEventTimeView(UpdateView):
         project_participation.wish_attend = self.event_time_selected(request.POST.getlist('selected_event_time_by_section'))
         project_participation.wish_ticket_count = request.POST.get('wish_ticket_count')
         project_participation.save()
+        messages.success(request, f'已更新 {vip.name} 的希望參加場次和提供票數')
         return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
     
     def event_time_selected(self, event_time_list):

@@ -8,6 +8,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import json
 # from .views.emails import Email
 
 
@@ -133,6 +134,20 @@ class EventTime(models.Model):
     def format_date_mm_dd(self):
         return self.date.strftime('%m/%d')
     
+    @classmethod
+    def get_event_times_json(cls, project_id, section):
+        event_times = cls.objects.filter(project_id=project_id, section=section)
+        return [{
+            'id': et.id,
+            'date': et.date.strftime('%Y-%m-%d'),
+            'section': et.section,
+            'session': et.session,
+            'start_time': et.start_time.strftime('%H:%M'),
+            'end_time': et.end_time.strftime('%H:%M'),
+            'location_name': et.location_name,
+            'location_address': et.location_address,
+        } for et in event_times]
+    
 class EventTicket(models.Model):
     staff = models.ForeignKey(
         StaffProfile, 
@@ -247,6 +262,9 @@ class ProjectParticipation(models.Model):
         else:
             event_time_ids = [event_time_id.strip() for event_time_id in self.wish_attend.split(',') if event_time_id.strip()]
             return EventTime.objects.filter(id__in=event_time_ids)
+        
+    def get_wish_attend_list_ids(self):
+        return json.dumps([str(event_time.id) for event_time in self.get_wish_attend_list()])
         
     def wish_attend_list_email(self):
         from .views.emails import Email
