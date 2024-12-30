@@ -274,7 +274,7 @@
                             data-vip-position="{{ participant.vip.position }}"
                             data-vip-phone-number="{{ participant.vip.phone_number }}"
                             data-vip-email="{{ participant.vip.email }}"
-                            data-invited-by="{{ participant.invited_by.username }}"
+                            data-invited-by="{{ participant.invited_by.profile.nickname }}"
                             data-wish-attend="{{ participant.wish_attend }}"
                             data-wish-attend-list="{{ participant.get_wish_attend_list_ids }}"
                             data-wish-ticket-count="{{ participant.wish_ticket_count }}"
@@ -288,6 +288,9 @@
                             data-event-time-location-name="{{ participant.event_time.location_name }}"
                             data-event-time-location-address="{{ participant.event_time.location_address }}"
                             data-dead-line-date="{{ participant.event_time.get_dead_line_weekday }}"
+                            data-event-time-format-date="{{ participant.event_time.format_date_mm_dd }}"
+                            data-pp-id="{{ participant.pp_id }}"
+                            data-join-people-count="{{ participant.join_people_count }}"
                             >
                                 <td style="width: 5%; text-align: center;">{{ participant.pp_id }}</td>
                                 <td data-bs-toggle="modal" data-bs-target="#vipDetailModal" style="cursor: pointer; width: 6%;">
@@ -394,7 +397,7 @@
             <div class="modal-body" id="deleteModalBody"></div>
             <div class="modal-footer" style="display: flex; justify-content: space-between;">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form action="{% url 'VIPSystem_APP:remove_participant_by_section' project.pk event_time.section %}" method="POST" style="display: inline;">
+                <form action="{% url 'VIPSystem_APP:remove_participant_event_time' project.pk event_time.section event_time.pk %}" method="POST" style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" id="participant_id" name="participant_id">
                     <button type="submit" class="btn btn-danger">確認刪除</button>
@@ -404,7 +407,7 @@
     </div>
 </div>
 
-<!-- 寄件 Modal -->
+<!-- 寄邀請信 Modal -->
 <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" data-bs-backdrop="static" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -417,7 +420,6 @@
                     {% csrf_token %}
                     <div class="form-group mb-3 row">
                         <input type="hidden" id="vip_id" name="vip_id">
-                        <input type="hidden" id="wish_ticket_count" name="wish_ticket_count">
                         <label for="recipient_name" class="col-sm-2 col-form-label">收件人名稱</label>
                         <div class="col-sm-3">
                             <input type="text" class="form-control" id="recipient_name" name="recipient_name" required placeholder="請輸入收件人名稱">
@@ -442,7 +444,7 @@
                     <hr>
                     <div class="mb-3">
                         <h5>信件內容</h5>
-                        <textarea class="form-control" id="email_content" name="email_content" rows="3"></textarea>
+                        <textarea class="form-control rich_text_editor" id="email_content" name="email_content" rows="3"></textarea>
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>     
@@ -454,6 +456,54 @@
     </div>
 </div>
 
+<!-- 寄確認信 Modal -->
+<div class="modal fade" id="checkEmailModal" tabindex="-1" aria-labelledby="checkEmailModalLabel" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="emailModalLabel">寄送確認信</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'VIPSystem_APP:send_check_email_event_time' project.pk event_time.section event_time.pk %}" id="checkEmailForm">
+                    {% csrf_token %}
+                    <div class="form-group mb-3 row">
+                        <input type="hidden" id="check_email_vip_id" name="check_email_vip_id" readonly>
+                        <label for="recipient_name" class="col-sm-2 col-form-label">收件人名稱</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" id="check_email_recipient_name" name="check_email_recipient_name" required placeholder="請輸入收件人名稱" readonly>
+                        </div>  
+                        <label for="check_email_sender" class="col-sm-2 col-form-label">收件人 E-mail</label>
+                        <div class="col-sm-5">
+                            <input type="email" class="form-control" id="check_email_sender" name="check_email_sender" required placeholder="請輸入收件人電子郵件">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h5>邀請場次</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item" id="check_email_eventInfo"></li>
+                        </ul>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h5>信件標題</h5>
+                        <input type="text" class="form-control" id="check_email_email_title" name="check_email_email_title" required placeholder="請輸入信件標題">
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h5>信件內容</h5>
+                        <textarea class="form-control rich_text_editor" id="check_email_email_content" name="check_email_email_content" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>     
+                        <button type="submit" class="btn btn-dark" id="check_email_submitBtn">送出</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 篩選姓名 Modal -->
 <div class="modal fade" id="filterNameModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="filterNameModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -657,7 +707,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
 
-        $('#email_content').summernote({
+        $('.rich_text_editor').summernote({
             height: 300,
             toolbar: [
                 // 樣式相關
@@ -700,7 +750,97 @@
         updateModal.addEventListener('hidden.bs.modal', function () {
             this.removeAttribute('aria-hidden');
         });
+
+        // 監聽 checkEmailModal 的 show 事件
+        const checkEmailModal = document.getElementById('checkEmailModal');
+        checkEmailModal.addEventListener('show.bs.modal', handleCheckEmailModal);
     });
+
+    function handleCheckEmailModal(event) {
+        const checkEmailModal = document.getElementById('checkEmailModal');
+        const trigger = event.relatedTarget;
+        const parentRow = trigger.closest('.vip-row');
+        if (parentRow) {
+            checkEmailModal.querySelector('#check_email_recipient_name').value = parentRow.dataset.vipName;
+            checkEmailModal.querySelector('#check_email_vip_id').value = parentRow.dataset.vipId;
+            checkEmailModal.querySelector('#check_email_sender').value = parentRow.dataset.vipEmail;
+            checkEmailModal.querySelector('#check_email_eventInfo').innerHTML = `
+                <strong>${parentRow.dataset.eventTimeDate} ${parentRow.dataset.eventTimeSession}</strong>
+                <br>
+                <small>
+                    時間：${parentRow.dataset.eventTimeStartTime} - ${parentRow.dataset.eventTimeEndTime} | 
+                    地點：${parentRow.dataset.eventTimeLocationName} | 
+                    地址：${parentRow.dataset.eventTimeLocationAddress}
+                </small>
+            `;
+            checkEmailModal.querySelector('#check_email_email_title').value = `【出席確認信】《${parentRow.dataset.projectName}》${parentRow.dataset.eventTimeFormatDate} - 薩泰爾娛樂`;
+            const emailTemplate = `
+                    <h4 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">親愛的${parentRow.dataset.vipName} 您好：</h4>
+
+                    <p>
+                        感謝您撥空參與薩泰爾娛樂 - 《${parentRow.dataset.projectName}》
+                    </p>
+
+                    <p>
+                        本信件用於核對現場取票資訊，請保留至演出結束，<strong style="color: darkred;">建議您將以下資訊截圖保存，以利加速取票流程。</strong>
+                    </p>
+
+                    <p>期待您蒞臨觀賞，謝謝！</p>
+
+                    <p style="margin-top: 20px;">
+                        ◉ 取票序號：<strong style="color: darkred;">${parentRow.dataset.ppId}</strong><br><br>
+                        ◉ 貴賓資訊：<strong>${parentRow.dataset.vipOrganization} ${parentRow.dataset.vipName}</strong>（邀請人：<strong>${parentRow.dataset.invitedBy}</strong>）<br><br>
+                        ◉ 取票數量：<strong style="color: darkred;">${parentRow.dataset.joinPeopleCount}</strong><br><br>
+                        ◉ 取票位置：<strong>壹電視攝影棚入口公關取票桌</strong><br><br>
+                        ◉ 取票方式：至公關取票桌出示本【出席確認信】的取票資訊
+                    </p>
+
+                    <p>
+                        <strong>【活動資訊】</strong><br>
+                        演出日期：<strong>${parentRow.dataset.eventTimeDate}</strong><br>
+                        場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
+                        進場時間：<strong>17:00 - 18:00</strong>（若您超過18:00進場，需要按照現場人員指示進場）<br>
+                        演出時間：<strong>18:00 - 21:00</strong>
+                    </p>
+
+                    <p style="margin-top: 20px;">
+                        若有任何問題請不吝聯繫邀請您的夥伴或以下窗口
+                    </p>
+
+                    <p>
+                        <strong>【${parentRow.dataset.projectName}】禮賓統籌</strong><br>
+                        游幃傑 Jerry Yu<br>
+                        jerryyu@strnetwork.cc<br>
+                        0924-109-008
+                    </p>
+
+                    <p>
+                        敬祝 平安順心<br>
+                        薩泰爾娛樂 敬上
+                    </p>
+
+                    <h3>▶ 現場注意事項</h3>
+                    <ol>
+                        <li>本節目錄影全長約 110 至 140 分鐘（含中場休息）。遲到觀眾須於主辦單位安排之時間點，在工作人員的引導之下入場，不得異議。</li>
+                        <li>未經主辦單位同意，場內禁止錄影、錄音、拍照、限時動態。</li>
+                        <li>主辦單位未公開節目內容前，需對內容完全保密。</li>
+                        <li>本節目禁止攜帶外食、飲料、任何種類之金屬、玻璃、雷射筆、煙火或任何危險物品。</li>
+                        <li>本節目無尺度限制，18 歲以下觀眾建議由成年人陪同觀賞。</li>
+                        <li>全場次皆為錄影場，入場即代表您同意個人肖像權可作為薩泰爾娛樂股份有限公司 -【 賀瓏夜夜秀 】使用。</li>
+                        <li>全場次皆為現場錄影，攝影機架設、移動尊重現場導播指示，如有部分阻擋視線敬請見諒。</li>
+                    </ol>
+                    `;
+            $('#check_email_email_content').summernote('code', emailTemplate);
+        };
+
+        // 設置表單提交事件
+        const checkEmailForm = document.getElementById('checkEmailForm');
+        checkEmailForm.addEventListener('submit', function(e) {
+            var check_email_submitBtn = e.target.querySelector('#check_email_submitBtn');
+            check_email_submitBtn.disabled = true;
+            check_email_submitBtn.innerHTML = ' <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> 寄件中請稍候';
+        });
+    }
 
     function handleUpdateModal(event) {
         const updateModal = document.getElementById('updateModal');
@@ -774,7 +914,6 @@
         if (parentRow) {
             document.getElementById('recipient_name').value = parentRow.dataset.vipName;
             document.getElementById('vip_id').value = parentRow.dataset.vipId;
-            document.getElementById('wish_ticket_count').value = parentRow.dataset.wishTicketCount;
             document.getElementById('sender').value = parentRow.dataset.vipEmail;
             document.getElementById('email_title').value = `【薩泰爾娛樂】《${parentRow.dataset.projectName}》合作夥伴現場觀賞邀請`;
             // 建立 Email 完整模板

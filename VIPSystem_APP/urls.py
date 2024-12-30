@@ -20,7 +20,7 @@ from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIP
 from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView, ProjectParticipationBySectionView
 from .views import InviteListView, SendEmailListBySectionView, ProjectParticipantsByEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime, InviteListBySectionView, UpdateParticipantsBySectionView, UpdateParticipantsInfoBySectionView, UpdateParticipantsInfoByEventTimeView, UpdateParticipantsByEventTimeView 
 from .views import UpdateParticipantsByEventTimeView, UpdateParticipantsByEventTimeDirectlyView
-from .views import EventTimeDetailView, EventTimeCreateView, UpdateEventTimeView, DeleteEventTimeView, send_email_by_section
+from .views import EventTimeDetailView, EventTimeCreateView, UpdateEventTimeView, DeleteEventTimeView, send_email_by_section    
 app_name = 'VIPSystem_APP'
 
 urlpatterns = [
@@ -57,12 +57,14 @@ urlpatterns = [
                 path('send_emails/', views.send_emails_by_section, name='send_emails_by_section'),
                 path('event_time/<int:event_time_id>/', include([
                     path('participants/', ProjectParticipantsByEventTimeView.as_view(), name="participation_by_event_time"),
+                    path('remove_participant/', views.remove_participant_event_time, name='remove_participant_event_time'),
                     path('invite_list/', InviteListViewEventTime.as_view(), name="invite_list_event_time"),
                     path('update_participants/', UpdateParticipantsByEventTimeView.as_view(), name="update_participants_event_time"),
                     path('update_participants_directly/', UpdateParticipantsByEventTimeDirectlyView.as_view(), name="update_participants_event_time_directly"),
                     path('update_participants_info/', UpdateParticipantsInfoByEventTimeView.as_view(), name='update_participants_info_by_event_time'),
                     path('update_vip_info/', UpdateVipInfoByEventTimeView.as_view(), name='update_vip_info_by_event_time'),
                     path('send_email/', views.send_email_event_time, name="send_email_event_time"), # 從場次寄信給貴賓（單獨）
+                    path('send_check_email/', views.send_check_email_event_time, name="send_check_email_event_time"), # 從場次寄確認信給貴賓（單獨）
                 ])),
             ])),
             # path('participants/', include([ # 直接看專案的總表

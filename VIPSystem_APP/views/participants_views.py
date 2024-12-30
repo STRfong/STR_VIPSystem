@@ -514,11 +514,12 @@ def remove_participant_by_section(request, project_id, section):
         return redirect('VIPSystem_APP:participation_by_section', project_id=project_id, section=section)
 
 @login_required
-def remove_participant_event_time(request, project_id, section, event_time_id, participant_id):
+def remove_participant_event_time(request, project_id, section, event_time_id):
     if request.method == 'POST':
         project = get_object_or_404(Project, pk=project_id)
-        participant = get_object_or_404(VIP, pk=participant_id)
-        project_participation = get_object_or_404(ProjectParticipation, project=project, vip=participant)
+        event_time = get_object_or_404(EventTime, pk=event_time_id)
+        participant = get_object_or_404(VIP, pk=request.POST.get('participant_id'))
+        project_participation = get_object_or_404(ProjectParticipation, project=project, vip=participant, event_time=event_time)
         project_participation.delete()
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
     return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
