@@ -44,10 +44,10 @@
             <h2 class="mb-0">{{ project.description }}《{{ project.name }}》{{event_time.date}} {{event_time.session}}</h2>
         </div>
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <!-- 大螢幕佈局 -->
+            <div class="d-none d-lg-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">貴賓邀請名單</h3>
                 <div class="d-flex justify-content-around gap-3">
-
                     <div class="card text-center" style="width: 10rem;">
                         <div class="card-body">
                             <h5 class="card-title">已邀請組數</h5>
@@ -60,7 +60,6 @@
                             <p class="card-text">
                                 {% if ticket_count != 0 %}
                                     {{ticket_count}} 張
-                                    
                                 {% else %}
                                     無可使用票數
                                 {% endif %}
@@ -82,13 +81,70 @@
                 </div>
                 <div class="btn-group" role="group">
                     <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                      貴賓名單操作
+                        貴賓名單操作
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                      <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
-                      <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
-                      <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
+                        <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
+                        <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
+                        <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
                     </ul>
+                </div>
+            </div>
+
+            <!-- 小螢幕佈局 -->
+            <div class="d-lg-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="card-title mb-0">貴賓邀請名單</h3>
+                    <div class="btn-group" role="group">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            貴賓名單操作
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
+                            <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
+                            <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row row-cols-1 row-cols-sm-2 g-3">
+                    <div class="col">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">已邀請組數</h5>
+                                <p class="card-text">{{invited_amount}} 組</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">可使用票數</h5>
+                                <p class="card-text">
+                                    {% if ticket_count != 0 %}
+                                        {{ticket_count}} 張
+                                    {% else %}
+                                        無可使用票數
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">已使用票數</h5>
+                                <p class="card-text">{{invited_ticket_count}} 張</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">剩餘票數</h5>
+                                <p class="card-text">{{remaining_ticket_count}} 張</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- 直接新增貴賓 Modal -->
@@ -199,12 +255,12 @@
                                 <th style="width:  5%; text-align: center;">序號</th>
                                 <th style="width:  6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
-                                <th style="width:  6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
-                                <th style="width:  6%; text-align: center;">提供票數</th>
-                                <th style="width: 14%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
-                                <th style="width:  6%; text-align: center;">索取票數</th>
-                                <th style="width:  5%; text-align: center;">確認信</th>
-                                <th style="width:  5%; text-align: center;">提醒信</th>
+                                <th class="d-none d-lg-table-cell" style="width:  6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
+                                <th style="width:  8%; text-align: center;">提供票數</th>
+                                <th class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                                <th class="d-none d-lg-table-cell" style="width:  6%; text-align: center;">索取票數</th>
+                                <th class="d-none d-lg-table-cell" style="width:  5%; text-align: center;">確認信</th>
+                                <th class="d-none d-lg-table-cell" style="width:  5%; text-align: center;">提醒信</th>
                                 <th style="width: 10%;">備註</th>
                                 <th style="width: 15%; text-align: center;">操作</th>
                             </tr>
@@ -219,6 +275,8 @@
                             data-vip-phone-number="{{ participant.vip.phone_number }}"
                             data-vip-email="{{ participant.vip.email }}"
                             data-invited-by="{{ participant.invited_by.username }}"
+                            data-wish-attend="{{ participant.wish_attend }}"
+                            data-wish-attend-list="{{ participant.get_wish_attend_list_ids }}"
                             data-wish-ticket-count="{{ participant.wish_ticket_count }}"
                             data-notes="{{ participant.notes }}"
                             data-project-name="{{ project.name }}"
@@ -240,20 +298,20 @@
                                     </span>
                                 </td>
                                 <td style="width: 6%;">{{ participant.vip.organization }}</td>
-                                <td style="width: 6%;">{{ participant.invited_by.username }}</td>
-                                <td style="width: 6%; text-align: center;">{{ participant.wish_ticket_count }}</td>
-                                <td style="width: 14%; text-align: center;">{{ participant.get_status_display }}</td>
+                                <td class="d-none d-lg-table-cell" style="width: 6%;">{{ participant.invited_by.username }}</td>
+                                <td style="width: 8%; text-align: center;">{{ participant.wish_ticket_count }}</td>
+                                <td class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">{{ participant.get_status_display }}</td>
                                
-                                <td style="width: 6%; text-align: center;">{{ participant.join_people_count }}</td>
+                                <td class="d-none d-lg-table-cell" style="width: 6%; text-align: center;">{{ participant.join_people_count }}</td>
                                 
-                                <td style="width: 5%; text-align: center;">
+                                <td class="d-none d-lg-table-cell" style="width: 5%; text-align: center;">
                                     {% if participant.send_check_email %}
                                         <i class="bi bi-check-circle text-success"></i>
                                     {% else %}
                                         <i class="bi bi-x-circle text-danger"></i>
                                     {% endif %}
                                 </td>
-                                <td style="width: 5%; text-align: center;">
+                                <td class="d-none d-lg-table-cell"style="width: 5%; text-align: center;">
                                     {% if participant.send_remind_email %}
                                         <i class="bi bi-check-circle text-success"></i>
                                     {% else %}
@@ -266,7 +324,7 @@
                                         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#emailModal">
                                             <i class="bi bi-envelope"></i>
                                         </button>
-                                        <button type = "button" class = "btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateModal{{ participant.id }}">
+                                        <button type = "button" class = "btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateModal">
                                             <i class="bi bi-pencil-square"></i>
                                         </button> 
                                         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal">
@@ -275,95 +333,6 @@
                                     </div>
                                 </td>
                             </tr>
-                            <!-- 修改 Modal -->
-                            <div class="modal fade" id="updateModal{{ participant.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ participant.id }}" data-bs-backdrop="static" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="updateModalLabel{{ participant.id }}">修改 {{ participant.vip.name }} 的參與資訊</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_event_time' project.pk event_time.section event_time.pk %}" id="updateForm{{ participant.id }}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="vip_id" value="{{ participant.vip.id }}">
-                                                <h6>參與場次修改</h6>
-                                                <div class="row row-cols-1 row-cols-md-2 g-4">
-                                                    <div class="col">
-                                                        <label class="card h-100">
-                                                            <div class="card-body">
-                                                                <h5 class="card-title">
-                                                                    <input type="checkbox" name="selected_event_time_by_section" value="all" class="form-check-input me-2 selectAll" id="selectAll{{ participant.id }}" form="updateForm{{ participant.id }}" {% if 'all' in participant.wish_attend %}checked{% endif %}>
-                                                                    都可以
-                                                                </h5>
-                                                                <p class="card-text">
-                                                                    選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
-                                                                </p>
-                                                            </div>
-                                                        </label>
-                                                    </div>
-                                                    {% for event_time in event_times %}
-                                                    <div class="col">
-                                                        <label class="card h-100">
-                                                            <div class="card-body">
-                                                                <h5 class="card-title">
-                                                                    <input form="updateForm{{ participant.id }}" type="checkbox" name="selected_event_time_by_section" value="{{ event_time.id }}" class="form-check-input me-2 event-time-checkbox" {% if event_time in participant.get_wish_attend_list %}checked{% endif %}>
-                                                                    <!-- {{ event_time.date }} {{event_time.section}}{{ event_time.get_session_display }} -->
-                                                                    {{ event_time.date }} {{event_time.section}}{{ event_time.session }}
-                                                                </h5>
-                                                                <p class="card-text">
-                                                                    時間：{{ event_time.start_time }} - {{ event_time.end_time }}<br>
-                                                                    地點：{{ event_time.location_name }}<br>
-                                                                    地址：{{ event_time.location_address }}
-                                                                </p>
-                                                            </div>
-                                                        </label>
-                                                    </div>
-                                                    {% endfor %}
-                                                </div>
-                                                <hr>
-                                                <h6>希望發放票數調整</h6>
-                                                <div class="row row-cols-1 row-cols-md-2 g-4">
-                                                    <div class="col">
-                                                        <input type="number" class="form-control" name="wish_ticket_count" value="{{ participant.wish_ticket_count }}">
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div class="modal-footer justify-content-between">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
-                                            <button type="submit" form="updateForm{{ participant.id }}" class="btn btn-primary" id="confirmEventTime">送出</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <script>
-                                document.getElementById('updateModal{{ participant.id }}').addEventListener('shown.bs.modal', function (event) {
-                                    const modal = document.getElementById('updateModal{{ participant.id }}');
-                                    const selectAllCheckbox = modal.querySelector('#selectAll{{ participant.id }}')
-                                    const eventTimeCheckboxes = modal.querySelectorAll('.event-time-checkbox');
-
-                                    function updateSelectAllState() {
-                                        selectAllCheckbox.checked = Array.from(eventTimeCheckboxes).every(checkbox => checkbox.checked);
-                                    }
-
-                                    selectAllCheckbox.addEventListener('change', function() {
-                                        eventTimeCheckboxes.forEach(checkbox => {
-                                            checkbox.checked = this.checked;
-                                        });
-                                    });
-
-                                    eventTimeCheckboxes.forEach(checkbox => {
-                                        checkbox.addEventListener('change', function() {
-                                            if (!this.checked) {
-                                                selectAllCheckbox.checked = false;
-                                            } else {
-                                                updateSelectAllState();
-                                            }
-                                        });
-                                    });
-                                });
-                            </script>
                         {% endfor %}
                         </tbody>
                     </table>
@@ -653,6 +622,50 @@
         </div>
     </div>
 </div>
+
+<!-- 修改 Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" data-bs-backdrop="static">
+    {{ event_times_json|json_script:"event-times-data" }}
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_event_time' project.pk event_time.section event_time.pk %}" id="updateForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="vip_id" id="vip_id">
+                    <h6>參與場次修改</h6>
+                    <div class="row row-cols-1 row-cols-md-2 g-4" id = "eachEventTimeCheckboxDiv">
+                        <div class="col">
+                            <label class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title" id="allEventTimeCheckboxDiv"></h5>
+                                    <p class="card-text">
+                                        選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>提供票數調整</h6>
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="col">
+                            <input type="number" class="form-control" name="wish_ticket_count" id="wish_ticket_count" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="updateForm" class="btn btn-primary" id="confirmEventTime">送出</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -675,12 +688,84 @@
         // 監聽 previewModal 的 show 事件
         const previewModal = document.getElementById('previewModal');
         previewModal.addEventListener('show.bs.modal', handlePreviewModal);
+
+        // 監聽 updateModal 的 show 事件
+        const updateModal = document.getElementById('updateModal');
+        updateModal.addEventListener('show.bs.modal', handleUpdateModal);
+        updateModal.addEventListener('hidden.bs.modal', function () {
+            this.removeAttribute('aria-hidden');
+        });
     });
+
+    function handleUpdateModal(event) {
+        const updateModal = document.getElementById('updateModal');
+        const trigger = event.relatedTarget;
+        const parentRow = trigger.closest('.vip-row');
+        if (parentRow) {
+            const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
+            eachEventTimeCheckboxDiv.innerHTML = '';
+            updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
+            updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
+            const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
+            const wishAttendList = parentRow.dataset.wishAttendList;
+            const checkedAll = wishAttend.includes('all') ? 'checked' : '';
+            eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend',`
+            <div class="col">   
+                <label class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <input type="checkbox" 
+                            name="selected_event_time_by_section" 
+                            value="all" 
+                            class="form-check-input me-2 selectAll" 
+                            id="selectAll" 
+                            form="updateForm"
+                            ${checkedAll}>
+                        都可以
+                        </h5>
+                        <p class="card-text">
+                            選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
+                        </p>
+                    </div>
+                </label>
+            </div>
+            `);
+            
+            const eventTimes = JSON.parse(document.getElementById('event-times-data').textContent);
+            eventTimes.forEach(eventTime => {
+                const isChecked = wishAttendList.includes(eventTime.id) ? 'checked' : '';
+                eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend', `
+                    <div class="col">
+                        <label class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <input form="updateForm" 
+                                        type="checkbox" 
+                                        name="selected_event_time_by_section" 
+                                        value="${eventTime.id}" 
+                                        class="form-check-input me-2 event-time-checkbox"
+                                        ${isChecked}>
+                                    ${eventTime.date} ${eventTime.section}${eventTime.session}
+                                </h5>
+                                <p class="card-text">
+                                    時間：${eventTime.start_time} - ${eventTime.end_time}<br>
+                                    地點：${eventTime.location_name}<br>
+                                    地址：${eventTime.location_address}
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                `);
+            });
+
+            var wishTicketCount = parentRow.dataset.wishTicketCount;
+            updateModal.querySelector('#wish_ticket_count').value = wishTicketCount;
+        }
+    }
 
     function handlePreviewModal(event) {
         var formData = document.getElementById('emailForm');
         var emailForm = new FormData(formData);
-        console.log(emailForm);
         if (emailForm) {
             var emailContent = emailForm.get('email_content');
             var recipientName = emailForm.get('recipient_name');
