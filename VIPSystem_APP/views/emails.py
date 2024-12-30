@@ -13,29 +13,30 @@ from VIPSystem_APP.models import ProjectParticipation, VIP, Project, EventTime
 from email.header import Header
 from collections import defaultdict
 from datetime import datetime
+from bs4 import BeautifulSoup
 
 
-@login_required
-def send_email(request, project_id, participant_id):
-    project = get_object_or_404(Project, pk=project_id)
-    vip = get_object_or_404(VIP, pk=participant_id)
-    if request.method == 'POST':
-        pp = ProjectParticipation.objects.get(project=project, vip=vip)
-        random_token = get_random_string(length=32)
-        email = Email(request.user.username, 
-                        request.POST['sender'], 
-                        request.POST.getlist('selected_event_times'), 
-                        pp.wish_ticket_count,
-                        vip.name,
-                        project, 
-                        random_token)
-        email.send_email()
-        pp.token = random_token
-        pp.status = 'sended'
-        pp.save()
-        messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
-        return redirect('VIPSystem_APP:project_participants', project_id=project_id)
-    return render(request, 'send_email.html')
+# @login_required
+# def send_email(request, project_id, participant_id):
+#     project = get_object_or_404(Project, pk=project_id)
+#     vip = get_object_or_404(VIP, pk=participant_id)
+#     if request.method == 'POST':
+#         pp = ProjectParticipation.objects.get(project=project, vip=vip)
+#         random_token = get_random_string(length=32)
+#         email = Email(request.user.username, 
+#                         request.POST['sender'], 
+#                         request.POST.getlist('selected_event_times'), 
+#                         pp.wish_ticket_count,
+#                         vip.name,
+#                         project, 
+#                         random_token)
+#         email.send_email()
+#         pp.token = random_token
+#         pp.status = 'sended'
+#         pp.save()
+#         messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
+#         return redirect('VIPSystem_APP:project_participants', project_id=project_id)
+#     return render(request, 'send_email.html')
 
 def send_email_by_section(request, project_id, section):
     project = get_object_or_404(Project, pk=project_id)
@@ -66,26 +67,22 @@ def send_email_event_time(request, project_id, section, event_time_id):
     project = get_object_or_404(Project, pk=project_id)
     vip = get_object_or_404(VIP, pk=request.POST['vip_id'])
     event_time = get_object_or_404(EventTime, pk=event_time_id)
-    dead_line_date = request.POST['dead_line_date']
-    print(dead_line_date)
+    email_title = request.POST.get('email_title')
+    email_content = request.POST.get('email_content')
     if request.method == 'POST':
-        pp = get_object_or_404(ProjectParticipation, project=project, vip=vip)
+        pp = get_object_or_404(ProjectParticipation, project=project, vip=vip, event_time=event_time)
         random_token = get_random_string(length=32)
-        email = Email(request.user.username, 
-                        request.POST['sender'], 
-                        pp.get_wish_attend_list(), 
-                        pp.wish_ticket_count,
-                        vip.name,
-                        project, 
-                        event_time,
-                        dead_line_date,
-                        random_token, 
-                        request.POST['email_content'])
+        email_content = BeautifulSoup(email_content, 'html.parser')
+        target_link = email_content.find('a', text='☞點擊按鈕確認參加！')
+        if target_link:
+            target_link['href'] = f"{os.getenv('SITE_URL')}/VIPSystem_APP/respond/{random_token}"
+        email_content = str(email_content)
+        email = Email(pp, email_title, email_content)
         email.send_email()
         pp.token = random_token
         pp.status = 'sended'
         pp.save()
-        messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
+        messages.success(request, f"已成功發送邀請函給 {vip.name} !")
         return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
     return render(request, 'send_email.html')
 
@@ -176,45 +173,23 @@ def send_emails_by_section(request, project_id, section):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 class Email():
-    def __init__(self, username, sender, selected_event_times_list, wish_ticket_count, vip_name, project, event_time, dead_line_date, token, email_content = None):
-        self.username = username
-        self.sender = sender
-        self.selected_event_times_list = selected_event_times_list
-        self.wish_ticket_count = wish_ticket_count
-        self.vip_name = vip_name
-        self.project = project
-        self.event_time = event_time
-        self.dead_line_date = dead_line_date
-        self.token = token
+    def __init__(self, pp, email_title=None, email_content = None):
+        self.pp = pp
+        self.email_title = email_title
         self.email_content = email_content
     def send_email(self):
         with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
-                html_content = render_to_string(
-                    'VIPSystem/email_template.html',
-                    {'username': self.username, 
-                     'token': self.token, 
-                     'vip_name': self.vip_name,
-                     'wish_ticket_count': self.wish_ticket_count,
-                     'project': self.project,
-                     'dead_line_date': self.dead_line_date,
-                     'event_time': self.event_time,
-                     'SITE_URL': os.getenv('SITE_URL'),
-                     'email_content': self.email_content}
-                )
-                
                 # 添加 HTML 内容到邮件
-                msg = MIMEText(html_content, 'html', 'utf-8')
+                msg = MIMEText(self.email_content, 'html', 'utf-8')
                 msg['From'] = Header("contact@strnetwork.cc",'utf-8')
-                msg['To'] =  Header(self.sender,'utf-8')            
-                subject = f" 【薩泰爾娛樂】《{self.project.name}》合作夥伴現場觀賞邀請"
-                msg['Subject'] = Header(subject, 'utf-8')
+                msg['To'] =  Header(self.pp.vip.email,'utf-8')            
+                msg['Subject'] = Header(self.email_title, 'utf-8')
                 smtp.send_message(msg)  
 
     def send_check_reply_email(self, join_people_count):
-        pp = ProjectParticipation.objects.get(token=self.token)
         try:
             with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
                     smtp.ehlo()
@@ -223,9 +198,9 @@ class Email():
                     html_content = render_to_string(
                         'VIPSystem/email_check_reply_template.html',
                         {
-                        'project': self.project,
-                        'participant': pp,
-                        'event_time': self.event_time, 
+                        'project': self.pp.project,
+                        'participant': self.pp,
+                        'event_time': self.pp.event_time, 
                         'join_people_count': join_people_count
                         }
                     )
@@ -233,9 +208,8 @@ class Email():
                     # 添加 HTML 内容到邮件
                     msg = MIMEText(html_content, 'html', 'utf-8')
                     msg['From'] = Header("contact@strnetwork.cc",'utf-8')
-                    msg['To'] =  Header(self.sender,'utf-8')            
-                    subject = f" 【出席確認信】《{self.project.name}》{self.event_time.format_date_mm_dd()} - 薩泰爾娛樂"
-                    msg['Subject'] = Header(subject, 'utf-8')
+                    msg['To'] =  Header(self.pp.vip.email,'utf-8')            
+                    msg['Subject'] = Header(self.email_title, 'utf-8')
                     smtp.send_message(msg)  
         except Exception as e:
             print("錯誤訊息: ", e)
