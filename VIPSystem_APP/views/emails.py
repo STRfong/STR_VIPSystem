@@ -15,29 +15,6 @@ from collections import defaultdict
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-
-# @login_required
-# def send_email(request, project_id, participant_id):
-#     project = get_object_or_404(Project, pk=project_id)
-#     vip = get_object_or_404(VIP, pk=participant_id)
-#     if request.method == 'POST':
-#         pp = ProjectParticipation.objects.get(project=project, vip=vip)
-#         random_token = get_random_string(length=32)
-#         email = Email(request.user.username, 
-#                         request.POST['sender'], 
-#                         request.POST.getlist('selected_event_times'), 
-#                         pp.wish_ticket_count,
-#                         vip.name,
-#                         project, 
-#                         random_token)
-#         email.send_email()
-#         pp.token = random_token
-#         pp.status = 'sended'
-#         pp.save()
-#         messages.success(request, f"已成功發送邀請函給 {request.POST['sender']} !")
-#         return redirect('VIPSystem_APP:project_participants', project_id=project_id)
-#     return render(request, 'send_email.html')
-
 def send_email_by_section(request, project_id, section):
     project = get_object_or_404(Project, pk=project_id)
     vip = get_object_or_404(VIP, pk=request.POST['vip_id'])
@@ -83,6 +60,26 @@ def send_email_event_time(request, project_id, section, event_time_id):
         pp.status = 'sended'
         pp.save()
         messages.success(request, f"已成功發送邀請函給 {vip.name} !")
+        return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
+    return render(request, 'send_email.html')
+
+@login_required
+def send_check_email_event_time(request, project_id, section, event_time_id):
+    project = get_object_or_404(Project, pk=project_id)
+    vip = get_object_or_404(VIP, pk=request.POST.get('check_email_vip_id'))
+    event_time = get_object_or_404(EventTime, pk=event_time_id)
+    email_title = request.POST.get('check_email_email_title')
+    email_content = request.POST.get('check_email_email_content')
+    if request.method == 'POST':
+        pp = get_object_or_404(ProjectParticipation, project=project, vip=vip, event_time=event_time)
+        email = Email(pp, email_title, email_content)
+        email.send_email()
+        pp.event_time = event_time
+        pp.join_people_count = pp.wish_ticket_count
+        pp.send_check_email = True
+        pp.status = 'confirmed'
+        pp.save()
+        messages.success(request, f"已成功發送確認信給 {vip.name} !")
         return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
     return render(request, 'send_email.html')
 
