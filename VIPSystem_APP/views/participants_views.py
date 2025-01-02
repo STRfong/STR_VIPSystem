@@ -308,7 +308,6 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
         project_id = kwargs.get('project_id')
         section = kwargs.get('section')
         event_time_id = kwargs.get('event_time_id')
-        print(request.POST)
         # 獲取表單數據
         vip_name = request.POST.get('name')
         vip_nickname = request.POST.get('nickname')
@@ -334,6 +333,7 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                     messages.info(request, f'找到現有貴賓：{vip.name}')
                     vip.name = vip_name
                     vip.nickname = vip_nickname
+                    vip.invited_by = request.user
                     vip.email = vip_email
                     vip.phone_number = vip_phone
                     vip.organization = vip_organization
@@ -351,6 +351,7 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                         name=vip_name,
                         email=vip_email,
                         phone_number=vip_phone,
+                        invited_by=request.user,
                         organization=vip_organization,
                         position=vip_position,
                         str_connect=str_connect,
