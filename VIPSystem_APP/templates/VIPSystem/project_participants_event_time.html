@@ -1085,8 +1085,9 @@
 
 
     const eventTimeId = '{{ event_time.pk }}';
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const vipSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/vip-updates/' + eventTimeId + '/'
+        protocol + window.location.host + '/ws/vip-updates/' + eventTimeId + '/'
     );
 
     vipSocket.onopen = function(e) {
