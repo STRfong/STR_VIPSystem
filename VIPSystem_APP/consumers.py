@@ -55,6 +55,7 @@ class VIPUpdateConsumer(AsyncWebsocketConsumer):
                 'vip__position': p.vip.position,
                 'vip__phone_number': p.vip.phone_number,
                 'vip__email': p.vip.email,
+                'status': p.get_status_display(),
                 'invited_by__username': p.invited_by.profile.nickname if p.invited_by else '',
                 'invited_by__email': p.invited_by.email if p.invited_by else '',
                 'wish_attend': p.wish_attend,

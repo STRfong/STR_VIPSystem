@@ -333,7 +333,6 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                     messages.info(request, f'找到現有貴賓：{vip.name}')
                     vip.name = vip_name
                     vip.nickname = vip_nickname
-                    vip.invited_by = request.user
                     vip.email = vip_email
                     vip.phone_number = vip_phone
                     vip.organization = vip_organization
@@ -351,7 +350,6 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                         name=vip_name,
                         email=vip_email,
                         phone_number=vip_phone,
-                        invited_by=request.user,
                         organization=vip_organization,
                         position=vip_position,
                         str_connect=str_connect,

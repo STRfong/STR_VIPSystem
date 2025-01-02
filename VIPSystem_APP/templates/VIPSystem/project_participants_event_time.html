@@ -274,6 +274,7 @@
                             data-vip-position="{{ participant.vip.position }}"
                             data-vip-phone-number="{{ participant.vip.phone_number }}"
                             data-vip-email="{{ participant.vip.email }}"
+                            data-status="{{ participant.get_status_display }}"
                             data-invited-by="{{ participant.invited_by.profile.nickname }}"
                             data-invited-by-email="{{ participant.invited_by.email }}"
                             data-wish-attend="{{ participant.wish_attend }}"
@@ -930,11 +931,10 @@
             document.getElementById('sender').value = parentRow.dataset.vipEmail;
             document.getElementById('email_title').value = `【薩泰爾娛樂】《${parentRow.dataset.projectName}》合作夥伴現場觀賞邀請`;
             document.getElementById('email_cc').value = parentRow.dataset.invitedByEmail;
-            var ticket_count;
-            if (parentRow.dataset.sendCheckEmail) {
-                ticket_count = parentRow.dataset.joinPeopleCount;
+            if (parentRow.dataset.status == '尚未寄出邀請信' || parentRow.dataset.status == '已發送邀請信件等待回覆') {
+                var ticket_count = parentRow.dataset.wishTicketCount;
             } else {
-                ticket_count = parentRow.dataset.wishTicketCount;
+                var ticket_count = parentRow.dataset.joinPeopleCount;
             }
             // 建立 Email 完整模板
             const emailTemplate = `
@@ -1086,6 +1086,7 @@
 
     const eventTimeId = '{{ event_time.pk }}';
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    console.log( protocol + window.location.host + '/ws/vip-updates/' + eventTimeId + '/');
     const vipSocket = new WebSocket(
         protocol + window.location.host + '/ws/vip-updates/' + eventTimeId + '/'
     );
@@ -1177,6 +1178,7 @@
             'data-vip-position': participant.vip__position,
             'data-vip-phone-number': participant.vip__phone_number,
             'data-vip-email': participant.vip__email,
+            'data-status': participant.status,
             'data-invited-by': participant.invited_by__username,
             'data-invited-by-email': participant.invited_by__email,
             'data-wish-attend': participant.wish_attend,
