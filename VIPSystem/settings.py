@@ -100,7 +100,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'widget_tweaks', 
     'VIPSystem',
-    'django_extensions'
+    'django_extensions',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -132,9 +133,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = "VIPSystem.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -208,3 +206,35 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 SITE_URL = 'http://localhost:8000'
+
+ASGI_APPLICATION = 'VIPSystem.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [{
+                "host": os.getenv('REDIS_HOST', '127.0.0.1'),
+                "port": os.getenv('REDIS_PORT', 6379),
+                "password": os.getenv('REDIS_PASSWORD', None)
+            }],
+        },
+    },
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'VIPSystem_APP': {  # 替換成你的應用名稱
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

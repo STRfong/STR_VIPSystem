@@ -255,7 +255,7 @@
                                 <th style="width:  5%; text-align: center;">序號</th>
                                 <th style="width:  6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
-                                <th class="d-none d-lg-table-cell" style="width:  6%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
+                                <th class="d-none d-lg-table-cell" style="width:  7%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  8%; text-align: center;">提供票數</th>
                                 <th class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                                 <th class="d-none d-lg-table-cell" style="width:  6%; text-align: center;">索取票數</th>
@@ -303,7 +303,7 @@
                                     </span>
                                 </td>
                                 <td style="width: 6%;">{{ participant.vip.organization }}</td>
-                                <td class="d-none d-lg-table-cell" style="width: 6%;">{{ participant.invited_by.username }}</td>
+                                <td class="d-none d-lg-table-cell" style="width: 7%;">{{ participant.invited_by.profile.nickname }}</td>
                                 <td style="width: 8%; text-align: center;">{{ participant.wish_ticket_count }}</td>
                                 <td class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">{{ participant.get_status_display }}</td>
                                
@@ -1082,5 +1082,170 @@
         }
         window.location.href = url.toString();
     }
+
+
+    const eventTimeId = '{{ event_time.pk }}';
+    const vipSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/vip-updates/' + eventTimeId + '/'
+    );
+
+    vipSocket.onopen = function(e) {
+        console.log('VIP WebSocket connected');
+    };
+
+    vipSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log('有髒東西進來了');
+        console.log(data.participants);
+        if (data.type === 'vip_update') {
+            updateVIPTable(data.participants);
+        }
+    };
+
+    function updateVIPTable(participants) {
+        const tbody = document.querySelector('table tbody');
+        const existingRows = tbody.getElementsByClassName('vip-row');
+        
+        // 將現有行轉換為 Map
+        const existingRowsMap = new Map();
+        Array.from(existingRows).forEach(row => {
+            existingRowsMap.set(row.getAttribute('data-pp-id'), row);
+        });
+        
+        // 將新數據轉換為 Map
+        const newRowsMap = new Map();
+        participants.forEach(participant => {
+            newRowsMap.set(participant.pp_id.toString(), participant);
+        });
+        
+        // 處理更新和新增
+        participants.forEach(participant => {
+            const pp_id = participant.pp_id.toString();
+            console.log(existingRowsMap);
+            const existingRow = existingRowsMap.get(pp_id);
+            
+            if (existingRow) {
+                console.log('在ㄛ！');
+                // 如果行已存在且內容有變化，進行更新
+                if (hasChanged(existingRow, participant)) {
+                    existingRow.replaceWith(createRow(participant));
+                }
+            };
+            // else {
+            //     // 如果是新行，添加到表格末尾
+            //     tbody.appendChild(createRow(participant));
+            // }
+        });
+        
+        // 處理刪除
+        Array.from(existingRows).forEach(row => {
+            const pp_id = row.getAttribute('data-pp-id');
+            if (!newRowsMap.has(pp_id)) {
+                row.remove();
+            }
+        });
+    }
+
+    function hasChanged(existingRow, newData) {
+    // 檢查確認信和提醒信的圖標狀態
+    const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(8) .bi-check-circle') !== null;
+    const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
+
+    return (
+        existingRow.querySelector('td:nth-child(2)').textContent.trim() !== newData.vip__name ||
+        existingRow.querySelector('td:nth-child(3)').textContent.trim() !== newData.vip__organization ||
+        existingRow.querySelector('td:nth-child(4)').textContent.trim() !== newData.invited_by__username ||
+        existingRow.querySelector('td:nth-child(5)').textContent.trim() !== newData.wish_ticket_count.toString() ||
+        existingRow.querySelector('td:nth-child(6)').textContent.trim() !== newData.status ||
+        existingRow.querySelector('td:nth-child(7)').textContent.trim() !== newData.join_people_count.toString() ||
+        hasCheckEmailIcon !== newData.send_check_email ||
+        hasRemindEmailIcon !== newData.send_remind_email ||
+        existingRow.querySelector('td:nth-child(10)').textContent.trim() !== newData.notes
+    );
+    }
+
+    function createRow(participant) {
+        const tr = document.createElement('tr');
+        tr.className = 'vip-row';
+        
+        const dataAttributes = {
+            'data-vip-name': participant.vip__name,
+            'data-vip-id': participant.vip__id,
+            'data-vip-nickname': participant.vip__nickname,
+            'data-vip-organization': participant.vip__organization,
+            'data-vip-position': participant.vip__position,
+            'data-vip-phone-number': participant.vip__phone_number,
+            'data-vip-email': participant.vip__email,
+            'data-invited-by': participant.invited_by__username,
+            'data-invited-by-email': participant.invited_by__email,
+            'data-wish-attend': participant.wish_attend,
+            'data-wish-attend-list': participant.wish_attend_list,
+            'data-wish-ticket-count': participant.wish_ticket_count,
+            'data-notes': participant.notes,
+            'data-project-name': participant.project_name,
+            'data-project-description': participant.project_description,
+            'data-event-time-date': participant.event_time_date,
+            'data-event-time-session': participant.event_time_session,
+            'data-event-time-start-time': participant.event_time_start_time,
+            'data-event-time-end-time': participant.event_time_end_time,
+            'data-event-time-location-name': participant.event_time_location_name,
+            'data-event-time-location-address': participant.event_time_location_address,
+            'data-dead-line-date': participant.dead_line_date,
+            'data-event-time-format-date': participant.event_time_format_date,
+            'data-pp-id': participant.pp_id,
+            'data-join-people-count': participant.join_people_count,
+            'data-send-check-email': participant.send_check_email
+        };
+
+        
+        Object.entries(dataAttributes).forEach(([key, value]) => {
+            tr.setAttribute(key, value);
+        });
+        
+        tr.innerHTML = `
+            <td style="width: 5%; text-align: center;">${participant.pp_id}</td>
+            <td data-bs-toggle="modal" data-bs-target="#vipDetailModal" style="cursor: pointer; width: 6%;">
+                <span data-bs-toggle="tooltip" data-bs-placement="right" title="邀請時間：${participant.invited_at}
+                上次更新時間：${participant.last_update_at}" style="cursor: pointer;">
+                    ${participant.vip__name}
+                </span>
+            </td>
+            <td style="width: 6%;">${participant.vip__organization}</td>
+            <td class="d-none d-lg-table-cell" style="width: 6%;">${participant.invited_by__username}</td>
+            <td style="width: 8%; text-align: center;">${participant.wish_ticket_count}</td>
+            <td class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">${participant.status}</td>
+            <td class="d-none d-lg-table-cell" style="width: 6%; text-align: center;">${participant.join_people_count}</td>
+            <td class="d-none d-lg-table-cell" style="width: 5%; text-align: center;">
+                ${participant.send_check_email ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>'}
+            </td>
+            <td class="d-none d-lg-table-cell" style="width: 5%; text-align: center;">
+                ${participant.send_remind_email ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>'}
+            </td>
+            <td style="width: 10%;">${participant.notes}</td>
+            <td style="width: 15%; text-align: center;">
+                <div class="btn-group btn-group-sm" role="group">
+                    <div class="btn-group btn-group-sm dropstart" role="group">
+                        <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-envelope"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#emailModal">寄送邀請信</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#checkEmailModal">寄送確認信</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#reminderModal">寄送提醒信</a></li>
+                        </ul>
+                    </div>
+                    <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateModal">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        return tr;
+    }
+
 </script>
 {% endblock %}
