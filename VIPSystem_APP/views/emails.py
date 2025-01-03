@@ -87,6 +87,24 @@ def send_check_email_event_time(request, project_id, section, event_time_id):
     return render(request, 'send_email.html')
 
 @login_required
+def send_remind_email_event_time(request, project_id, section, event_time_id):
+    project = get_object_or_404(Project, pk=project_id)
+    vip = get_object_or_404(VIP, pk=request.POST.get('remind_email_vip_id'))
+    event_time = get_object_or_404(EventTime, pk=event_time_id)
+    email_title = request.POST.get('remind_email_email_title')
+    email_content = request.POST.get('remind_email_email_content')
+    cc = request.POST.get('remind_email_cc')
+    if request.method == 'POST':
+        pp = get_object_or_404(ProjectParticipation, project=project, vip=vip, event_time=event_time)
+        email = Email(pp, email_title, email_content, cc)
+        email.send_email()
+        pp.send_remind_email = True
+        pp.save()
+        messages.success(request, f"已成功發送提醒信給 {vip.name} !")
+        return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
+    return render(request, 'send_email.html')
+
+@login_required
 def send_emails(request, project_id):
     if request.method == 'POST':
         project = get_object_or_404(Project, pk=project_id)
