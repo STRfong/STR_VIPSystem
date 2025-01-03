@@ -211,6 +211,7 @@ class ProjectParticipation(models.Model):
     notes = models.TextField(blank=True)
     send_check_email = models.BooleanField(default=False)
     send_remind_email = models.BooleanField(default=False)
+    get_ticket_check = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['id']

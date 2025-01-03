@@ -253,6 +253,7 @@
                     <table class="table table-striped mt-3">
                         <thead style="position: sticky; top: 0; background-color: white; z-index: 1;">
                             <tr>
+                                <th style="width:  3%; text-align: center;">取</th>
                                 <th style="width:  5%; text-align: center;">序號</th>
                                 <th style="width:  6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
@@ -295,7 +296,11 @@
                             data-pp-id="{{ participant.pp_id }}"
                             data-join-people-count="{{ participant.join_people_count }}"
                             data-send-check-email="{{ participant.send_check_email }}"
+                            data-get-ticket-check="{{ participant.get_ticket_check }}"
                             >
+                                <td style="width: 3%; text-align: center;">
+                                    <input type="checkbox" class="form-check-input row-checkbox" {% if participant.get_ticket_check %}checked{% endif %}>
+                                </td>
                                 <td style="width: 5%; text-align: center;">{{ participant.pp_id }}</td>
                                 <td data-bs-toggle="modal" data-bs-target="#vipDetailModal" style="cursor: pointer; width: 6%;">
                                     <span data-bs-toggle="tooltip" data-bs-placement="right" 
@@ -826,6 +831,9 @@
         // 監聽 remindEmailModal 的 show 事件
         const remindEmailModal = document.getElementById('remindEmailModal');
         remindEmailModal.addEventListener('show.bs.modal', handleRemindEmailModal);
+
+        handleUpdateGetTicketCheck();
+
     });
 
     function handleRemindEmailModal(event) {
@@ -1169,7 +1177,6 @@
     }
 
     function applyFilterInvitedBy() {
-        console.log('applyFilterInvitedBy');
         var selectedInvitedBy = [];
         var checkboxes = document.querySelectorAll('#filterInvitedByForm input[type="checkbox"]:checked');
         checkboxes.forEach(function(checkbox) {
@@ -1215,7 +1222,6 @@
 
     const eventTimeId = '{{ event_time.pk }}';
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    console.log( protocol + window.location.host + '/ws/vip-updates/' + eventTimeId + '/');
     const vipSocket = new WebSocket(
         protocol + window.location.host + '/ws/vip-updates/' + eventTimeId + '/'
     );
@@ -1225,15 +1231,14 @@
     };
 
     vipSocket.onmessage = function(e) {
+        console.log('有喔！');
         const data = JSON.parse(e.data);
-        console.log('有髒東西進來了');
-        console.log(data.participants);
         if (data.type === 'vip_update') {
-            updateVIPTable(data.participants);
+            updateVIPTable(data.participation, data.pp_id);
         }
     };
 
-    function updateVIPTable(participants) {
+    function updateVIPTable(participation, pp_id) {
         const tbody = document.querySelector('table tbody');
         const existingRows = tbody.getElementsByClassName('vip-row');
         
@@ -1242,56 +1247,32 @@
         Array.from(existingRows).forEach(row => {
             existingRowsMap.set(row.getAttribute('data-pp-id'), row);
         });
-        
-        // 將新數據轉換為 Map
-        const newRowsMap = new Map();
-        participants.forEach(participant => {
-            newRowsMap.set(participant.pp_id.toString(), participant);
-        });
-        
-        // 處理更新和新增
-        participants.forEach(participant => {
-            const pp_id = participant.pp_id.toString();
-            console.log(existingRowsMap);
-            const existingRow = existingRowsMap.get(pp_id);
-            
-            if (existingRow) {
-                console.log('在ㄛ！');
-                // 如果行已存在且內容有變化，進行更新
-                if (hasChanged(existingRow, participant)) {
-                    existingRow.replaceWith(createRow(participant));
-                }
-            };
-            // else {
-            //     // 如果是新行，添加到表格末尾
-            //     tbody.appendChild(createRow(participant));
-            // }
-        });
-        
-        // 處理刪除
-        Array.from(existingRows).forEach(row => {
-            const pp_id = row.getAttribute('data-pp-id');
-            if (!newRowsMap.has(pp_id)) {
-                row.remove();
+        const existingRow = existingRowsMap.get(pp_id.toString());
+        if (existingRow) {
+            // 如果行已存在且內容有變化，進行更新
+            if (hasChanged(existingRow, participation)) {
+                existingRow.replaceWith(createRow(participation));
             }
-        });
+        };
     }
 
     function hasChanged(existingRow, newData) {
     // 檢查確認信和提醒信的圖標狀態
+    const getTicketCheck = existingRow.querySelector('td:nth-child(1) .form-check-input').checked;
     const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(8) .bi-check-circle') !== null;
     const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
 
     return (
-        existingRow.querySelector('td:nth-child(2)').textContent.trim() !== newData.vip__name ||
-        existingRow.querySelector('td:nth-child(3)').textContent.trim() !== newData.vip__organization ||
-        existingRow.querySelector('td:nth-child(4)').textContent.trim() !== newData.invited_by__username ||
-        existingRow.querySelector('td:nth-child(5)').textContent.trim() !== newData.wish_ticket_count.toString() ||
-        existingRow.querySelector('td:nth-child(6)').textContent.trim() !== newData.status ||
-        existingRow.querySelector('td:nth-child(7)').textContent.trim() !== newData.join_people_count.toString() ||
+        getTicketCheck !== newData.get_ticket_check ||
+        existingRow.querySelector('td:nth-child(3)').textContent.trim() !== newData.vip__name ||
+        existingRow.querySelector('td:nth-child(4)').textContent.trim() !== newData.vip__organization ||
+        existingRow.querySelector('td:nth-child(5)').textContent.trim() !== newData.invited_by__username ||
+        existingRow.querySelector('td:nth-child(6)').textContent.trim() !== newData.wish_ticket_count.toString() ||
+        existingRow.querySelector('td:nth-child(7)').textContent.trim() !== newData.status ||
+        existingRow.querySelector('td:nth-child(8)').textContent.trim() !== newData.join_people_count.toString() ||
         hasCheckEmailIcon !== newData.send_check_email ||
         hasRemindEmailIcon !== newData.send_remind_email ||
-        existingRow.querySelector('td:nth-child(10)').textContent.trim() !== newData.notes
+        existingRow.querySelector('td:nth-child(11)').textContent.trim() !== newData.notes
     );
     }
 
@@ -1326,7 +1307,8 @@
             'data-event-time-format-date': participant.event_time_format_date,
             'data-pp-id': participant.pp_id,
             'data-join-people-count': participant.join_people_count,
-            'data-send-check-email': participant.send_check_email
+            'data-send-check-email': participant.send_check_email,
+            'data-get-ticket-check': participant.get_ticket_check,
         };
 
         
@@ -1335,6 +1317,9 @@
         });
         
         tr.innerHTML = `
+            <td style="width: 3%; text-align: center;">
+                <input type="checkbox" class="form-check-input row-checkbox" ${participant.get_ticket_check ? 'checked' : ''}>
+            </td>
             <td style="width: 5%; text-align: center;">${participant.pp_id}</td>
             <td data-bs-toggle="modal" data-bs-target="#vipDetailModal" style="cursor: pointer; width: 6%;">
                 <span data-bs-toggle="tooltip" data-bs-placement="right" title="邀請時間：${participant.invited_at}
@@ -1375,8 +1360,75 @@
                 </div>
             </td>
         `;
-        
+        const tooltips = tr.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(element => {
+            new bootstrap.Tooltip(element);
+        });
+
         return tr;
+    }
+
+    function handleUpdateGetTicketCheck() {
+        // 找到表格或其父容器
+        const container = document.querySelector('.table'); // 或其他合適的選擇器
+        
+        container.addEventListener('change', function(e) {
+            // 確保事件來自核取方塊
+            if (!e.target.matches('.row-checkbox')) {
+                return;
+            }
+
+            const checkbox = e.target;
+            const row = checkbox.closest('.vip-row');
+            const participantId = row.dataset.vipId;
+            const isChecked = checkbox.checked;
+            
+            // 從當前 URL 獲取必要參數
+            const currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/');
+            const projectId = pathParts[3];
+            const section = pathParts[4];
+            const eventTimeId = pathParts[6];
+            
+            // 準備表單數據
+            const formData = new FormData();
+            formData.append('is_checked', isChecked);
+            formData.append('participant_id', participantId);
+            
+            // 發送 AJAX 請求
+            fetch(`/VIPSystem_APP/project_list/${projectId}/${section}/event_time/${eventTimeId}/update_get_ticket_check/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    checkbox.checked = !isChecked;
+                    console.error('Update failed:', data.message);
+                }
+            })
+            .catch(error => {
+                checkbox.checked = !isChecked;
+                console.error('Error:', error);
+            });
+        });
+    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
 </script>
