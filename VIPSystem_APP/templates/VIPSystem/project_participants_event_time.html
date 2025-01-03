@@ -87,6 +87,7 @@
                         <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
                         <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
                         <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
+                        <li><a href="{% url 'VIPSystem_APP:export_participants_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">輸出貴賓名單</a></li>
                     </ul>
                 </div>
             </div>

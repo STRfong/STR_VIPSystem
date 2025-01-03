@@ -7,6 +7,16 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Prefetch
 from django.contrib.auth.models import User
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill
+from django.shortcuts import get_object_or_404
+from datetime import datetime
+from django.utils.encoding import escape_uri_path
+from django.http import HttpResponse
+
+
+
+
 
 @method_decorator(login_required, name='dispatch')
 class ProjectParticipantsView(ListView):
@@ -348,6 +358,7 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                     # 創建新的 VIP
                     vip = VIP.objects.create(
                         name=vip_name,
+                        nickname=vip_nickname,
                         email=vip_email,
                         phone_number=vip_phone,
                         organization=vip_organization,
@@ -397,6 +408,120 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                        project_id=kwargs.get('project_id'),
                        section=kwargs.get('section'),
                        event_time_id=kwargs.get('event_time_id'))
+    
+@method_decorator(login_required, name='dispatch')
+class ExportParticipantsByEventTimeView(ListView):
+    model = ProjectParticipation
+    
+    def get_queryset(self):
+        # 獲取URL參數
+        project_id = self.kwargs.get('project_id')
+        event_time_id = self.kwargs.get('event_time_id')
+        
+        # 獲取並驗證專案
+        self.project = get_object_or_404(Project, pk=project_id)
+        
+        # 獲取並驗證場次屬於該專案
+        self.event_time = get_object_or_404(
+            EventTime, 
+            id=event_time_id,
+            project=self.project
+        )
+        
+        # 返回過濾後的查詢集
+        return ProjectParticipation.objects.filter(
+            project=self.project,
+            event_time=self.event_time
+        ).select_related(
+            'vip',
+            'invited_by'
+        ).order_by('pp_id')
+
+    def get(self, request, *args, **kwargs):
+        # 取得資料
+        queryset = self.get_queryset()
+        
+        # 創建工作簿
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"{self.project.name}-{self.event_time.date.strftime('%Y%m%d')}-{self.event_time.session}"
+
+        # 設定標題樣式
+        header_font = Font(bold=True)
+        header_fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+
+        # 定義欄位
+        headers = [
+            '取票序號', '姓名', '稱呼', '單位', '職稱', 
+            '電話', 'Email', '聯絡窗口', '窗口職稱',
+            '窗口電話', '窗口Email', '公司地址',
+            '邀請人', '狀態', '參與人數', '備註', 
+            '出席確認信', '出席提醒信'
+        ]
+
+        # 寫入標題
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+
+        # 寫入資料
+        status_mapping = {
+            'added': '尚未寄出邀請信',
+            'confirmed': '確認參加',
+            'sended': '已發送邀請信件等待回覆',
+            'declined': '拒絕參加'
+        }
+
+        for row, pp in enumerate(queryset, 2):
+            data = [
+                pp.pp_id,
+                pp.vip.name,
+                pp.vip.nickname,
+                pp.vip.organization,
+                pp.vip.position,
+                pp.vip.phone_number,
+                pp.vip.email,
+                pp.vip.poc,
+                pp.vip.poc_position,
+                pp.vip.poc_phone_number,
+                pp.vip.poc_email,
+                pp.vip.address,
+                pp.invited_by.username if pp.invited_by else '',
+                status_mapping.get(pp.status, pp.status),
+                pp.join_people_count,
+                pp.notes,
+                '⭕️' if pp.send_check_email else '❌',
+                '⭕️' if pp.send_remind_email else '❌'
+            ]
+            
+            for col, value in enumerate(data, 1):
+                ws.cell(row=row, column=col, value=value)
+
+        # 調整欄寬
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column_letter].width = adjusted_width
+
+        # 準備檔案回應
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = f"{self.project.name}_{self.event_time.date.strftime('%Y%m%d')}_{self.event_time.session}_貴賓名單.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{escape_uri_path(filename)}"'
+
+        # 儲存到回應
+        wb.save(response)
+        return response
+
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class UpdateParticipantsInfoByEventTimeView(UpdateView):
     def post(self, request, *args, **kwargs):
