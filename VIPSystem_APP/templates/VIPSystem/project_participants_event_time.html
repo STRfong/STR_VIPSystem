@@ -1177,7 +1177,6 @@
     }
 
     function applyFilterInvitedBy() {
-        console.log('applyFilterInvitedBy');
         var selectedInvitedBy = [];
         var checkboxes = document.querySelectorAll('#filterInvitedByForm input[type="checkbox"]:checked');
         checkboxes.forEach(function(checkbox) {
@@ -1232,13 +1231,14 @@
     };
 
     vipSocket.onmessage = function(e) {
+        console.log('有喔！');
         const data = JSON.parse(e.data);
         if (data.type === 'vip_update') {
-            updateVIPTable(data.participants);
+            updateVIPTable(data.participation, data.pp_id);
         }
     };
 
-    function updateVIPTable(participants) {
+    function updateVIPTable(participation, pp_id) {
         const tbody = document.querySelector('table tbody');
         const existingRows = tbody.getElementsByClassName('vip-row');
         
@@ -1247,42 +1247,18 @@
         Array.from(existingRows).forEach(row => {
             existingRowsMap.set(row.getAttribute('data-pp-id'), row);
         });
-        
-        // 將新數據轉換為 Map
-        const newRowsMap = new Map();
-        participants.forEach(participant => {
-            newRowsMap.set(participant.pp_id.toString(), participant);
-        });
-        
-        // 處理更新和新增
-        participants.forEach(participant => {
-            const pp_id = participant.pp_id.toString();
-            const existingRow = existingRowsMap.get(pp_id);
-            
-            if (existingRow) {
-                // 如果行已存在且內容有變化，進行更新
-                if (hasChanged(existingRow, participant)) {
-                    existingRow.replaceWith(createRow(participant));
-                }
-            };
-            // else {
-            //     // 如果是新行，添加到表格末尾
-            //     tbody.appendChild(createRow(participant));
-            // }
-        });
-        
-        // 處理刪除
-        Array.from(existingRows).forEach(row => {
-            const pp_id = row.getAttribute('data-pp-id');
-            if (!newRowsMap.has(pp_id)) {
-                row.remove();
+        const existingRow = existingRowsMap.get(pp_id.toString());
+        if (existingRow) {
+            // 如果行已存在且內容有變化，進行更新
+            if (hasChanged(existingRow, participation)) {
+                existingRow.replaceWith(createRow(participation));
             }
-        });
+        };
     }
 
     function hasChanged(existingRow, newData) {
     // 檢查確認信和提醒信的圖標狀態
-    const getTicketCheck = existingRow.querySelector('td:nth-child(1) .form-check-input').checked !== null;
+    const getTicketCheck = existingRow.querySelector('td:nth-child(1) .form-check-input').checked;
     const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(8) .bi-check-circle') !== null;
     const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
 
@@ -1384,7 +1360,11 @@
                 </div>
             </td>
         `;
-        
+        const tooltips = tr.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(element => {
+            new bootstrap.Tooltip(element);
+        });
+
         return tr;
     }
 

@@ -661,7 +661,6 @@ def update_get_ticket_check(request, project_id, section, event_time_id):
             vip_id=participant_id,
             event_time_id=event_time_id
         )
-        print(is_checked)
         
         participant.get_ticket_check = is_checked
         participant.save()  # 這會觸發 signal
