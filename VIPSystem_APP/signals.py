@@ -52,8 +52,8 @@ def notify_vip_update(sender, instance, created=False, **kwargs):
                 'send_check_email': instance.send_check_email,
                 'send_remind_email': instance.send_remind_email,
                 'get_ticket_check': instance.get_ticket_check,
-                'invited_at': instance.invited_at.strftime('%Y-%m-%d %H:%M') if instance.invited_at else '',
-                'last_update_at': instance.last_update_at.strftime('%Y-%m-%d %H:%M') if instance.last_update_at else '',
+                'invited_at': instance.invited_at.strftime('%Y/%m/%d %H:%M') if instance.invited_at else '',
+                'last_update_at': instance.last_update_at.strftime('%Y/%m/%d %H:%M') if instance.last_update_at else '',
             }
 
         # 發送更新消息
