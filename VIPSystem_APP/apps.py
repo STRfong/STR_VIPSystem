@@ -1,10 +1,12 @@
 from django.apps import AppConfig
-from django.dispatch import receiver
 
 class VipsystemAppConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "VIPSystem_APP"
-    
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'VIPSystem_APP'
+
     def ready(self):
-        # 導入信號模塊
-        import VIPSystem_APP.adapter
+        try:
+            from . import signals  # 導入signals
+            print("Signals loaded successfully")  # 添加日誌
+        except Exception as e:
+            print(f"Error loading signals: {str(e)}")  # 添加錯誤日誌
