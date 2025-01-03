@@ -77,6 +77,7 @@ class VIPUpdateConsumer(AsyncWebsocketConsumer):
                 'join_people_count': p.join_people_count,
                 'send_check_email': p.send_check_email,
                 'send_remind_email': p.send_remind_email,
+                'get_ticket_check': p.get_ticket_check,
             }
             for p in participants
         ]

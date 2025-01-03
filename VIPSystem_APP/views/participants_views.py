@@ -13,6 +13,8 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime
 from django.utils.encoding import escape_uri_path
 from django.http import HttpResponse
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 
 
@@ -648,4 +650,22 @@ def remove_participant_event_time(request, project_id, section, event_time_id):
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
     return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
 
-
+@login_required
+def update_get_ticket_check(request, project_id, section, event_time_id):
+    try:
+        is_checked = request.POST.get('is_checked') == 'true'
+        participant_id = request.POST.get('participant_id')
+        
+        participant = ProjectParticipation.objects.get(
+            project_id=project_id,
+            vip_id=participant_id,
+            event_time_id=event_time_id
+        )
+        print(is_checked)
+        
+        participant.get_ticket_check = is_checked
+        participant.save()  # 這會觸發 signal
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
