@@ -20,7 +20,7 @@ from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIP
 from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView, ProjectParticipationBySectionView
 from .views import InviteListView, SendEmailListBySectionView, ProjectParticipantsByEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime, InviteListBySectionView, UpdateParticipantsBySectionView, UpdateParticipantsInfoBySectionView, UpdateParticipantsInfoByEventTimeView, UpdateParticipantsByEventTimeView 
 from .views import UpdateParticipantsByEventTimeView, UpdateParticipantsByEventTimeDirectlyView
-from .views import EventTimeDetailView, EventTimeCreateView, UpdateEventTimeView, DeleteEventTimeView, send_email_by_section    
+from .views import EventTimeDetailView, EventTimeCreateView, UpdateEventTimeView, DeleteEventTimeView, send_email_by_section, send_check_email_event_time, ExportParticipantsByEventTimeView    
 app_name = 'VIPSystem_APP'
 
 urlpatterns = [
@@ -65,6 +65,7 @@ urlpatterns = [
                     path('update_vip_info/', UpdateVipInfoByEventTimeView.as_view(), name='update_vip_info_by_event_time'),
                     path('send_email/', views.send_email_event_time, name="send_email_event_time"), # 從場次寄信給貴賓（單獨）
                     path('send_check_email/', views.send_check_email_event_time, name="send_check_email_event_time"), # 從場次寄確認信給貴賓（單獨）
+                    path('export_participants_event_time/', ExportParticipantsByEventTimeView.as_view(), name="export_participants_event_time"), # 從場次匯出貴賓名單
                 ])),
             ])),
             # path('participants/', include([ # 直接看專案的總表
