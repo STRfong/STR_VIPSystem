@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import email
 from email.mime.text import MIMEText
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -197,7 +198,7 @@ class Email():
         self.email_content = email_content
         self.cc = cc
     def send_email(self):
-        with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+        with smtplib.SMTP(host="smtp.gmail.com", port=587) as smtp:
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
@@ -209,7 +210,9 @@ class Email():
                 if self.cc:
                     # 分割字串並去除每個郵箱地址周圍的空白
                     cc_list = [email.strip() for email in self.cc.split(',')]
-                    msg['Cc'] = Header(", ".join(cc_list), 'utf-8')
+                    # msg['Cc'] = Header(",".join(cc_list), 'utf-8')
+                    msg['Cc'] = ",".join(cc_list)
+                    print(msg['Cc'])
                     recipients = [self.pp.vip.email] + cc_list
                 else:
                     recipients = [self.pp.vip.email]
