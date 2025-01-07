@@ -210,9 +210,7 @@ class Email():
                 if self.cc:
                     # 分割字串並去除每個郵箱地址周圍的空白
                     cc_list = [email.strip() for email in self.cc.split(',')]
-                    # msg['Cc'] = Header(",".join(cc_list), 'utf-8')
                     msg['Cc'] = ",".join(cc_list)
-                    print(msg['Cc'])
                     recipients = [self.pp.vip.email] + cc_list
                 else:
                     recipients = [self.pp.vip.email]
@@ -240,7 +238,15 @@ class Email():
                     msg['From'] = Header("contact@strnetwork.cc",'utf-8')
                     msg['To'] =  Header(self.pp.vip.email,'utf-8')            
                     msg['Subject'] = Header(self.email_title, 'utf-8')
-                    smtp.send_message(msg)  
+                    if self.cc:
+                        # 分割字串並去除每個郵箱地址周圍的空白
+                        cc_list = [email.strip() for email in self.cc.split(',')]
+                        msg['Cc'] = ",".join(cc_list)
+                        recipients = [self.pp.vip.email] + cc_list
+                    else:
+                        recipients = [self.pp.vip.email]
+                        
+                    smtp.send_message(msg, to_addrs=recipients)
         except Exception as e:
             print("錯誤訊息: ", e)
 
