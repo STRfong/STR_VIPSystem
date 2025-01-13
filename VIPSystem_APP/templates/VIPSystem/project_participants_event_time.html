@@ -86,7 +86,7 @@
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                         <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
                         <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
-                        <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
+                        <!-- <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li> -->
                         <li><a href="{% url 'VIPSystem_APP:export_participants_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">輸出貴賓名單</a></li>
                     </ul>
                 </div>
@@ -198,19 +198,30 @@
                       <div class="row mb-3">
                         <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >STR 聯絡人<span style="color: red;">*</span></label>
                         <div class="col-sm-8">
-                          <input type="text" class="form-control" name="str_connect" placeholder="請輸入 STR 聯絡人" required>
+                          <input type="text" class="form-control" list="staffList" placeholder="請輸入 STR 聯絡人" autocomplete="off" autocomplete="new-str-connect" spellcheck="false" name="str_connect" required>
+                          <datalist id="staffList">
+                            {% for staff in staffs %}
+                              <option value="{{ staff.profile.nickname}}"></option>
+                            {% endfor %}
+                          </datalist>
                         </div>
                       </div>
                       <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >備註</label>
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓備註</label>
                         <div class="col-sm-8">
-                          <input type="text" class="form-control" name="notes" placeholder="備註">
+                          <input type="text" class="form-control" name="vip_notes" placeholder="針對此貴賓的備註">
                         </div>
                       </div>
                       <div class="row mb-3">
                         <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >提供票數<span style="color: red;">*</span></label>
                         <div class="col-sm-8">
                           <input type="number" class="form-control" name="wish_ticket_count" placeholder="請輸入提供票數" min="1" required>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >活動備註</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="pp_notes" placeholder="該貴賓參加此場次需要注意的事項">
                         </div>
                       </div>
                       <hr>
@@ -613,7 +624,7 @@
                     <form id="filterInvitedByForm">
                         {% for user in staffs %}
                         <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
-                        <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
+                        <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.profile.nickname }} </label>
                         {% endfor %}
                     </form>
                 </div>
@@ -742,7 +753,7 @@
                 <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_event_time' project.pk event_time.section event_time.pk %}" id="updateForm">
                     {% csrf_token %}
                     <input type="hidden" name="vip_id" id="vip_id">
-                    <h6>參與場次修改</h6>
+                    <!-- <h6>參與場次修改</h6>
                     <div class="row row-cols-1 row-cols-md-2 g-4" id = "eachEventTimeCheckboxDiv">
                         <div class="col">
                             <label class="card h-100">
@@ -755,7 +766,7 @@
                             </label>
                         </div>
                     </div>
-                    <hr>
+                    <hr> -->
                     <h6>提供票數調整</h6>
                     <div class="row row-cols-1 row-cols-md-2 g-4">
                         <div class="col">
@@ -999,60 +1010,60 @@
         const parentRow = trigger.closest('.vip-row');
         if (parentRow) {
             const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
-            eachEventTimeCheckboxDiv.innerHTML = '';
-            updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
-            updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
-            const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
-            const wishAttendList = parentRow.dataset.wishAttendList;
-            const checkedAll = wishAttend.includes('all') ? 'checked' : '';
-            eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend',`
-            <div class="col">   
-                <label class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <input type="checkbox" 
-                            name="selected_event_time_by_section" 
-                            value="all" 
-                            class="form-check-input me-2 selectAll" 
-                            id="selectAll" 
-                            form="updateForm"
-                            ${checkedAll}>
-                        都可以
-                        </h5>
-                        <p class="card-text">
-                            選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
-                        </p>
-                    </div>
-                </label>
-            </div>
-            `);
+            // eachEventTimeCheckboxDiv.innerHTML = '';
+            // updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
+            // updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
+            // const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
+            // const wishAttendList = parentRow.dataset.wishAttendList;
+            // const checkedAll = wishAttend.includes('all') ? 'checked' : '';
+            // eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend',`
+            // <div class="col">   
+            //     <label class="card h-100">
+            //         <div class="card-body">
+            //             <h5 class="card-title">
+            //                 <input type="checkbox" 
+            //                 name="selected_event_time_by_section" 
+            //                 value="all" 
+            //                 class="form-check-input me-2 selectAll" 
+            //                 id="selectAll" 
+            //                 form="updateForm"
+            //                 ${checkedAll}>
+            //             都可以
+            //             </h5>
+            //             <p class="card-text">
+            //                 選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
+            //             </p>
+            //         </div>
+            //     </label>
+            // </div>
+            // `);
             
-            const eventTimes = JSON.parse(document.getElementById('event-times-data').textContent);
-            eventTimes.forEach(eventTime => {
-                const isChecked = wishAttendList.includes(eventTime.id) ? 'checked' : '';
-                eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend', `
-                    <div class="col">
-                        <label class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <input form="updateForm" 
-                                        type="checkbox" 
-                                        name="selected_event_time_by_section" 
-                                        value="${eventTime.id}" 
-                                        class="form-check-input me-2 event-time-checkbox"
-                                        ${isChecked}>
-                                    ${eventTime.date} ${eventTime.section}${eventTime.session}
-                                </h5>
-                                <p class="card-text">
-                                    時間：${eventTime.start_time} - ${eventTime.end_time}<br>
-                                    地點：${eventTime.location_name}<br>
-                                    地址：${eventTime.location_address}
-                                </p>
-                            </div>
-                        </label>
-                    </div>
-                `);
-            });
+            // const eventTimes = JSON.parse(document.getElementById('event-times-data').textContent);
+            // eventTimes.forEach(eventTime => {
+            //     const isChecked = wishAttendList.includes(eventTime.id) ? 'checked' : '';
+            //     eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend', `
+            //         <div class="col">
+            //             <label class="card h-100">
+            //                 <div class="card-body">
+            //                     <h5 class="card-title">
+            //                         <input form="updateForm" 
+            //                             type="checkbox" 
+            //                             name="selected_event_time_by_section" 
+            //                             value="${eventTime.id}" 
+            //                             class="form-check-input me-2 event-time-checkbox"
+            //                             ${isChecked}>
+            //                         ${eventTime.date} ${eventTime.section}${eventTime.session}
+            //                     </h5>
+            //                     <p class="card-text">
+            //                         時間：${eventTime.start_time} - ${eventTime.end_time}<br>
+            //                         地點：${eventTime.location_name}<br>
+            //                         地址：${eventTime.location_address}
+            //                     </p>
+            //                 </div>
+            //             </label>
+            //         </div>
+            //     `);
+            // });
 
             var wishTicketCount = parentRow.dataset.wishTicketCount;
             updateModal.querySelector('#wish_ticket_count').value = wishTicketCount;
