@@ -532,7 +532,7 @@ class UpdateParticipantsInfoByEventTimeView(UpdateView):
         vip_id = request.POST.get('vip_id')
         vip = VIP.objects.get(id=vip_id)
         project_participation = ProjectParticipation.objects.get(project=project_id, vip=vip)
-        project_participation.wish_attend = self.event_time_selected(request.POST.getlist('selected_event_time_by_section'))
+        # project_participation.wish_attend = self.event_time_selected(request.POST.getlist('selected_event_time_by_section')) # 暫時先屏蔽，之後再打開
         project_participation.wish_ticket_count = request.POST.get('wish_ticket_count')
         project_participation.save()
         messages.success(request, f'已更新 {vip.name} 的希望參加場次和提供票數')

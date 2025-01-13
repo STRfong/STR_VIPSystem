@@ -747,7 +747,7 @@
                 <form method="post" action="{% url 'VIPSystem_APP:update_participants_info_by_event_time' project.pk event_time.section event_time.pk %}" id="updateForm">
                     {% csrf_token %}
                     <input type="hidden" name="vip_id" id="vip_id">
-                    <h6>參與場次修改</h6>
+                    <!-- <h6>參與場次修改</h6>
                     <div class="row row-cols-1 row-cols-md-2 g-4" id = "eachEventTimeCheckboxDiv">
                         <div class="col">
                             <label class="card h-100">
@@ -760,7 +760,7 @@
                             </label>
                         </div>
                     </div>
-                    <hr>
+                    <hr> -->
                     <h6>提供票數調整</h6>
                     <div class="row row-cols-1 row-cols-md-2 g-4">
                         <div class="col">
@@ -1004,60 +1004,60 @@
         const parentRow = trigger.closest('.vip-row');
         if (parentRow) {
             const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
-            eachEventTimeCheckboxDiv.innerHTML = '';
-            updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
-            updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
-            const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
-            const wishAttendList = parentRow.dataset.wishAttendList;
-            const checkedAll = wishAttend.includes('all') ? 'checked' : '';
-            eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend',`
-            <div class="col">   
-                <label class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <input type="checkbox" 
-                            name="selected_event_time_by_section" 
-                            value="all" 
-                            class="form-check-input me-2 selectAll" 
-                            id="selectAll" 
-                            form="updateForm"
-                            ${checkedAll}>
-                        都可以
-                        </h5>
-                        <p class="card-text">
-                            選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
-                        </p>
-                    </div>
-                </label>
-            </div>
-            `);
+            // eachEventTimeCheckboxDiv.innerHTML = '';
+            // updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
+            // updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
+            // const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
+            // const wishAttendList = parentRow.dataset.wishAttendList;
+            // const checkedAll = wishAttend.includes('all') ? 'checked' : '';
+            // eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend',`
+            // <div class="col">   
+            //     <label class="card h-100">
+            //         <div class="card-body">
+            //             <h5 class="card-title">
+            //                 <input type="checkbox" 
+            //                 name="selected_event_time_by_section" 
+            //                 value="all" 
+            //                 class="form-check-input me-2 selectAll" 
+            //                 id="selectAll" 
+            //                 form="updateForm"
+            //                 ${checkedAll}>
+            //             都可以
+            //             </h5>
+            //             <p class="card-text">
+            //                 選擇此選項表示不特別限定貴賓參與的場次，讓貴賓自由選擇
+            //             </p>
+            //         </div>
+            //     </label>
+            // </div>
+            // `);
             
-            const eventTimes = JSON.parse(document.getElementById('event-times-data').textContent);
-            eventTimes.forEach(eventTime => {
-                const isChecked = wishAttendList.includes(eventTime.id) ? 'checked' : '';
-                eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend', `
-                    <div class="col">
-                        <label class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <input form="updateForm" 
-                                        type="checkbox" 
-                                        name="selected_event_time_by_section" 
-                                        value="${eventTime.id}" 
-                                        class="form-check-input me-2 event-time-checkbox"
-                                        ${isChecked}>
-                                    ${eventTime.date} ${eventTime.section}${eventTime.session}
-                                </h5>
-                                <p class="card-text">
-                                    時間：${eventTime.start_time} - ${eventTime.end_time}<br>
-                                    地點：${eventTime.location_name}<br>
-                                    地址：${eventTime.location_address}
-                                </p>
-                            </div>
-                        </label>
-                    </div>
-                `);
-            });
+            // const eventTimes = JSON.parse(document.getElementById('event-times-data').textContent);
+            // eventTimes.forEach(eventTime => {
+            //     const isChecked = wishAttendList.includes(eventTime.id) ? 'checked' : '';
+            //     eachEventTimeCheckboxDiv.insertAdjacentHTML('beforeend', `
+            //         <div class="col">
+            //             <label class="card h-100">
+            //                 <div class="card-body">
+            //                     <h5 class="card-title">
+            //                         <input form="updateForm" 
+            //                             type="checkbox" 
+            //                             name="selected_event_time_by_section" 
+            //                             value="${eventTime.id}" 
+            //                             class="form-check-input me-2 event-time-checkbox"
+            //                             ${isChecked}>
+            //                         ${eventTime.date} ${eventTime.section}${eventTime.session}
+            //                     </h5>
+            //                     <p class="card-text">
+            //                         時間：${eventTime.start_time} - ${eventTime.end_time}<br>
+            //                         地點：${eventTime.location_name}<br>
+            //                         地址：${eventTime.location_address}
+            //                     </p>
+            //                 </div>
+            //             </label>
+            //         </div>
+            //     `);
+            // });
 
             var wishTicketCount = parentRow.dataset.wishTicketCount;
             updateModal.querySelector('#wish_ticket_count').value = wishTicketCount;
