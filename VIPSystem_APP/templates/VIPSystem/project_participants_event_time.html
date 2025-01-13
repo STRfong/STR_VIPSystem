@@ -25,6 +25,9 @@
     .seat-col {
         display: none;  /* 預設隱藏座位相關的列 */
     }
+    .editable-seat {
+        cursor: pointer;
+    }
 </style>
 {% if messages %}
     <div class="container mt-4" id="message-container">
@@ -357,7 +360,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="seat-col" style="width: 10%;">{{ participant.notes }}</td>
-                                <td class="seat-col" style="width: 10%;">{{ participant.seat_number }}</td>
+                                <td class="seat-col editable-seat" style="width: 10%;">{{ participant.seat_number }}</td>
                                 <td style="width: 15%; text-align: center;">
                                     <div class="btn-group btn-group-sm " role="group">
                                         <div class="btn-group btn-group-sm dropstart" role="group">
@@ -859,7 +862,11 @@
         const remindEmailModal = document.getElementById('remindEmailModal');
         remindEmailModal.addEventListener('show.bs.modal', handleRemindEmailModal);
 
+        // 監聽取票了沒的 websocket 事件
         handleUpdateGetTicketCheck();
+        // 監聽座位號碼的 websocket 事件
+        handleSeatNumberEditable();
+        // 監聽切換索取票數和座位號碼的 websocket 事件
         hanldeSwitchInvitedAndSeatStatus();
 
     });
@@ -1287,8 +1294,8 @@
     function hasChanged(existingRow, newData) {
     // 檢查確認信和提醒信的圖標狀態
     const getTicketCheck = existingRow.querySelector('td:nth-child(1) .form-check-input').checked;
-    const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(8) .bi-check-circle') !== null;
-    const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
+    const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
+    const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(10) .bi-check-circle') !== null;
 
     return (
         getTicketCheck !== newData.get_ticket_check ||
@@ -1300,7 +1307,8 @@
         existingRow.querySelector('td:nth-child(8)').textContent.trim() !== newData.join_people_count.toString() ||
         hasCheckEmailIcon !== newData.send_check_email ||
         hasRemindEmailIcon !== newData.send_remind_email ||
-        existingRow.querySelector('td:nth-child(11)').textContent.trim() !== newData.notes
+        existingRow.querySelector('td:nth-child(11)').textContent.trim() !== newData.seat_number ||
+        existingRow.querySelector('td:nth-child(12)').textContent.trim() !== newData.notes
     );
     }
 
@@ -1368,7 +1376,7 @@
                 ${participant.send_remind_email ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>'}
             </td>
             <td class="seat-col" style="width: 10%;">${participant.notes}</td>
-            <td class="seat-col" style="width: 10%;">${participant.seat_number}</td>
+            <td class="seat-col editable-seat" style="width: 10%;">${participant.seat_number}</td>
             <td style="width: 15%; text-align: center;">
                 <div class="btn-group btn-group-sm" role="group">
                     <div class="btn-group btn-group-sm dropstart" role="group">
@@ -1533,5 +1541,100 @@
         // 初始化顯示狀態
         toggleColumns(btnInvite.checked);
     }
-</script>
+
+    function handleSeatNumberEditable() {
+        const table = document.querySelector('.table');
+        
+        table.addEventListener('click', function(e) {
+            // 確保點擊的是座位欄
+            if (!e.target.classList.contains('editable-seat')) {
+                return;
+            }
+            
+            const cell = e.target;
+            const currentValue = cell.textContent.trim();
+            
+            // 檢查是否已經在編輯中
+            if (cell.querySelector('input')) {
+                return;
+            }
+
+            // 創建輸入框
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentValue;
+            input.className = 'form-control form-control-sm';
+            
+            // 儲存原始內容
+            const originalContent = cell.innerHTML;
+            
+            // 替換內容為輸入框
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            
+            // 自動聚焦
+            input.focus();
+
+            // 處理輸入完成
+            function completeEdit(newValue) {
+                const row = cell.closest('.vip-row');
+                const participantId = row.dataset.vipId;
+                
+                // 從當前 URL 獲取必要參數
+                const currentPath = window.location.pathname;
+                const pathParts = currentPath.split('/');
+                const projectId = pathParts[3];
+                const section = pathParts[4];
+                const eventTimeId = pathParts[6];
+                
+                // 準備表單數據
+                const formData = new FormData();
+                formData.append('seat_number', newValue);
+                formData.append('participant_id', participantId);
+                
+                // 發送 AJAX 請求
+                fetch(`/VIPSystem_APP/project_list/${projectId}/${section}/event_time/${eventTimeId}/update_seat_number/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        cell.textContent = newValue;
+                    } else {
+                        console.error('Update failed:', data.message);
+                        cell.innerHTML = originalContent;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    cell.innerHTML = originalContent;
+                });
+            }
+
+            // 處理取消編輯
+            function cancelEdit() {
+                cell.innerHTML = originalContent;
+            }
+
+            // 監聽Enter和Esc按鍵
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    completeEdit(this.value);
+                } else if (e.key === 'Escape') {
+                    cancelEdit();
+                }
+            });
+
+            // 監聽失焦事件
+            input.addEventListener('blur', function() {
+                completeEdit(this.value);
+            });
+        });
+    }
+    </script>
 {% endblock %}

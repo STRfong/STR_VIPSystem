@@ -18,7 +18,7 @@ from django.urls import path, include
 from . import views 
 from .views import VIPListView, VIPDetailView, VIPCreateView, VIPUpdateView, VIPDeleteView, UpdateVipInfoByEventTimeView
 from .views import ProjectListView, ProjectDetailView, ProjectCreateView, ProjectUpdateView, ProjectDeleteView, ProjectParticipantsView, ProjectParticipationBySectionView
-from .views import InviteListView, SendEmailListBySectionView, ProjectParticipantsByEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime, InviteListBySectionView, UpdateParticipantsBySectionView, UpdateParticipantsInfoBySectionView, UpdateParticipantsInfoByEventTimeView, UpdateParticipantsByEventTimeView, update_get_ticket_check
+from .views import InviteListView, SendEmailListBySectionView, ProjectParticipantsByEventTimeView, InviteListViewEventTime, SendEmailListViewEventTime, InviteListBySectionView, UpdateParticipantsBySectionView, UpdateParticipantsInfoBySectionView, UpdateParticipantsInfoByEventTimeView, UpdateParticipantsByEventTimeView
 from .views import UpdateParticipantsByEventTimeView, UpdateParticipantsByEventTimeDirectlyView
 from .views import EventTimeDetailView, EventTimeCreateView, UpdateEventTimeView, DeleteEventTimeView, send_email_by_section, ExportParticipantsByEventTimeView    
 app_name = 'VIPSystem_APP'
@@ -68,6 +68,7 @@ urlpatterns = [
                     path('send_remind_email/', views.send_remind_email_event_time, name="send_remind_email_event_time"), # 從場次寄提醒信給貴賓（單獨）
                     path('export_participants_event_time/', ExportParticipantsByEventTimeView.as_view(), name="export_participants_event_time"), # 從場次匯出貴賓名單
                     path('update_get_ticket_check/', views.update_get_ticket_check, name="update_get_ticket_check"), # 從場次更新貴賓是否已領票
+                    path('update_seat_number/', views.update_seat_number, name="update_seat_number"), # 從場次更新貴賓座位號碼
                 ])),
             ])),
             # path('participants/', include([ # 直接看專案的總表
