@@ -86,7 +86,7 @@
                     <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                         <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
                         <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
-                        <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li>
+                        <!-- <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li> -->
                         <li><a href="{% url 'VIPSystem_APP:export_participants_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">輸出貴賓名單</a></li>
                     </ul>
                 </div>
@@ -198,7 +198,12 @@
                       <div class="row mb-3">
                         <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >STR 聯絡人<span style="color: red;">*</span></label>
                         <div class="col-sm-8">
-                          <input type="text" class="form-control" name="str_connect" placeholder="請輸入 STR 聯絡人" required>
+                          <input type="text" class="form-control" list="staffList" placeholder="請輸入 STR 聯絡人" autocomplete="off" autocomplete="new-str-connect" spellcheck="false" name="str_connect" required>
+                          <datalist id="staffList">
+                            {% for staff in staffs %}
+                              <option value="{{ staff.profile.nickname }}">{{ staff.profile.nickname }}</option>
+                            {% endfor %}
+                          </datalist>
                         </div>
                       </div>
                       <div class="row mb-3">
@@ -613,7 +618,7 @@
                     <form id="filterInvitedByForm">
                         {% for user in staffs %}
                         <input type="checkbox" class="btn-check" value="{{ user.id }}" id="user{{ user.id }}">
-                        <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.username }} </label>
+                        <label class="btn btn-outline-dark m-1" for="user{{ user.id }}"> {{ user.profile.nickname }} </label>
                         {% endfor %}
                     </form>
                 </div>
