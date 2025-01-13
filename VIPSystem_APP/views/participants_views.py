@@ -102,7 +102,7 @@ class ProjectParticipantsByEventTimeView(ListView):
         project_id = self.kwargs.get('project_id')
         event_time = EventTime.objects.get(id=self.kwargs.get('event_time_id'))
         section = self.kwargs.get('section')
-        queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section)
+        queryset = ProjectParticipation.objects.filter(project_id=project_id, wish_attend_section=section).order_by('invited_by__username')
         
         # 篩選名字
         name_filter = self.request.GET.get('nameFilter')
