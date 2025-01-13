@@ -212,6 +212,7 @@ class ProjectParticipation(models.Model):
     send_check_email = models.BooleanField(default=False)
     send_remind_email = models.BooleanField(default=False)
     get_ticket_check = models.BooleanField(default=False)
+    seat_number = models.CharField(max_length=10, blank=True)
 
     class Meta:
         ordering = ['id']
