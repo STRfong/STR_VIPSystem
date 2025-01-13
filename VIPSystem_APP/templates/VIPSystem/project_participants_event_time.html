@@ -201,21 +201,27 @@
                           <input type="text" class="form-control" list="staffList" placeholder="請輸入 STR 聯絡人" autocomplete="off" autocomplete="new-str-connect" spellcheck="false" name="str_connect" required>
                           <datalist id="staffList">
                             {% for staff in staffs %}
-                              <option value="{{ staff.profile.nickname }}">{{ staff.profile.nickname }}</option>
+                              <option value="{{ staff.profile.nickname}}"></option>
                             {% endfor %}
                           </datalist>
                         </div>
                       </div>
                       <div class="row mb-3">
-                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >備註</label>
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >貴賓備註</label>
                         <div class="col-sm-8">
-                          <input type="text" class="form-control" name="notes" placeholder="備註">
+                          <input type="text" class="form-control" name="vip_notes" placeholder="針對此貴賓的備註">
                         </div>
                       </div>
                       <div class="row mb-3">
                         <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >提供票數<span style="color: red;">*</span></label>
                         <div class="col-sm-8">
                           <input type="number" class="form-control" name="wish_ticket_count" placeholder="請輸入提供票數" min="1" required>
+                        </div>
+                      </div>
+                      <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label text-center" style="justify-content: center;" >活動備註</label>
+                        <div class="col-sm-8">
+                          <input type="text" class="form-control" name="pp_notes" placeholder="該貴賓參加此場次需要注意的事項">
                         </div>
                       </div>
                       <hr>

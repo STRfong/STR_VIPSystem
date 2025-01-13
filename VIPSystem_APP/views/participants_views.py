@@ -326,13 +326,16 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
         vip_position = request.POST.get('position')
         vip_phone = request.POST.get('phone')
         vip_email = request.POST.get('email')
-        str_connect = request.POST.get('str_connect')
-        notes = request.POST.get('notes')
+        str_connect_name = request.POST.get('str_connect')
+        str_connect = User.objects.get(profile__nickname=str_connect_name)
+
+        vip_notes = request.POST.get('vip_notes')
         wish_ticket_count = request.POST.get('wish_ticket_count')
         poc = request.POST.get('poc')
         poc_position = request.POST.get('poc_position')
         poc_phone_number = request.POST.get('poc_phone_number')
         poc_email = request.POST.get('poc_email')
+        pp_notes = request.POST.get('pp_notes')
         
         try:
             with transaction.atomic():
@@ -348,8 +351,8 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                     vip.phone_number = vip_phone
                     vip.organization = vip_organization
                     vip.position = vip_position
-                    vip.str_connect = str_connect
-                    vip.notes = notes
+                    vip.str_connect = str_connect.profile.nickname
+                    vip.notes = vip_notes
                     vip.poc = poc
                     vip.poc_position = poc_position
                     vip.poc_phone_number = poc_phone_number
@@ -364,8 +367,8 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                         phone_number=vip_phone,
                         organization=vip_organization,
                         position=vip_position,
-                        str_connect=str_connect,
-                        notes=notes,
+                        str_connect=str_connect.profile.nickname,
+                        notes=vip_notes,
                         poc=poc,
                         poc_position=poc_position,
                         poc_phone_number=poc_phone_number,
@@ -382,8 +385,9 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
                     project=project,
                     vip=vip,
                     event_time=event_time,
+                    invited_by=str_connect,
+                    notes=pp_notes,
                     defaults={
-                        'invited_by': request.user,
                         'status': 'added',
                         'wish_attend': str(event_time.id),
                         'wish_attend_section': section,
