@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
 </head>
 <body>
-    <h4>親愛的{{participant.vip.name}} 您好：</h4>
+    <h4 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">{{participant.vip.name}} 您好：</h4>
 
     <p>
-        感謝您撥空參與薩泰爾娛樂 - 《{{project.name}}》
+        <strong>感謝您撥空參與薩泰爾娛樂 - 【{{project.name}} {{event_time.session}}】</strong>
     </p>
 
     <p>
@@ -18,7 +18,8 @@
 
     <p style="margin-top: 20px;">
         ◉ 取票序號：<strong style="color: darkred;">{{participant.pp_id}}</strong><br><br>
-        ◉ 貴賓資訊：<strong>{{participant.vip.organization}} {{participant.vip.name}}</strong>（邀請人：<strong>{{participant.invited_by.profile.nickname}}</strong>）<br><br>
+        ◉ 邀請人：<strong>{{participant.invited_by.profile.nickname}}</strong><br><br>
+        ◉ 貴賓資訊：<strong>{{participant.vip.organization}} {{participant.vip.name}}</strong><br><br>
         ◉ 取票數量：<strong>{{join_people_count}}</strong><br><br>
         ◉ 取票位置：<strong>壹電視攝影棚入口公關取票桌</strong><br><br>
         ◉ 取票方式：至公關取票桌出示本【出席確認信】的取票資訊
@@ -28,8 +29,9 @@
         <strong>【活動資訊】</strong><br>
         演出日期：<strong>{{event_time.get_date_and_weekday}}</strong><br>
         場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
-        進場時間：<strong>17:00 - 18:00</strong>（若您超過18:00進場，需要按照現場人員指示進場）<br>
-        演出時間：<strong>18:00 - 21:00</strong>
+        取票時間：<strong>17:00 - 18:00</strong><br>
+        演出時間：<strong>18:00 - 21:00</strong><br>
+        現場聯繫人：<strong>梓瑄 0958-601-360</strong>
     </p>
 
     <p style="margin-top: 20px;">
