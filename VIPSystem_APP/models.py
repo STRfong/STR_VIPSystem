@@ -245,7 +245,7 @@ class ProjectParticipation(models.Model):
             self.notes = notes
 
             from .views.emails import Email
-            subject = f" 【出席確認信】《{self.project.name}》{self.event_time.format_date_mm_dd()} - 薩泰爾娛樂"
+            subject = f" 【出席確認信】【{self.project.name} {self.event_time.session}】—— 薩泰爾娛樂"
             email = Email(self, subject, cc = self.invited_by.email) 
             email.send_check_reply_email(join_people_count)
             self.send_check_email = True
