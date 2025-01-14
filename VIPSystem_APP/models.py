@@ -123,10 +123,15 @@ class EventTime(models.Model):
         days = ["一", "二", "三", "四", "五", "六", "日"]
         return f"{self.dead_line_date.strftime('%Y年%m月%d日')}（{days[weekday_number]}）"
     
-    def get_weekday(self):
+    def get_date_and_weekday(self):
         weekday_number = self.date.weekday()
         days = ["一", "二", "三", "四", "五", "六", "日"]
         return f"{self.date}（{days[weekday_number]}）"
+    
+    def get_weekday(self):
+        weekday_number = self.date.weekday()
+        days = ["一", "二", "三", "四", "五", "六", "日"]
+        return days[weekday_number]
     
     def total_join_people_count(self):
         return self.participations.aggregate(total=models.Sum('join_people_count'))['total'] or 0
