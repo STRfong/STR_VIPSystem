@@ -315,7 +315,7 @@
                             data-notes="{{ participant.notes }}"
                             data-project-name="{{ project.name }}"
                             data-project-description="{{ project.description }}"
-                            data-event-time-date="{{ participant.event_time.date }}"
+                            data-event-time-date="{{ participant.event_time.get_weekday }}"
                             data-event-time-session="{{ participant.event_time.session }}"
                             data-event-time-start-time="{{ participant.event_time.start_time }}"
                             data-event-time-end-time="{{ participant.event_time.end_time }}"
@@ -906,7 +906,7 @@
                     <strong>【活動資訊】</strong><br>
                     演出日期：<strong>${parentRow.dataset.eventTimeDate}</strong><br>
                     場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
-                    進場時間：<strong>17:00 - 18:00</strong>（若您超過18:00進場，需要按照現場人員指示進場）<br>
+                    取票時間：<strong>17:00 - 18:00</strong>（若您超過18:00進場，需要按照現場人員指示進場）<br>
                     演出時間：<strong>18:00 - 21:00</strong>
                 </p>
 
@@ -1101,7 +1101,7 @@
             document.getElementById('recipient_name').value = parentRow.dataset.vipName;
             document.getElementById('vip_id').value = parentRow.dataset.vipId;
             document.getElementById('sender').value = parentRow.dataset.vipEmail;
-            document.getElementById('email_title').value = `【薩泰爾娛樂】《${parentRow.dataset.projectName}》合作夥伴現場觀賞邀請`;
+            document.getElementById('email_title').value = `【薩泰爾娛樂】【${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}】合作夥伴現場觀賞邀請`;
             document.getElementById('email_cc').value = parentRow.dataset.invitedByEmail;
             if (parentRow.dataset.status == '尚未寄出邀請信' || parentRow.dataset.status == '已發送邀請信件等待回覆') {
                 var ticket_count = parentRow.dataset.wishTicketCount;
@@ -1110,18 +1110,18 @@
             }
             // 建立 Email 完整模板
             const emailTemplate = `
-                <h4 class="mb-3" style="font-size: 24px; font-weight: bold;">親愛的${parentRow.dataset.vipName} 您好：</h4>
+                <h5 class="mb-3" style="font-size: 20px; font-weight: bold;">${parentRow.dataset.vipName} 您好：</h5>
                 
                 <p>感謝您一路以來對薩泰爾娛樂的支持，<br>
                 我們將於 <strong style="color:darkred;">${parentRow.dataset.eventTimeDate}</strong> 舉辦<strong>【${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}】的錄影活動</strong></p>
 
-                <p>請於下方連結中填寫資料，敬請於 <strong style="color:darkred;">${parentRow.dataset.deadLineDate}</strong> 前填寫完成，期待您的蒞臨！</p>
+                <p>請於下方連結中填寫資料，敬請於 <strong style="color:darkred;">${parentRow.dataset.deadLineDate} 下午 5:00 前</strong> 填寫完成，期待您的蒞臨！</p>
 
-                <p><a href="#">☞點擊按鈕確認參加！</a></p>
+                <p><a href="#">☞點擊按鈕確認參加！</a><br>（若您填寫完表單後，再次點擊此表單會顯示網頁錯誤。報名是否成功請以收到出席確認信為主）</p>
 
                 <p>活動日期：<strong>${parentRow.dataset.eventTimeDate}</strong><br>
                 場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
-                進場時間：<strong>17:00 - 18:00</strong><br>
+                取票時間：<strong>17:00 - 18:00</strong><br>
                 演出時間：<strong>18:00 - 21:00</strong></p>
 
                 <p>填寫時麻煩留意以下資訊：
