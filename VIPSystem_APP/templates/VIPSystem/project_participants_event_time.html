@@ -315,7 +315,8 @@
                             data-notes="{{ participant.notes }}"
                             data-project-name="{{ project.name }}"
                             data-project-description="{{ project.description }}"
-                            data-event-time-date="{{ participant.event_time.get_weekday }}"
+                            data-event-time-date="{{ participant.event_time.get_date_and_weekday }}"
+                            data-event-time-weekday="{{ participant.event_time.get_weekday }}"
                             data-event-time-session="{{ participant.event_time.session }}"
                             data-event-time-start-time="{{ participant.event_time.start_time }}"
                             data-event-time-end-time="{{ participant.event_time.end_time }}"
@@ -889,13 +890,14 @@
                     地址：${parentRow.dataset.eventTimeLocationAddress}
                 </small>
             `;
-            remindEmailModal.querySelector('#remind_email_email_title').value = `【出席提醒信】《${parentRow.dataset.projectName}》${parentRow.dataset.eventTimeFormatDate} - 薩泰爾娛樂`;
+            remindEmailModal.querySelector('#remind_email_email_title').value = `【出席提醒信】【${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}】—— 薩泰爾娛樂`;
             const emailTemplate = `
-                <h4 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${parentRow.dataset.vipName} 您好：</h4>
-                <p>《${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}》就要在明天舉行了！提醒您將以下活動及進場資訊截圖保存於手機中，以利加速進場流程</p>
-                <p>期待您蒞臨觀賞，謝謝！</p>
+                <h4 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">${parentRow.dataset.vipName} 您好：</h4>
+                <p><strong>【${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}】就要在本週${parentRow.dataset.eventTimeWeekday}舉行了！提醒您將以下活動及進場資訊截圖保存於手機中，以利加速進場流程</strong></p>
+                <p style="margin-top: 20px;>期待您蒞臨觀賞，謝謝！</p>
                 <p style="margin-top: 20px;">
                     ◉ 取票序號：<strong style="color: darkred;">${parentRow.dataset.ppId}</strong><br><br>
+                    ◉ 邀請人：<strong>${parentRow.dataset.invitedBy}</strong><br><br>
                     ◉ 貴賓資訊：<strong>${parentRow.dataset.vipOrganization} ${parentRow.dataset.vipName}</strong>（邀請人：<strong>${parentRow.dataset.invitedBy}</strong>）<br><br>
                     ◉ 取票數量：<strong style="color: darkred;">${parentRow.dataset.wishTicketCount}</strong><br><br>
                     ◉ 取票位置：<strong>壹電視攝影棚入口公關取票桌</strong><br><br>
@@ -907,11 +909,12 @@
                     演出日期：<strong>${parentRow.dataset.eventTimeDate}</strong><br>
                     場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
                     取票時間：<strong>17:00 - 18:00</strong>（若您超過18:00進場，需要按照現場人員指示進場）<br>
-                    演出時間：<strong>18:00 - 21:00</strong>
+                    演出時間：<strong>18:00 - 21:00</strong><br>
+                    現場聯繫人：<strong>梓瑄 0958-601-360</strong>
                 </p>
 
                 <p style="margin-top: 20px;">
-                    若有任何問題請不吝聯繫邀請您的夥伴或以下窗口
+                    若有任何問題請不吝聯繫邀請您的夥伴或以下聯繫人
                 </p>
 
                 <p>
@@ -975,7 +978,7 @@
 
                     <p style="margin-top: 20px;">
                         ◉ 取票序號：<strong style="color: darkred;">${parentRow.dataset.ppId}</strong><br><br>
-                        ◉ 邀請人資訊：<strong>${parentRow.dataset.invitedBy}</strong><br><br>
+                        ◉ 邀請人：<strong>${parentRow.dataset.invitedBy}</strong><br><br>
                         ◉ 貴賓資訊：<strong>${parentRow.dataset.vipOrganization} ${parentRow.dataset.vipName}</strong>（邀請人：<strong>${parentRow.dataset.invitedBy}</strong>）<br><br>
                         ◉ 取票數量：<strong style="color: darkred;">${parentRow.dataset.wishTicketCount}</strong><br><br>
                         ◉ 取票位置：<strong>壹電視攝影棚入口公關取票桌</strong><br><br>
@@ -992,7 +995,7 @@
                     </p>
 
                     <p style="margin-top: 20px;">
-                        若有任何問題請不吝聯繫邀請您的夥伴或以下窗口
+                        若有任何問題請不吝聯繫邀請您的夥伴或以下現場聯繫人
                     </p>
 
                     <p>
@@ -1336,6 +1339,7 @@
             'data-project-name': participant.project_name,
             'data-project-description': participant.project_description,
             'data-event-time-date': participant.event_time_date,
+            'data-event-time-weekday': participant.event_time_weekday,
             'data-event-time-session': participant.event_time_session,
             'data-event-time-start-time': participant.event_time_start_time,
             'data-event-time-end-time': participant.event_time_end_time,
