@@ -959,12 +959,12 @@
                     地址：${parentRow.dataset.eventTimeLocationAddress}
                 </small>
             `;
-            checkEmailModal.querySelector('#check_email_email_title').value = `【出席確認信】《${parentRow.dataset.projectName}》${parentRow.dataset.eventTimeFormatDate} - 薩泰爾娛樂`;
+            checkEmailModal.querySelector('#check_email_email_title').value = `【出席確認信】【${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}】—— 薩泰爾娛樂`;
             const emailTemplate = `
-                    <h4 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">親愛的${parentRow.dataset.vipName} 您好：</h4>
+                    <h4 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">${parentRow.dataset.vipName} 您好：</h4>
 
                     <p>
-                        感謝您撥空參與薩泰爾娛樂 - 《${parentRow.dataset.projectName}》
+                        感謝您撥空參與薩泰爾娛樂 - 【${parentRow.dataset.projectName} ${parentRow.dataset.eventTimeSession}】
                     </p>
 
                     <p>
@@ -975,6 +975,7 @@
 
                     <p style="margin-top: 20px;">
                         ◉ 取票序號：<strong style="color: darkred;">${parentRow.dataset.ppId}</strong><br><br>
+                        ◉ 邀請人資訊：<strong>${parentRow.dataset.invitedBy}</strong><br><br>
                         ◉ 貴賓資訊：<strong>${parentRow.dataset.vipOrganization} ${parentRow.dataset.vipName}</strong>（邀請人：<strong>${parentRow.dataset.invitedBy}</strong>）<br><br>
                         ◉ 取票數量：<strong style="color: darkred;">${parentRow.dataset.wishTicketCount}</strong><br><br>
                         ◉ 取票位置：<strong>壹電視攝影棚入口公關取票桌</strong><br><br>
@@ -986,7 +987,8 @@
                         演出日期：<strong>${parentRow.dataset.eventTimeDate}</strong><br>
                         場館地址：<strong>壹電視攝影棚 (台北市內湖區新湖二路146巷18號)</strong><br>
                         進場時間：<strong>17:00 - 18:00</strong>（若您超過18:00進場，需要按照現場人員指示進場）<br>
-                        演出時間：<strong>18:00 - 21:00</strong>
+                        演出時間：<strong>18:00 - 21:00</strong><br>
+                        現場聯繫人：<strong>梓瑄 0958-601-360</strong>
                     </p>
 
                     <p style="margin-top: 20px;">
