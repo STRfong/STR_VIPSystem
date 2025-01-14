@@ -653,6 +653,7 @@ def remove_participant_event_time(request, project_id, section, event_time_id):
         messages.success(request, f'已成功將 {participant.name} 從專案中移除。')
     return redirect('VIPSystem_APP:participation_by_event_time', project_id=project_id, section=section, event_time_id=event_time_id)
 
+@require_POST
 @login_required
 def update_get_ticket_check(request, project_id, section, event_time_id):
     try:
@@ -671,3 +672,34 @@ def update_get_ticket_check(request, project_id, section, event_time_id):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@require_POST
+@login_required
+def update_seat_number(request, project_id, section, event_time_id):
+    try:
+        # 獲取參數
+        participant_id = request.POST.get('participant_id')
+        seat_number = request.POST.get('seat_number', '').strip()
+
+        # 獲取並驗證參與者記錄是否存在
+        participant = ProjectParticipation.objects.get(
+            vip_id=participant_id,
+            event_time_id=event_time_id
+        )
+
+        # 更新座位號
+        participant.seat_number = seat_number
+        participant.save()  # 這會觸發 signal，自動處理 WebSocket 廣播
+
+        return JsonResponse({'status': 'success'})
+
+    except ProjectParticipation.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': '找不到該參與者記錄'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

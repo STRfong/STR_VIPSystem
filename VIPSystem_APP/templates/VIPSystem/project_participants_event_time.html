@@ -19,6 +19,15 @@
         background-color: #495057; /* 懸停時的背景顏色 */
         border-color: #495057; /* 懸停時的邊框顏色 */
     }
+    /* 已有的樣式保持不變 */
+    
+    /* 新增樣式 */
+    .seat-col {
+        display: none;  /* 預設隱藏座位相關的列 */
+    }
+    .editable-seat {
+        cursor: pointer;
+    }
 </style>
 {% if messages %}
     <div class="container mt-4" id="message-container">
@@ -79,16 +88,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="btn-group" role="group">
-                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        貴賓名單操作
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                        <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
-                        <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
-                        <!-- <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li> -->
-                        <li><a href="{% url 'VIPSystem_APP:export_participants_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">輸出貴賓名單</a></li>
-                    </ul>
+                <div class="d-flex flex-column gap-2">
+                    <div class="btn-group" role="group">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            貴賓名單操作
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <li><a href="{% url 'VIPSystem_APP:invite_list_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">從資料庫新增貴賓</a></li>
+                            <li><a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addParticipantDirectlyModal">直接新增貴賓</a></li>
+                            <!-- <li><a href="{% url 'VIPSystem_APP:send_emails_list_event_time' project.pk event_time.pk %}" class="dropdown-item">批量寄出邀請信</a></li> -->
+                            <li><a href="{% url 'VIPSystem_APP:export_participants_event_time' project.pk event_time.section event_time.pk %}" class="dropdown-item">輸出貴賓名單</a></li>
+                        </ul>
+                    </div>
+                    <div class="btn-group" role="group" aria-label="邀請與座位切換">
+                        <input type="radio" class="btn-check" name="btnradio" id="btnInvite" autocomplete="off" checked>
+                        <label class="btn btn-outline-dark" for="btnInvite">邀請</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btnSeat" autocomplete="off">
+                        <label class="btn btn-outline-dark" for="btnSeat">座位</label>
+                    </div>
                 </div>
             </div>
 
@@ -269,12 +287,13 @@
                                 <th style="width:  6%;">姓名 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterNameModal" style="cursor: pointer;"></i></th>
                                 <th style="width:  8%;">單位 <i class="bi bi-search" data-bs-toggle="modal" data-bs-target="#filterOrganizationModal" style="cursor: pointer;"></i></th>
                                 <th class="d-none d-lg-table-cell" style="width:  7%;">邀請人 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterInvitedByModal" style="cursor: pointer;"></i></th>
-                                <th style="width:  8%; text-align: center;">提供票數</th>
-                                <th class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
+                                <th class="invited-col" style="width:  8%; text-align: center;">提供票數</th>
+                                <th class="invited-col d-none d-lg-table-cell" style="width: 14%; text-align: center;">信件回覆狀態 <i class="bi bi-funnel" data-bs-toggle="modal" data-bs-target="#filterStatusModal" style="cursor: pointer;"></i></th>
                                 <th class="d-none d-lg-table-cell" style="width:  6%; text-align: center;">索取票數</th>
-                                <th class="d-none d-lg-table-cell" style="width:  5%; text-align: center;">確認信</th>
-                                <th class="d-none d-lg-table-cell" style="width:  5%; text-align: center;">提醒信</th>
-                                <th style="width: 10%;">備註</th>
+                                <th class="invited-col d-none d-lg-table-cell" style="width:  5%; text-align: center;">確認信</th>
+                                <th class="invited-col d-none d-lg-table-cell" style="width:  5%; text-align: center;">提醒信</th>
+                                <th class="seat-col" style="width: 10%;">備註</th>
+                                <th class="seat-col" style="width: 10%;">座位</th>
                                 <th style="width: 15%; text-align: center;">操作</th>
                             </tr>
                         </thead>
@@ -308,6 +327,7 @@
                             data-join-people-count="{{ participant.join_people_count }}"
                             data-send-check-email="{{ participant.send_check_email }}"
                             data-get-ticket-check="{{ participant.get_ticket_check }}"
+                            data-seat-number="{{ participant.seat_number }}"
                             >
                                 <td style="width: 3%; text-align: center;">
                                     <input type="checkbox" class="form-check-input row-checkbox" {% if participant.get_ticket_check %}checked{% endif %}>
@@ -322,26 +342,25 @@
                                 </td>
                                 <td style="width: 6%;">{{ participant.vip.organization }}</td>
                                 <td class="d-none d-lg-table-cell" style="width: 7%;">{{ participant.invited_by.profile.nickname }}</td>
-                                <td style="width: 8%; text-align: center;">{{ participant.wish_ticket_count }}</td>
-                                <td class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">{{ participant.get_status_display }}</td>
-                               
+                                <td class="invited-col" style="width: 8%; text-align: center;">{{ participant.wish_ticket_count }}</td>
+                                <td class="invited-col d-none d-lg-table-cell" style="width: 14%; text-align: center;">{{ participant.get_status_display }}</td>
                                 <td class="d-none d-lg-table-cell" style="width: 6%; text-align: center;">{{ participant.join_people_count }}</td>
-                                
-                                <td class="d-none d-lg-table-cell" style="width: 5%; text-align: center;">
+                                <td class="invited-col d-none d-lg-table-cell" style="width: 5%; text-align: center;">
                                     {% if participant.send_check_email %}
                                         <i class="bi bi-check-circle text-success"></i>
                                     {% else %}
                                         <i class="bi bi-x-circle text-danger"></i>
                                     {% endif %}
                                 </td>
-                                <td class="d-none d-lg-table-cell"style="width: 5%; text-align: center;">
+                                <td class="invited-col d-none d-lg-table-cell"style="width: 5%; text-align: center;">
                                     {% if participant.send_remind_email %}
                                         <i class="bi bi-check-circle text-success"></i>
                                     {% else %}
                                         <i class="bi bi-x-circle text-danger"></i>
                                     {% endif %}
                                 </td>
-                                <td style="width: 10%;">{{ participant.notes }}</td>
+                                <td class="seat-col" style="width: 10%;">{{ participant.notes }}</td>
+                                <td class="seat-col editable-seat" style="width: 10%;">{{ participant.seat_number }}</td>
                                 <td style="width: 15%; text-align: center;">
                                     <div class="btn-group btn-group-sm " role="group">
                                         <div class="btn-group btn-group-sm dropstart" role="group">
@@ -843,7 +862,12 @@
         const remindEmailModal = document.getElementById('remindEmailModal');
         remindEmailModal.addEventListener('show.bs.modal', handleRemindEmailModal);
 
+        // 監聽取票了沒的 websocket 事件
         handleUpdateGetTicketCheck();
+        // 監聽座位號碼的 websocket 事件
+        handleSeatNumberEditable();
+        // 監聽切換索取票數和座位號碼的 websocket 事件
+        hanldeSwitchInvitedAndSeatStatus();
 
     });
 
@@ -1009,10 +1033,10 @@
         const trigger = event.relatedTarget;
         const parentRow = trigger.closest('.vip-row');
         if (parentRow) {
-            const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
+            // const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
             // eachEventTimeCheckboxDiv.innerHTML = '';
             // updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
-            // updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
+            updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
             // const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
             // const wishAttendList = parentRow.dataset.wishAttendList;
             // const checkedAll = wishAttend.includes('all') ? 'checked' : '';
@@ -1270,8 +1294,8 @@
     function hasChanged(existingRow, newData) {
     // 檢查確認信和提醒信的圖標狀態
     const getTicketCheck = existingRow.querySelector('td:nth-child(1) .form-check-input').checked;
-    const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(8) .bi-check-circle') !== null;
-    const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
+    const hasCheckEmailIcon = existingRow.querySelector('td:nth-child(9) .bi-check-circle') !== null;
+    const hasRemindEmailIcon = existingRow.querySelector('td:nth-child(10) .bi-check-circle') !== null;
 
     return (
         getTicketCheck !== newData.get_ticket_check ||
@@ -1283,7 +1307,8 @@
         existingRow.querySelector('td:nth-child(8)').textContent.trim() !== newData.join_people_count.toString() ||
         hasCheckEmailIcon !== newData.send_check_email ||
         hasRemindEmailIcon !== newData.send_remind_email ||
-        existingRow.querySelector('td:nth-child(11)').textContent.trim() !== newData.notes
+        existingRow.querySelector('td:nth-child(11)').textContent.trim() !== newData.seat_number ||
+        existingRow.querySelector('td:nth-child(12)').textContent.trim() !== newData.notes
     );
     }
 
@@ -1320,6 +1345,7 @@
             'data-join-people-count': participant.join_people_count,
             'data-send-check-email': participant.send_check_email,
             'data-get-ticket-check': participant.get_ticket_check,
+            'data-seat-number': participant.seat_number,
         };
 
         
@@ -1340,16 +1366,17 @@
             </td>
             <td style="width: 6%;">${participant.vip__organization}</td>
             <td class="d-none d-lg-table-cell" style="width: 6%;">${participant.invited_by__username}</td>
-            <td style="width: 8%; text-align: center;">${participant.wish_ticket_count}</td>
-            <td class="d-none d-lg-table-cell" style="width: 14%; text-align: center;">${participant.status}</td>
+            <td class="invited-col" style="width: 8%; text-align: center;">${participant.wish_ticket_count}</td>
+            <td class="invited-col d-none d-lg-table-cell" style="width: 14%; text-align: center;">${participant.status}</td>
             <td class="d-none d-lg-table-cell" style="width: 6%; text-align: center;">${participant.join_people_count}</td>
-            <td class="d-none d-lg-table-cell" style="width: 5%; text-align: center;">
+            <td class="invited-col d-none d-lg-table-cell" style="width: 5%; text-align: center;">
                 ${participant.send_check_email ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>'}
             </td>
-            <td class="d-none d-lg-table-cell" style="width: 5%; text-align: center;">
+            <td class="invited-col d-none d-lg-table-cell" style="width: 5%; text-align: center;">
                 ${participant.send_remind_email ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>'}
             </td>
-            <td style="width: 10%;">${participant.notes}</td>
+            <td class="seat-col" style="width: 10%;">${participant.notes}</td>
+            <td class="seat-col editable-seat" style="width: 10%;">${participant.seat_number}</td>
             <td style="width: 15%; text-align: center;">
                 <div class="btn-group btn-group-sm" role="group">
                     <div class="btn-group btn-group-sm dropstart" role="group">
@@ -1371,6 +1398,32 @@
                 </div>
             </td>
         `;
+
+        // 根據當前按鈕狀態設置顯示/隱藏
+        const btnInvite = document.getElementById('btnInvite');
+        const invitedCols = tr.querySelectorAll('.invited-col');
+        const seatCols = tr.querySelectorAll('.seat-col');
+        
+        if (btnInvite.checked) {
+            invitedCols.forEach(col => {
+                if (col.classList.contains('d-none')) {
+                    col.classList.replace('d-none', 'd-lg-table-cell');
+                } else {
+                    col.style.display = 'table-cell';
+                }
+            });
+            seatCols.forEach(col => col.style.display = 'none');
+        } else {
+            invitedCols.forEach(col => {
+                if (col.classList.contains('d-lg-table-cell')) {
+                    col.classList.replace('d-lg-table-cell', 'd-none');
+                } else {
+                    col.style.display = 'none';
+                }
+            });
+            seatCols.forEach(col => col.style.display = 'table-cell');
+        }
+
         const tooltips = tr.querySelectorAll('[data-bs-toggle="tooltip"]');
         tooltips.forEach(element => {
             new bootstrap.Tooltip(element);
@@ -1442,5 +1495,146 @@
         return cookieValue;
     }
 
-</script>
+    function hanldeSwitchInvitedAndSeatStatus() {
+
+        // 新增按鈕切換處理
+        const btnInvite = document.getElementById('btnInvite');
+        const btnSeat = document.getElementById('btnSeat');
+
+        function toggleColumns(showInvited) {
+            const invitedCols = document.querySelectorAll('.invited-col');
+            const seatCols = document.querySelectorAll('.seat-col');
+            invitedCols.forEach(col => {
+                if (showInvited) {
+                    if (col.classList.contains('d-none')) {
+                        col.classList.replace('d-none', 'd-lg-table-cell');
+                    } else {
+                        col.style.display = 'table-cell';
+                    }
+                } else {
+                    if (col.classList.contains('d-lg-table-cell')) {
+                        col.classList.replace('d-lg-table-cell', 'd-none');
+                    } else {
+                        col.style.display = 'none';
+                    }
+                }
+            });
+
+            seatCols.forEach(col => {
+                col.style.display = showInvited ? 'none' : 'table-cell';
+            });
+        }
+
+        // 添加事件監聽
+        btnInvite.addEventListener('change', function() {
+            if (this.checked) {
+                toggleColumns(true);
+            }
+        });
+
+        btnSeat.addEventListener('change', function() {
+            if (this.checked) {
+                toggleColumns(false);
+            }
+        });
+
+        // 初始化顯示狀態
+        toggleColumns(btnInvite.checked);
+    }
+
+    function handleSeatNumberEditable() {
+        const table = document.querySelector('.table');
+        
+        table.addEventListener('click', function(e) {
+            // 確保點擊的是座位欄
+            if (!e.target.classList.contains('editable-seat')) {
+                return;
+            }
+            
+            const cell = e.target;
+            const currentValue = cell.textContent.trim();
+            
+            // 檢查是否已經在編輯中
+            if (cell.querySelector('input')) {
+                return;
+            }
+
+            // 創建輸入框
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentValue;
+            input.className = 'form-control form-control-sm';
+            
+            // 儲存原始內容
+            const originalContent = cell.innerHTML;
+            
+            // 替換內容為輸入框
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            
+            // 自動聚焦
+            input.focus();
+
+            // 處理輸入完成
+            function completeEdit(newValue) {
+                const row = cell.closest('.vip-row');
+                const participantId = row.dataset.vipId;
+                
+                // 從當前 URL 獲取必要參數
+                const currentPath = window.location.pathname;
+                const pathParts = currentPath.split('/');
+                const projectId = pathParts[3];
+                const section = pathParts[4];
+                const eventTimeId = pathParts[6];
+                
+                // 準備表單數據
+                const formData = new FormData();
+                formData.append('seat_number', newValue);
+                formData.append('participant_id', participantId);
+                
+                // 發送 AJAX 請求
+                fetch(`/VIPSystem_APP/project_list/${projectId}/${section}/event_time/${eventTimeId}/update_seat_number/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        cell.textContent = newValue;
+                    } else {
+                        console.error('Update failed:', data.message);
+                        cell.innerHTML = originalContent;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    cell.innerHTML = originalContent;
+                });
+            }
+
+            // 處理取消編輯
+            function cancelEdit() {
+                cell.innerHTML = originalContent;
+            }
+
+            // 監聽Enter和Esc按鍵
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    completeEdit(this.value);
+                } else if (e.key === 'Escape') {
+                    cancelEdit();
+                }
+            });
+
+            // 監聽失焦事件
+            input.addEventListener('blur', function() {
+                completeEdit(this.value);
+            });
+        });
+    }
+    </script>
 {% endblock %}
