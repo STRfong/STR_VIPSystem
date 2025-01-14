@@ -1033,10 +1033,10 @@
         const trigger = event.relatedTarget;
         const parentRow = trigger.closest('.vip-row');
         if (parentRow) {
-            const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
+            // const eachEventTimeCheckboxDiv = updateModal.querySelector('#eachEventTimeCheckboxDiv');
             // eachEventTimeCheckboxDiv.innerHTML = '';
             // updateModal.querySelector('#updateModalLabel').innerHTML = `修改 ${parentRow.dataset.vipName} 的參與資訊`;
-            // updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
+            updateModal.querySelector('#vip_id').value = parentRow.dataset.vipId;
             // const wishAttend = parentRow.dataset.wishAttend?.split(',') || [];
             // const wishAttendList = parentRow.dataset.wishAttendList;
             // const checkedAll = wishAttend.includes('all') ? 'checked' : '';
