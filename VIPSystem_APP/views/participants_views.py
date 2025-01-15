@@ -358,7 +358,14 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
         vip_phone = request.POST.get('phone')
         vip_email = request.POST.get('email')
         str_connect_name = request.POST.get('str_connect')
-        str_connect = User.objects.get(profile__nickname=str_connect_name)
+        try:
+            str_connect = User.objects.get(profile__nickname=str_connect_name)
+        except User.DoesNotExist:
+            messages.error(request, f'加入失敗：找不到叫 {str_connect_name} 的同仁ㄛ，試著在下拉選單中找找看！')
+            return redirect('VIPSystem_APP:participation_by_event_time', 
+                       project_id=project_id, 
+                       section=section, 
+                       event_time_id=event_time_id)
 
         vip_notes = request.POST.get('vip_notes')
         wish_ticket_count = request.POST.get('wish_ticket_count')
