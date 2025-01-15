@@ -161,10 +161,41 @@ class ProjectParticipantsByEventTimeView(ListView):
                 context['invited_ticket_count'] = 0
                 context['remaining_ticket_count'] = 0
             
+            # 取得所有同仁的邀請狀況
+            all_ticket_status = self.get_all_staff_invite_status(event_time_id)
+            context['staff_invite_status'] = all_ticket_status['staff_invite_status']
+            context['total_invited_tickets'] = all_ticket_status['total_invited_tickets']
             return context
         except Exception as e:
             print(f"Error: {e}")
             return context
+        
+    def get_all_staff_invite_status(self, event_time_id):
+        staff_invite_status = {}
+        staffs = User.objects.all()
+        for staff in staffs:
+            try:
+                event_ticket = EventTicket.objects.get(
+                    event_time_id=event_time_id, 
+                    staff__user=staff
+                )
+                staff_invite_status[staff.profile.nickname] = {"可使用票數": event_ticket.ticket_count, "已使用票數": event_ticket.total_invited_tickets(), "剩餘票數": event_ticket.total_remaining_tickets()}
+            except EventTicket.DoesNotExist:
+                # staff_invite_status[staff.profile.nickname] = {"可使用票數": 0, "已使用票數": 0, "剩餘票數": 0}
+                continue
+        
+        # 計算所有同仁的票數總和
+        total_ticket_count = sum(status["可使用票數"] for status in staff_invite_status.values())
+        total_invited_tickets = sum(status["已使用票數"] for status in staff_invite_status.values())  
+        total_remaining_tickets = sum(status["剩餘票數"] for status in staff_invite_status.values())
+
+        # 將總和加入到 staff_invite_status 中
+        total_invited_tickets = {
+            "可使用票數": total_ticket_count,
+            "已使用票數": total_invited_tickets,
+            "剩餘票數": total_remaining_tickets
+        }
+        return {'staff_invite_status': staff_invite_status, 'total_invited_tickets': total_invited_tickets}
     
 @method_decorator(login_required, name='dispatch') # 邀請貴賓參與專案
 class InviteListView(ListView):
@@ -327,7 +358,14 @@ class UpdateParticipantsByEventTimeDirectlyView(UpdateView):
         vip_phone = request.POST.get('phone')
         vip_email = request.POST.get('email')
         str_connect_name = request.POST.get('str_connect')
-        str_connect = User.objects.get(profile__nickname=str_connect_name)
+        try:
+            str_connect = User.objects.get(profile__nickname=str_connect_name)
+        except User.DoesNotExist:
+            messages.error(request, f'加入失敗：找不到叫 {str_connect_name} 的同仁ㄛ，試著在下拉選單中找找看！')
+            return redirect('VIPSystem_APP:participation_by_event_time', 
+                       project_id=project_id, 
+                       section=section, 
+                       event_time_id=event_time_id)
 
         vip_notes = request.POST.get('vip_notes')
         wish_ticket_count = request.POST.get('wish_ticket_count')

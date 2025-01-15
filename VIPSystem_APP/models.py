@@ -193,6 +193,10 @@ class EventTicket(models.Model):
     def total_remaining_tickets(self): # 計算本場次剩餘可邀請票數
         return self.ticket_count - self.total_invited_tickets()
     
+    @classmethod
+    def total_invited_tickets_by_staff(cls, staff_id):
+        return cls.objects.filter(staff_id=staff_id).aggregate(total=Sum('ticket_count'))['total'] or 0
+    
     
 class ProjectParticipation(models.Model):
     pp_id = models.IntegerField(editable=False)
@@ -245,7 +249,7 @@ class ProjectParticipation(models.Model):
             self.notes = notes
 
             from .views.emails import Email
-            subject = f" 【出席確認信】《{self.project.name}》{self.event_time.format_date_mm_dd()} - 薩泰爾娛樂"
+            subject = f" 【出席確認信】【{self.project.name} {self.event_time.session}】—— 薩泰爾娛樂"
             email = Email(self, subject, cc = self.invited_by.email) 
             email.send_check_reply_email(join_people_count)
             self.send_check_email = True
