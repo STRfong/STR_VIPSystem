@@ -193,6 +193,10 @@ class EventTicket(models.Model):
     def total_remaining_tickets(self): # 計算本場次剩餘可邀請票數
         return self.ticket_count - self.total_invited_tickets()
     
+    @classmethod
+    def total_invited_tickets_by_staff(cls, staff_id):
+        return cls.objects.filter(staff_id=staff_id).aggregate(total=Sum('ticket_count'))['total'] or 0
+    
     
 class ProjectParticipation(models.Model):
     pp_id = models.IntegerField(editable=False)
